@@ -1,23 +1,44 @@
 ﻿using System;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.ReactiveUI;
+using System.Threading.Tasks;
 
 namespace tone
 {
     class Program
     {
-        // Initialization code. Don't use any Avalonia, third-party APIs or any
-        // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-        // yet and stuff might break.
-        public static void Main(string[] args) => BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        // private static ServiceProvider serviceProvider;
 
-        // Avalonia configuration, don't remove; also used by visual designer.
-        public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .LogToTrace()
-                .UseReactiveUI();
+        static async Task Main(string[] args)
+        {
+            try
+            {
+                /*
+                var services = new ServiceCollection();
+                ConfigureServices(services);
+                serviceProvider = services.BuildServiceProvider();
+                Console.WriteLine("Hello World!");
+                */
+                await Task.Delay(10);
+                Console.WriteLine("hello world");
+            }
+            catch (ArgumentException aex)
+            {
+                Console.WriteLine($"Caught ArgumentException: {aex.Message}");
+            }
+        }
+        /*
+        private static void  ConfigureServices(ServiceCollection services)
+        {
+            var configFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            var config = new ConfigurationBuilder()
+                .AddJsonFile(configFile,
+                    optional: true,
+                    reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            // https://stackoverflow.com/questions/55025197/how-to-use-configuration-with-validatedataannotations
+            services.Configure<AppSettings>((options) => { config.GetSection(nameof(AppSettings)).Bind(options); });
+        }
+        */
     }
 }

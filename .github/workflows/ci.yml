@@ -1,0 +1,54 @@
+name: Publish
+
+# on: [push]
+on: 
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release
+    strategy:
+      matrix:
+        kind: ['linux', 'windows', 'macOS']
+        include:
+          - kind: linux
+            os: ubuntu-latest
+            target: linux-x64
+          - kind: windows
+            os: windows-latest
+            target: win-x64
+          - kind: macOS
+            os: macos-latest
+            target: osx-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.403
+
+      - name: Build
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          project_name="tone"
+          dotnet_framework="net5.0"
+          release_name="$project_name-$tag-${{ matrix.target }}"
+
+          # Build everything
+          dotnet publish $project_name/$project_name.csproj --framework $dotnet_framework --runtime "${{ matrix.target }}" -c Release -o "$project_name/var/tmp/$release_name"
+          # Pack files
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            # Pack to zip for Windows
+            7z a -tzip "${project_name}/dist/${release_name}.zip" "./${project_name}/var/tmp/${release_name}/*"
+          else
+            tar czvf "${project_name}/dist/${release_name}.tgz" "$project_name/tmp/$release_name"
+          fi
+
+          # Delete output directory
+          rm -r "${project_name}/var/tmp/*"
+      
