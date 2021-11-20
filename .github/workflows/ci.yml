@@ -1,9 +1,15 @@
 name: Publish
 
-on:
-  release:
-    types: [published]
-
+on: 
+  push:
+    tags:
+    - 'v*'
+env:
+  PROJECT_NAME: 'tone'
+  PROJECT_PATH: 'tone/tone.csproj'
+  PROJECT_OUTPUT_PATH: ${{ github.workspace }}/output/
+  DOTNET_VERSION: '5.0.403'
+  DOTNET_FRAMEWORK: 'net5.0'
 jobs:
   release:
     name: Release
@@ -23,20 +29,27 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.101
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Get version
+        id: version
+        uses: battila7/get-version-action@v2
+        
+      #- name: Restore
+      #  run: dotnet restore tone/tone.csproj
 
       - name: Build
         shell: bash
         run: |
-          tag=$(git describe --tags --abbrev=0)
-          release_name="tone-$tag-${{ matrix.target }}"
+          # tag=$(git describe --tags --abbrev=0)
+          release_name="${{ env.PROJECT_NAME }}-${{ steps.get_version.outputs.version-without-v }}-${{ matrix.target }}"
           # Build everything
-          dotnet publish tone/tone.csproj --framework net5.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -o "$release_name"
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             # Pack to zip for Windows
@@ -49,6 +62,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "tone*"
+          files: "${{ env.PROJECT_NAME }}-${{ steps.get_version.outputs.version-without-v }}-${{ matrix.target }}*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
