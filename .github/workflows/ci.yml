@@ -46,22 +46,17 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          # tag=$(git describe --tags --abbrev=0)
-          release_name="${{ env.PROJECT_NAME }}-${{ steps.get_version.outputs.version-without-v }}-${{ matrix.target }}"
-          # Build everything
-          dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -o "$release_name"
-          # Pack files
+          release_name="${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version-without-v }}-${{ matrix.target }}"
+          dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           if [ "${{ matrix.target }}" == "win-x64" ]; then
-            # Pack to zip for Windows
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
-          tar czvf "${release_name}.tar.gz" "$release_name"
+            tar czvf "${release_name}.tar.gz" "$release_name"
           fi
-          # Delete output directory
           rm -r "$release_name"
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "${{ env.PROJECT_NAME }}-${{ steps.get_version.outputs.version-without-v }}-${{ matrix.target }}*"
+          files: "${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version-without-v }}-${{ matrix.target }}*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
