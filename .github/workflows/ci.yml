@@ -1,7 +1,6 @@
 name: Publish
 
-# on: [push]
-on: 
+on:
   release:
     types: [published]
 
@@ -29,26 +28,27 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.403
+          dotnet-version: 3.1.101
 
       - name: Build
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          project_name="tone"
-          dotnet_framework="net5.0"
-          release_name="$project_name-$tag-${{ matrix.target }}"
-
+          release_name="tone-$tag-${{ matrix.target }}"
           # Build everything
-          dotnet publish $project_name/$project_name.csproj --framework $dotnet_framework --runtime "${{ matrix.target }}" -c Release -o "$project_name/var/tmp/$release_name"
+          dotnet publish tone/tone.csproj --framework net5.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             # Pack to zip for Windows
-            7z a -tzip "${project_name}/dist/${release_name}.zip" "./${project_name}/var/tmp/${release_name}/*"
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
-            tar czvf "${project_name}/dist/${release_name}.tgz" "$project_name/tmp/$release_name"
+          tar czvf "${release_name}.tar.gz" "$release_name"
           fi
-
           # Delete output directory
-          rm -r "${project_name}/var/tmp/*"
-      
+          rm -r "$release_name"
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "tone*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
