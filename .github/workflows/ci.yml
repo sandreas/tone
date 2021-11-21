@@ -8,8 +8,8 @@ env:
   PROJECT_NAME: 'tone'
   PROJECT_PATH: 'tone/tone.csproj'
   PROJECT_OUTPUT_PATH: ${{ github.workspace }}/output/
-  DOTNET_VERSION: '5.0.403'
-  DOTNET_FRAMEWORK: 'net5.0'
+  DOTNET_VERSION: '6.0.100'
+  DOTNET_FRAMEWORK: 'net6.0'
 jobs:
   release:
     name: Release
