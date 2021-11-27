@@ -3,7 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using tone.Commands;
+using tone.Options;
 using tone.Services;
 
 namespace tone;
@@ -21,11 +23,19 @@ class Program
             .AddEnvironmentVariables()
             .Build();
 
+        // possible fix? https://stackoverflow.com/questions/40880261/configuring-serilog-rollingfile-with-appsettings-json
+         Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(config)
+            .WriteTo.Console()
+            //.WriteTo.Debug()
+            .CreateLogger();
+        
+        Log.Error("error");
         // https://stackoverflow.com/questions/55025197/how-to-use-configuration-with-validatedataannotations
         services.Configure<AppSettings>(options => config.GetSection(nameof(AppSettings)).Bind(options) );
         
         services.AddSingleton<App>();
-        services.AddSingleton<MergeCommand>();
+        services.AddSingleton< ICommand<MergeOptions>, MergeCommand>();
         
         services.AddSingleton<TagService>();
         

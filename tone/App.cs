@@ -9,18 +9,20 @@ namespace tone;
 
 public class App
 {
-    private readonly MergeCommand _merge;
+    private const int CodeInvalidCommand = 1;
+    private readonly ICommand<MergeOptions> _merge;
 
-    public App(MergeCommand merge)
+    public App(ICommand<MergeOptions> merge)
     {
         _merge = merge;
     }
     public async Task<int> RunAsync(string[] args)
     {
-        return await Parser.Default.ParseArguments<MergeOptions>(args)
+        var result = await Parser.Default.ParseArguments<MergeOptions>(args)
             .MapResult(
                 _merge.Execute,
-                _ => Task.FromResult(1));
+                _ => Task.FromResult(CodeInvalidCommand));
+        return result;
     }
 
 }

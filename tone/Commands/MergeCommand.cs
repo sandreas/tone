@@ -5,7 +5,7 @@ using tone.Services;
 
 namespace tone.Commands;
 
-public class MergeCommand: CommandBase
+public class MergeCommand: ICommand<MergeOptions>
 {
     private readonly TagService _tag;
 
@@ -17,7 +17,7 @@ public class MergeCommand: CommandBase
     {
         Console.WriteLine("Merge");
         _tag.DoSomething();
-        return await Task.FromResult(0);
+        return await Task.FromResult(5);
     }
 
 }
