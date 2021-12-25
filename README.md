@@ -15,6 +15,18 @@ Audio converter and  tagger
   - Github actions
   - Dependency injection for command line
 # notes
+```
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <PublishReadyToRun>true</PublishReadyToRun>
+        <!--
+        <PublishTrimmed>true</PublishTrimmed>
+        <PublishSingleFile>true</PublishSingleFile>
+```
 
 ## Dependency injection
 see https://www.youtube.com/watch?v=dgJ1nS2CLpQ

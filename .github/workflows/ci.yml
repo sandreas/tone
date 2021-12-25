@@ -20,6 +20,9 @@ jobs:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
+          - kind: linux
+              os: ubuntu-latest
+              target: linux-arm            
           - kind: windows
             os: windows-latest
             target: win-x64
