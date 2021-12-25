@@ -33,17 +33,20 @@ class Program
         Log.Error("error");
         // https://stackoverflow.com/questions/55025197/how-to-use-configuration-with-validatedataannotations
         services.Configure<AppSettings>(options => config.GetSection(nameof(AppSettings)).Bind(options) );
+
+        services.AddTransient<StringWriter>();
         
         services.AddSingleton<App>();
         services.AddSingleton< ICommand<MergeOptions>, MergeCommand>();
         
         services.AddSingleton<TagService>();
         
+        
         // var serviceProvider = services.BuildServiceProvider();
         // var app = serviceProvider.GetRequiredService<App>();
-        return await services.BuildServiceProvider().GetRequiredService<App>().RunAsync(args);
+        var result = await services.BuildServiceProvider().GetRequiredService<App>().RunAsync(args);
+        return await Task.FromResult(result);
 
-        
         //https://www.thecodebuzz.com/dependency-injection-console-app-using-generic-hostbuilder/
         // https://devblogs.microsoft.com/ifdef-windows/command-line-parser-on-net5/
         // https://stackoverflow.com/questions/54912012/how-to-stop-exit-terminate-dotnet-core-hostbuilder-console-application-programma
@@ -67,7 +70,7 @@ class Program
         }
         return Environment.ExitCode;
         */
-        
+
     }
 
 

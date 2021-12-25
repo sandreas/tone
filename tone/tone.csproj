@@ -35,4 +35,9 @@
       <PackageReference Include="z440.atl.core" Version="3.25.0" />
     </ItemGroup>
 
+
+    <ItemGroup>
+      <Folder Include="Common\StringParser" />
+    </ItemGroup>
+
 </Project>

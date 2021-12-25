@@ -1,6 +1,7 @@
 */obj/
 */bin/
 */var/
-*/dist/
 !*/var/*.gitkeep
+*/dist/
+*.DotSettings.user
 .idea/

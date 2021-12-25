@@ -13,7 +13,7 @@ public class MergeCommand: ICommand<MergeOptions>
     {
         _tag = tag;
     }
-    public async Task<int> Execute(MergeOptions options)
+    public async Task<int> ExecuteAsync(MergeOptions options)
     {
         Console.WriteLine("Merge");
         _tag.DoSomething();
