@@ -17,16 +17,19 @@
 
 
     <ItemGroup>
-      <PackageReference Include="CommandLineParser" Version="2.8.0" />
+      <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
       <PackageReference Include="Serilog" Version="2.10.0" />
+      <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+      <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+      <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+      <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
       <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
       <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
@@ -37,7 +40,19 @@
 
 
     <ItemGroup>
+      <Folder Include="Common\Extensions\IEnumerable" />
       <Folder Include="Common\StringParser" />
+      <Folder Include="var\data\input" />
+      <Folder Include="var\data\input-batch\Fantasy\A. L. Knorr\Der Ursprung der Elemente\1 - Tochter des Meeres\Files" />
+      <Folder Include="var\data\input-batch\Jugend-Hörbücher\Marlene Beer\Die unwissende Magierin" />
+      <Folder Include="var\data\output" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

@@ -11,21 +11,23 @@ namespace tone;
 
 public class App
 {
-    
+    private readonly ICommand<TagOptions> _tag;
     private readonly ICommand<MergeOptions> _merge;
     private StringWriter _helpWriter;
 
-    public App(ICommand<MergeOptions> merge, StringWriter helpWriter)
+    public App(ICommand<TagOptions> tag,ICommand<MergeOptions> merge,  StringWriter helpWriter)
     {
+        _tag = tag;
         _merge = merge;
         _helpWriter = helpWriter;
     }
     public async Task<int> RunAsync(string[] args)
     {
         var parser = new Parser (with => with.HelpWriter = _helpWriter);
-        var result= await parser.ParseArguments<MergeOptions>(args)
+        var result= await parser.ParseArguments<TagOptions, MergeOptions>(args)
             .MapResult(
-                 _merge.ExecuteAsync,
+                (TagOptions options) => _tag.ExecuteAsync(options),
+                (MergeOptions options) => _merge.ExecuteAsync(options),
                 DisplayHelp
                  );
         return result;
@@ -41,7 +43,6 @@ public class App
 
         await Console.Error.WriteLineAsync (_helpWriter.ToString ());
         return await Task.FromResult((int)ExitCodes.ParseArgumentsFailed);
-
     }
 
 }
