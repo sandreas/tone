@@ -10,36 +10,30 @@ namespace tone.Common.Io;
 [Flags]
 public enum FileWalkerOptions
 {
-    IncludeSelf = 1 << 1,
-    Recursive = 1 << 2,
+    Default = 1 << 0,
+    Recursive = 1 << 1,
 }
 
+[Flags]
 public enum FileWalkerBehaviour
 {
-    ContinueOnException = 1 << 0,
-    BreakOnException = 1 << 1,
+    Default = 0,
+    BreakOnException = 1 << 0
 }
 
 // https://stackoverflow.com/questions/18982108/making-a-custom-class-iqueryable
 public class FileWalker : IEnumerable<string>
 {
     private readonly FileSystem _fs;
-    private Func<string, Exception, FileWalkerBehaviour> _exceptionHandler;
     private string _path = "";
-    private FileWalkerOptions _options = FileWalkerOptions.IncludeSelf;
+    private Func<string, Exception, FileWalkerBehaviour> _exceptionHandler;
+    private FileWalkerOptions _options = FileWalkerOptions.Default;
 
     public FileWalker(FileSystem fs, Func<string, Exception, FileWalkerBehaviour>? exceptionHandler = null)
     {
         _fs = fs;
-        _exceptionHandler = exceptionHandler ?? ((_, _) => FileWalkerBehaviour.ContinueOnException);
+        _exceptionHandler = exceptionHandler ?? ((_, _) => FileWalkerBehaviour.Default);
     }
-
-    /*
-    public static FileWalker WalkRecursive(FileSystem fs, string path)
-    {
-        return new FileWalker(fs).WalkRecursive(path);
-    }
-    */
 
     public bool IsDir(IFileInfo f)
     {
@@ -106,22 +100,16 @@ public class FileWalker : IEnumerable<string>
                 }
                 continue;
             }
-
-            // todo: check if this would work? => maybe not even necessary
-            // if (currentPath != _path || _flags.HasFlag(FileWalkerFlags.IncludeSelf))
-            // {
-            yield return currentPath;
-            // }
             
-            // todo: check if this would work? Improve performance (get rid of additional if)
+            yield return currentPath;
+
+            var dirs = _fs.Directory.EnumerateDirectories(currentPath).ToArray();
             if (_options.HasFlag(FileWalkerOptions.Recursive))
             {
-                _fs.Directory.EnumerateDirectories(currentPath).AsParallel().ForAll(pending.Push);
-            } else {
-                tmp = tmp.Concat(_fs.Directory.EnumerateDirectories(currentPath).AsParallel());
+                dirs.AsParallel().ForAll(pending.Push);
             }
-    
-            foreach (var item in tmp)
+
+            foreach (var item in tmp.Concat(dirs))
             {
                 yield return item;
             }
