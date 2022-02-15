@@ -1,23 +1,31 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
-using System.IO.Enumeration;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using ATL;
-using Microsoft.Extensions.Logging;
-using tone.Common.Io;
-using tone.Options;
+using CliFx;
+using CliFx.Attributes;
+using CliFx.Infrastructure;
+using Sandreas.Files;
 using tone.Services;
+using Serilog;
+using tone.Common.Extensions;
 
 namespace tone.Commands;
 
-public class TagCommand: ICommand<TagOptions>
+[Command("tag")]
+public class TagCommand: ICommand
 {
+    private readonly ILogger _logger;
+    private readonly FileWalker _fileWalker;
+    private readonly DirectoryLoaderService _dirLoader;
+
+    [CommandOption("input", 'i')]
+    public IReadOnlyList<string> Input { get; init; }
+
+    [CommandOption("include-extensions")] public IReadOnlyList<string> IncludeExtensions { get; init; }
+    
+    
+    /*
     private readonly ILogger<ICommand> _logger;
     private readonly FileWalker _fileWalker;
     private readonly DirectoryLoaderService _dirLoader;
@@ -59,5 +67,24 @@ public class TagCommand: ICommand<TagOptions>
     private void SetTagValue(string? optionsAlbum, out string trackAlbum)
     {
         throw new NotImplementedException();
+    }
+    */
+    public TagCommand(ILogger logger, FileWalker fileWalker, DirectoryLoaderService dirLoader)
+    {
+        _logger = logger;
+        _fileWalker = fileWalker;
+        _dirLoader = dirLoader;
+    }
+    public async ValueTask ExecuteAsync(IConsole console)
+    {
+        var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(IncludeExtensions);
+        var inputFiles = _dirLoader.FindFilesByExtension(Input, audioExtensions);
+
+        console.WriteErrorLine(inputFiles.Count().ToString());
+        
+        // await console.Output.WriteLineAsync("hello tag command");
+        // _logger.Error("Error testing from tag command");
+        
+
     }
 }

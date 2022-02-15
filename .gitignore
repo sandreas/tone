@@ -5,3 +5,4 @@
 */dist/
 *.DotSettings.user
 .idea/
+nuget.config
