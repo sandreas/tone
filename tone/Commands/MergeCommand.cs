@@ -1,26 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
-using System.IO.Enumeration;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using ATL;
-using Microsoft.Extensions.Logging;
-using tone.Common.Io;
-using tone.Options;
+using CliFx;
+using CliFx.Attributes;
+using CliFx.Infrastructure;
+using Sandreas.Files;
 using tone.Services;
+using ILogger = Serilog.ILogger;
 
 namespace tone.Commands;
 
-public class MergeCommand: ICommand<MergeOptions>
+[Command("merge")]
+public class MergeCommand : ICommand
 {
-    private readonly ILogger<ICommand> _logger;
+    private readonly ILogger _logger;
     private readonly DirectoryLoaderService _dirLoader;
     private readonly FileWalker _fileWalker;
 
-    public MergeCommand(ILogger<ICommand> logger, FileWalker fileWalker, DirectoryLoaderService dirLoader)
+    public MergeCommand(ILogger logger, FileWalker fileWalker, DirectoryLoaderService dirLoader)
     {
         _logger = logger;
         _fileWalker = fileWalker;
@@ -28,13 +23,12 @@ public class MergeCommand: ICommand<MergeOptions>
     }
 
 
-    public async Task<int> ExecuteAsync(MergeOptions options)
-    {
-
-// todo: fix this with a . and some content
-        var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(options.IncludeExtensions);
-        var inputFiles = _dirLoader.SeekFiles(options.Input, audioExtensions).ToList();
-        Console.WriteLine(inputFiles.First().Item1 + ": " +string.Join(", ", inputFiles.First().Item2));
+//     public async Task<int> ExecuteAsync2(MergeOptions options)
+//     {
+// // todo: fix this with a . and some content
+//         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(options.IncludeExtensions);
+//         var inputFiles = _dirLoader.SeekFiles(options.Input, audioExtensions).ToList();
+//         Console.WriteLine(inputFiles.First().Item1 + ": " + string.Join(", ", inputFiles.First().Item2));
 
         /*
         Steps for batch pattern parsing
@@ -64,7 +58,11 @@ public class MergeCommand: ICommand<MergeOptions>
             // Console.WriteLine("MergeCommand.ExecuteAsync: " + f );
         }
         */
-        return await Task.FromResult(0);
-    }
+    //     return await Task.FromResult(0);
+    // }
 
+    public async ValueTask ExecuteAsync(IConsole console)
+    {
+        await console.Output.WriteLineAsync("hello merge command");
+    }
 }
