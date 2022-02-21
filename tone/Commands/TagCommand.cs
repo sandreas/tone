@@ -1,8 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
+using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,101 +9,156 @@ using ATL;
 using CliFx;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
-using Sandreas.Files;
 using tone.Services;
 using Serilog;
-using tone.Common.Extensions;
+using tone.Metadata;
 
 namespace tone.Commands;
 
 [Command("tag")]
-public class TagCommand : ICommand
+public class TagCommand : ICommand, IMetadata
 {
     private readonly ILogger _logger;
-    private readonly FileWalker _fileWalker;
     private readonly DirectoryLoaderService _dirLoader;
 
-    [CommandOption("input", 'i')] public IReadOnlyList<string> Input { get; init; }
+    [CommandOption("input", 'i')] public IReadOnlyList<string> Input { get; init; } = new List<string>();
+
+    [CommandOption("assume-yes", 'y')] public bool AssumeYes { get; init; } = false;
 
     [CommandOption("dump")] public bool Dump { get; init; } = false;
-    [CommandOption("include-extensions")] public IReadOnlyList<string> IncludeExtensions { get; init; }
 
+    [CommandOption("include-extensions")]
+    public IReadOnlyList<string> IncludeExtensions { get; init; } = new List<string>();
+    
+    [CommandOption("meta-title")] public string? Title { get; set; }
+    [CommandOption("meta-artist")] public string? Artist { get; set; }
+    [CommandOption("meta-composer")] public string? Composer { get; set; }
+    [CommandOption("meta-comment")] public string? Comment { get; set; }
+    [CommandOption("meta-genre")] public string? Genre { get; set; }
+    [CommandOption("meta-album")] public string? Album { get; set; }
+    [CommandOption("meta-original-album")] public string? OriginalAlbum { get; set; }
+    [CommandOption("meta-copyright")] public string? Copyright { get; set; }
+    [CommandOption("meta-description")] public string? Description { get; set; }
+    [CommandOption("meta-publisher")] public string? Publisher { get; set; }
+    [CommandOption("meta-album-artist")] public string? AlbumArtist { get; set; }
+    [CommandOption("meta-conductor")] public string? Conductor { get; set; }
+
+    [CommandOption("meta-group")] public string? Group { get; set; }
+
+    [CommandOption("meta-sort-name")] public string? SortName { get; set; }
+
+    [CommandOption("meta-sort-album")] public string? SortAlbum { get; set; }
+    [CommandOption("meta-sort-artist")] public string? SortArtist { get; set; }
+
+    [CommandOption("meta-sort-album-artist")]
+    public string? SortAlbumArtist { get; set; }
+
+    [CommandOption("meta-long-description")]
+    public string? LongDescription { get; set; }
+
+    [CommandOption("meta-encoding-tool")] public string? EncodingTool { get; set; }
+    [CommandOption("meta-purchase-date")] public DateTime? PurchaseDate { get; set; }
+    [CommandOption("meta-media-type")] public string? MediaType { get; set; }
 
     /*
-    private readonly ILogger<ICommand> _logger;
-    private readonly FileWalker _fileWalker;
-    private readonly DirectoryLoaderService _dirLoader;
+    [CommandOption("meta-date")] public DateTime? Date { get; set; }
+    [CommandOption("meta-track-number")]public int? TrackNumber { get; set; }
+    [CommandOption("meta-track-total")]public int? TrackTotal { get; set; }
+    [CommandOption("meta-disc-number")]public int? DiscNumber { get; set; }
+    [CommandOption("meta-disc-total")]public int? DiscTotal { get; set; }
+    [CommandOption("meta-popularity")]public float? Popularity { get; set; }
+*/
+    [CommandOption("meta-original-artist")]
+    public string? OriginalArtist { get; set; }
 
-    public TagCommand(ILogger<ICommand> logger, FileWalker fileWalker, DirectoryLoaderService dirLoader)
+    [CommandOption("meta-publishing-date")]
+    public DateTime? PublishingDate { get; set; }
+
+    public TagCommand(ILogger logger, DirectoryLoaderService dirLoader)
     {
         _logger = logger;
-        _fileWalker = fileWalker;
-        _dirLoader = dirLoader;
-    }
-
-
-    public async Task<int> ExecuteAsync(TagOptions options)
-    {
-        var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(options.IncludeExtensions);
-        var inputFiles = _dirLoader.SeekFiles(options.Input, audioExtensions).ToList();
-
-        foreach (var file in inputFiles)
-        {
-            try
-            {
-                var track = new Track(file.path);
-                track.Album = options.Album ?? track.Album;
-                track.Artist = options.Artist ?? track.Artist;
-                if (!track.Save())
-                {
-                    _logger.LogWarning("Could not save tags for {FilePath}", file.path);
-                };
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("Could not save tag for {FilePath}, exception: {ExceptionMessage}", file.path, e.Message);
-            }
-
-        }
-        return await Task.FromResult(0);
-    }
-
-    private void SetTagValue(string? optionsAlbum, out string trackAlbum)
-    {
-        throw new NotImplementedException();
-    }
-    */
-    public TagCommand(ILogger logger, FileWalker fileWalker, DirectoryLoaderService dirLoader)
-    {
-        _logger = logger;
-        _fileWalker = fileWalker;
         _dirLoader = dirLoader;
     }
 
     public async ValueTask ExecuteAsync(IConsole console)
     {
+        _logger.Debug("tag command started");
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(IncludeExtensions);
-        var inputFiles = _dirLoader.FindFilesByExtension(Input, audioExtensions).ToImmutableArray();
-
-
-        foreach (var file in inputFiles)
+        var inputFiles = _dirLoader.FindFilesByExtension(Input, audioExtensions);
+        if (Dump)
         {
-            if (Dump)
+            foreach (var file in inputFiles)
             {
                 await DumpTags(console, file);
-                continue;
+            }
+            return;
+        }
+
+        var inputFilesAsArray = inputFiles.ToArray();
+        if (inputFilesAsArray.Length > 1 && !AssumeYes)
+        {
+            if (!await Confirm(console, $"Tagging {inputFilesAsArray.Length} files, continue?"))
+            {
+                await console.Output.WriteLineAsync("aborted");
+                return;
             }
         }
 
-        // console.WriteErrorLine(inputFiles.Count().ToString());
+        var tasks = new List<Task>();
+        foreach (var file in inputFilesAsArray)
+        {
+            var track = new MetadataTrack(file);
+            CopyMetadata(this, track);
+            tasks.Add(Task.Run(() =>
+            {
+                if (!track.Save())
+                {
+                    console.Error.WriteLine($"Could not save tags for {file}");
+                }
+            }));
+        }
 
-        // await console.Output.WriteLineAsync("hello tag command");
-        // _logger.Error("Error testing from tag command");
+        await Task.WhenAll(tasks);
     }
+
+    private async Task<bool> Confirm(IConsole console, string message, bool confirmIsDefault = false)
+    {
+        var confirmString = confirmIsDefault ? "[Y/n]" : "[y/N]";
+        await console.Output.WriteAsync($"{message} {confirmString}");
+        var answer = await console.Input.ReadLineAsync();
+        return answer?.Trim().ToLower() != "y";
+    }
+
+    private void CopyMetadata(IMetadata source, IMetadata destination)
+    {
+        destination.Album = source.Album ?? destination.Album;
+        destination.Title = source.Title ?? destination.Title;
+        destination.Artist = source.Artist ?? destination.Artist;
+        destination.Composer = source.Composer ?? destination.Composer;
+        destination.Comment = source.Comment ?? destination.Comment;
+        destination.Genre = source.Genre ?? destination.Genre;
+        destination.Album = source.Album ?? destination.Album;
+        destination.OriginalAlbum = source.OriginalAlbum ?? destination.OriginalAlbum;
+        destination.Copyright = source.Copyright ?? destination.Copyright;
+        destination.Description = source.Description ?? destination.Description;
+        destination.Publisher = source.Publisher ?? destination.Publisher;
+        destination.AlbumArtist = source.AlbumArtist ?? destination.AlbumArtist;
+        destination.Conductor = source.Conductor ?? destination.Conductor;
+        destination.Group = source.Group ?? destination.Group;
+        destination.SortName = source.SortName ?? destination.SortName;
+        destination.SortAlbum = source.SortAlbum ?? destination.SortAlbum;
+        destination.SortArtist = source.SortArtist ?? destination.SortArtist;
+        destination.SortAlbumArtist = source.SortAlbumArtist ?? destination.SortAlbumArtist;
+        destination.LongDescription = source.LongDescription ?? destination.LongDescription;
+        destination.EncodingTool = source.EncodingTool ?? destination.EncodingTool;
+        destination.PurchaseDate = source.PurchaseDate ?? destination.PurchaseDate;
+        destination.MediaType = source.MediaType ?? destination.MediaType;
+    }
+
 
     private async Task DumpTags(IConsole console, IFileInfo file)
     {
-        var track = new Track(file.FullName);
+        var track = new MetadataTrack(file.FullName);
         var properties = track.GetType().GetProperties();
 
         var skipProperties = new[] { "Year", "Duration" };
@@ -123,7 +177,10 @@ public class TagCommand : ICommand
             if (name == "DurationMs")
             {
                 name = "Duration";
-                propValue =  TimeSpan.FromMilliseconds((double)(propValue ?? 0)).ToString(@"hh\:mm\:ss\.fff");
+                var duration = TimeSpan.FromMilliseconds((double)(propValue ?? 0));
+                var totalHoursAsString = Math.Floor(duration.TotalHours).ToString(CultureInfo.InvariantCulture)
+                    .PadLeft(2, '0');
+                propValue = totalHoursAsString + duration.ToString(@"\:mm\:ss\.fff");
             }
 
             if (propValue is DateTime dateTime && dateTime == DateTime.MinValue)
@@ -164,44 +221,5 @@ public class TagCommand : ICommand
 
             await console.Output.WriteLineAsync(name + ": " + propValue);
         }
-        /*
-Title: Kapitel 1 - Tochter des Meeres - Der Ursprung der Elemente, Band 1
-Artist: A. L. Knorr
-Composer: 
-Comment: 
-Genre: 
-Album: Tochter des Meeres - Der Ursprung der Elemente, Band 1 (Ungekürzt)
-OriginalAlbum: 
-OriginalArtist: 
-Copyright: 
-Description: 
-Publisher: 
-PublishingDate: 01/01/0001 00:00:00
-AlbumArtist: A. L. Knorr
-Conductor: 
-Date: 01/01/2021 00:00:00
-Year: 2021
-TrackNumber: 1
-TrackTotal: 157
-DiscNumber: 1
-DiscTotal: 1
-Popularity: 0
-PictureTokens: System.Collections.Generic.List`1[ATL.PictureInfo]
-ChaptersTableDescription: 
-Chapters: System.Collections.Generic.List`1[ATL.ChapterInfo]
-Lyrics: ATL.LyricsInfo
-AdditionalFields: System.Collections.Generic.Dictionary`2[System.String,System.String]
-Bitrate: 128
-SampleRate: 44100
-IsVBR: False
-CodecFamily: 0
-AudioFormat: ATL.Format
-MetadataFormats: System.Collections.Generic.List`1[ATL.Format]
-Duration: 184
-DurationMs: 184080
-ChannelsArrangement: Joint Stereo
-TechnicalInformation: ATL.TechnicalInfo
-EmbeddedPictures: System.Collections.Generic.List`1[ATL.PictureInfo]
-        */
     }
 }

@@ -14,11 +14,21 @@
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         -->
         <InvariantGlobalization>true</InvariantGlobalization>
+
+        <!-- one single monolithic exe instead of multiple dlls -->
         <PublishSingleFile>true</PublishSingleFile>
-        <!--
+        
+        <!-- deployment will not need runtime and is standalone -->
+        <!-- set via flag in the build.sh script -->
+        <!-- <SelfContained>true</SelfContained> -->
+        
+        <!-- enable tree shaking -->
         <PublishTrimmed>true</PublishTrimmed>
-        <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>-->
+        <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+        
         <PublishReadyToRun>true</PublishReadyToRun>
+        <!-- compress contents -->
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     </PropertyGroup>
 
 
@@ -28,9 +38,9 @@
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
       <PackageReference Include="Sandreas.Files" Version="0.0.4" />
       <PackageReference Include="Serilog" Version="2.10.0" />
