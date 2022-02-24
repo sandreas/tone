@@ -30,6 +30,9 @@ public class TagCommand : ICommand, IMetadata
     [CommandOption("include-extensions")]
     public IReadOnlyList<string> IncludeExtensions { get; init; } = new List<string>();
     
+    [CommandOption("meta-remove")]
+    public IReadOnlyList<string> Clear { get; init; } = new List<string>();
+    
     [CommandOption("meta-title")] public string? Title { get; set; }
     [CommandOption("meta-artist")] public string? Artist { get; set; }
     [CommandOption("meta-composer")] public string? Composer { get; set; }
