@@ -23,12 +23,15 @@
         <!-- <SelfContained>true</SelfContained> -->
         
         <!-- enable tree shaking -->
+        
         <PublishTrimmed>true</PublishTrimmed>
         <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
         
         <PublishReadyToRun>true</PublishReadyToRun>
         <!-- compress contents -->
+        
         <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+        
     </PropertyGroup>
 
 
@@ -52,7 +55,7 @@
       <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
       <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-      <PackageReference Include="z440.atl.core" Version="3.25.0" />
+      <PackageReference Include="z440.atl.core" Version="4.3.0" />
     </ItemGroup>
 
 

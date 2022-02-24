@@ -63,6 +63,7 @@ try
 catch (Exception aex)
 {
     Console.WriteLine($"Uncaught ArgumentException: {aex.Message}");
+    Console.WriteLine(aex.StackTrace);
     Environment.ExitCode = 1;
 }
 
