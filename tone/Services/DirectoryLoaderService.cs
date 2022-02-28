@@ -37,6 +37,8 @@ public class DirectoryLoaderService
     private readonly ILogger _logger;
     private readonly FileWalker _fileWalker;
 
+    public IFileSystem? FileSystem => _fileWalker?.FileSystem;
+    
     public DirectoryLoaderService(ILogger logger, FileWalker fileWalker)
     {
         _logger = logger;

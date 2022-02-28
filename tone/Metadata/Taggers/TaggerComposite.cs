@@ -1,16 +1,17 @@
 using System.Collections.Generic;
+using System.IO.Abstractions;
 
 namespace tone.Metadata.Taggers;
 
 public class TaggerComposite: ITagger
 {
-    public IEnumerable<ITagger> Updaters { get; } = new List<MetadataTagger>();
+    public List<ITagger> Taggers { get; } = new();
     
     public void Update(IMetadata metadata)
     {
-        foreach (var updater in Updaters)
+        foreach (var tagger in Taggers)
         {
-            updater.Update(metadata);
+            tagger.Update(metadata);
         }
     }
 }

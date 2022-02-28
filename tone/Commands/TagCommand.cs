@@ -12,6 +12,8 @@ using CliFx.Infrastructure;
 using tone.Services;
 using Serilog;
 using tone.Metadata;
+using tone.Metadata.Parsers;
+using tone.Metadata.Taggers;
 
 namespace tone.Commands;
 
@@ -20,6 +22,7 @@ public class TagCommand : ICommand, IMetadata
 {
     private readonly ILogger _logger;
     private readonly DirectoryLoaderService _dirLoader;
+    private readonly ChptFmtNativeParser _chptFmtParser;
 
     [CommandOption("input", 'i')] public IReadOnlyList<string> Input { get; init; } = new List<string>();
 
@@ -29,10 +32,9 @@ public class TagCommand : ICommand, IMetadata
 
     [CommandOption("include-extensions")]
     public IReadOnlyList<string> IncludeExtensions { get; init; } = new List<string>();
-    
-    [CommandOption("meta-remove")]
-    public IReadOnlyList<string> Clear { get; init; } = new List<string>();
-    
+
+    [CommandOption("meta-remove")] public IReadOnlyList<string> Clear { get; init; } = new List<string>();
+
     [CommandOption("meta-title")] public string? Title { get; set; }
     [CommandOption("meta-artist")] public string? Artist { get; set; }
     [CommandOption("meta-composer")] public string? Composer { get; set; }
@@ -45,6 +47,17 @@ public class TagCommand : ICommand, IMetadata
     [CommandOption("meta-publisher")] public string? Publisher { get; set; }
     [CommandOption("meta-album-artist")] public string? AlbumArtist { get; set; }
     [CommandOption("meta-conductor")] public string? Conductor { get; set; }
+
+    [CommandOption("meta-recording-date")] public DateTime? RecordingDate { get; set; }
+    [CommandOption("meta-track-number")] public int? TrackNumber { get; set; }
+    [CommandOption("meta-track-total")] public int? TrackTotal { get; set; }
+    [CommandOption("meta-disc-number")] public int? DiscNumber { get; set; }
+    [CommandOption("meta-disc-total")] public int? DiscTotal { get; set; }
+    [CommandOption("meta-popularity")] public float? Popularity { get; set; }
+
+    [CommandOption("meta-chapters-table-description")]
+    public string? ChaptersTableDescription { get; set; }
+
 
     [CommandOption("meta-group")] public string? Group { get; set; }
 
@@ -63,24 +76,32 @@ public class TagCommand : ICommand, IMetadata
     [CommandOption("meta-purchase-date")] public DateTime? PurchaseDate { get; set; }
     [CommandOption("meta-media-type")] public string? MediaType { get; set; }
 
-    /*
-    [CommandOption("meta-date")] public DateTime? Date { get; set; }
-    [CommandOption("meta-track-number")]public int? TrackNumber { get; set; }
-    [CommandOption("meta-track-total")]public int? TrackTotal { get; set; }
-    [CommandOption("meta-disc-number")]public int? DiscNumber { get; set; }
-    [CommandOption("meta-disc-total")]public int? DiscTotal { get; set; }
-    [CommandOption("meta-popularity")]public float? Popularity { get; set; }
-*/
     [CommandOption("meta-original-artist")]
     public string? OriginalArtist { get; set; }
 
     [CommandOption("meta-publishing-date")]
     public DateTime? PublishingDate { get; set; }
 
-    public TagCommand(ILogger logger, DirectoryLoaderService dirLoader)
+    [CommandOption("meta-extra-fields")]
+    public IReadOnlyList<string> ExtraFields { get; init; } = new List<string>();
+
+    [CommandOption("meta-extra-fields-remove")]
+    public IReadOnlyList<string> ExtraFieldsRemove { get; init; } = new List<string>();
+
+    // fulfil interface contract
+    public string? Path => null;
+    public TimeSpan TotalDuration => new();
+    public IList<ChapterInfo>? Chapters { get; set; }
+    public LyricsInfo? Lyrics { get; set; }
+    public IList<PictureInfo>? EmbeddedPictures => null;
+
+    public IDictionary<string, string>? AdditionalFields { get; set; }
+
+    public TagCommand(ILogger logger, DirectoryLoaderService dirLoader, ChptFmtNativeParser chptFmtParser)
     {
         _logger = logger;
         _dirLoader = dirLoader;
+        _chptFmtParser = chptFmtParser;
     }
 
     public async ValueTask ExecuteAsync(IConsole console)
@@ -94,6 +115,7 @@ public class TagCommand : ICommand, IMetadata
             {
                 await DumpTags(console, file);
             }
+
             return;
         }
 
@@ -107,13 +129,21 @@ public class TagCommand : ICommand, IMetadata
             }
         }
 
+        
+        
+        var tagger = new TaggerComposite();
+        tagger.Taggers.Add(new MetadataTagger(this));
+        tagger.Taggers.Add(new ExtraFieldsTagger(ExtraFields));
+        tagger.Taggers.Add(new ExtraFieldsRemoveTagger(ExtraFieldsRemove));
+        tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chptFmtParser)); // CHPT_FMT_NATIVE
+        
         var tasks = new List<Task>();
         foreach (var file in inputFilesAsArray)
         {
-            var track = new MetadataTrack(file);
-            CopyMetadata(this, track);
             tasks.Add(Task.Run(() =>
             {
+                var track = new MetadataTrack(file);
+                tagger.Update(track);
                 if (!track.Save())
                 {
                     console.Error.WriteLine($"Could not save tags for {file}");
@@ -130,32 +160,6 @@ public class TagCommand : ICommand, IMetadata
         await console.Output.WriteAsync($"{message} {confirmString}");
         var answer = await console.Input.ReadLineAsync();
         return answer?.Trim().ToLower() != "y";
-    }
-
-    private void CopyMetadata(IMetadata source, IMetadata destination)
-    {
-        destination.Album = source.Album ?? destination.Album;
-        destination.Title = source.Title ?? destination.Title;
-        destination.Artist = source.Artist ?? destination.Artist;
-        destination.Composer = source.Composer ?? destination.Composer;
-        destination.Comment = source.Comment ?? destination.Comment;
-        destination.Genre = source.Genre ?? destination.Genre;
-        destination.Album = source.Album ?? destination.Album;
-        destination.OriginalAlbum = source.OriginalAlbum ?? destination.OriginalAlbum;
-        destination.Copyright = source.Copyright ?? destination.Copyright;
-        destination.Description = source.Description ?? destination.Description;
-        destination.Publisher = source.Publisher ?? destination.Publisher;
-        destination.AlbumArtist = source.AlbumArtist ?? destination.AlbumArtist;
-        destination.Conductor = source.Conductor ?? destination.Conductor;
-        destination.Group = source.Group ?? destination.Group;
-        destination.SortName = source.SortName ?? destination.SortName;
-        destination.SortAlbum = source.SortAlbum ?? destination.SortAlbum;
-        destination.SortArtist = source.SortArtist ?? destination.SortArtist;
-        destination.SortAlbumArtist = source.SortAlbumArtist ?? destination.SortAlbumArtist;
-        destination.LongDescription = source.LongDescription ?? destination.LongDescription;
-        destination.EncodingTool = source.EncodingTool ?? destination.EncodingTool;
-        destination.PurchaseDate = source.PurchaseDate ?? destination.PurchaseDate;
-        destination.MediaType = source.MediaType ?? destination.MediaType;
     }
 
 

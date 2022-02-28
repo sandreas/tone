@@ -27,6 +27,10 @@ enum FormatKey
 
 public class MetadataTrack : Track, IMetadata
 {
+    public MetadataTrack()
+    {
+        
+    }
     public MetadataTrack(string path, IProgress<float>? writeProgress = null, bool load = true)
         : base(path, writeProgress, load)
     {
@@ -104,6 +108,14 @@ public class MetadataTrack : Track, IMetadata
         },
     };
 
+    public new string? Path => base.Path;
+
+    public DateTime? RecordingDate
+    {
+        get => Date;
+        set => Date = value;
+    }
+    
     public string? Group
     {
         get => GetAdditionalField(MappingKey.Group);
@@ -150,6 +162,12 @@ public class MetadataTrack : Track, IMetadata
     {
         get => GetAdditionalFieldDate(MappingKey.PurchaseDate);
         set => SetAdditionalField(MappingKey.PurchaseDate, value);
+    }
+
+    private TimeSpan? _totalDuration;
+    public TimeSpan TotalDuration     {
+        get => _totalDuration ?? TimeSpan.FromMilliseconds(DurationMs); 
+        set => _totalDuration = value;
     }
 
     public string? MediaType
@@ -208,7 +226,7 @@ public class MetadataTrack : Track, IMetadata
         SetAdditionalField(key, value?.ToString("yyyy/MM/dd"));
     }
 
-    private string? ResolveKey(Format format, MappingKey key)
+    private string? ResolveKey(ATL.Format format, MappingKey key)
     {
         return format.ID switch
         {

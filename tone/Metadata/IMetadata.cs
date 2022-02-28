@@ -1,9 +1,30 @@
 using System;
+using System.Collections.Generic;
+using ATL;
 
 namespace tone.Metadata;
 
+// TagData
 public interface IMetadata
 {
+    /// <summary>Track number</summary>
+    public int? TrackNumber { get; set; }
+
+    /// <summary>Total track number</summary>
+    public int? TrackTotal { get; set; }
+
+    /// <summary>Disc number</summary>
+    public int? DiscNumber { get; set; }
+
+    /// <summary>Total disc number</summary>
+    public int? DiscTotal { get; set; }
+
+    /// <summary>
+    /// Popularity (0% = 0 stars to 100% = 5 stars)
+    /// e.g. 3.5 stars = 70%
+    /// </summary>
+    public float? Popularity { get; set; }
+
     /// <summary>Title</summary>
     public string? Title { get; set; }
 
@@ -43,6 +64,7 @@ public interface IMetadata
     /// <summary>Conductor</summary>
     public string? Conductor { get; set; }
 
+
     public string? Group { get; set; }
     public string? SortName { get; set; }
     public string? SortAlbum { get; set; }
@@ -50,27 +72,41 @@ public interface IMetadata
     public string? SortAlbumArtist { get; set; }
     public string? LongDescription { get; set; }
     public string? EncodingTool { get; set; }
-    public DateTime? PurchaseDate { get; set; }
     public string? MediaType { get; set; }
 
-    // /// <summary>Recording Date (set to DateTime.MinValue to remove)</summary>
-    // public DateTime? Date { get; set; }
-    //
-    // /// <summary>Track number</summary>
-    // public int? TrackNumber { get; set; }
-    //
-    // /// <summary>Total track number</summary>
-    // public int? TrackTotal { get; set; }
-    //
-    // /// <summary>Disc number</summary>
-    // public int? DiscNumber { get; set; }
-    //
-    // /// <summary>Total disc number</summary>
-    // public int? DiscTotal { get; set; }
-    //
-    // /// <summary>
-    // /// Popularity (0% = 0 stars to 100% = 5 stars)
-    // /// e.g. 3.5 stars = 70%
-    // /// </summary>
-    // public float? Popularity { get; set; }
+    /// <summary>Chapters table of content description</summary>
+    public string? ChaptersTableDescription { get; set; }
+    public string? Path { get;}
+    
+    /// <summary>Publishing date (set to DateTime.MinValue to remove)</summary>
+    public DateTime? PublishingDate { get; set; }
+
+    /// <summary>Recording Date (set to DateTime.MinValue to remove)</summary>
+    public DateTime? RecordingDate { get; set; }
+
+    public DateTime? PurchaseDate { get; set; }
+    
+    /// <summary>Synchronized and unsynchronized lyrics</summary>
+    public LyricsInfo? Lyrics { get; set; }
+
+    public TimeSpan TotalDuration { get;}
+    
+    /// <summary>
+    /// Contains any other metadata field that is not represented by a getter in the above interface
+    /// </summary>
+    public IList<ChapterInfo>? Chapters { get;  }
+
+    /// <summary>
+    /// List of picture IDs stored in the tag
+    ///     PictureInfo.PIC_TYPE : internal, normalized picture type
+    ///     PictureInfo.NativePicCode : native picture code (useful when exploiting the UNSUPPORTED picture type)
+    ///     NB : PictureInfo.PictureData (raw binary picture data) is _not_ valued here; see EmbeddedPictures field
+    /// </summary>
+    public IList<PictureInfo>? EmbeddedPictures { get; }
+    /// <summary>
+    /// Contains any other metadata field that is not represented by a getter in the above interface
+    /// </summary>
+    public IDictionary<string, string>? AdditionalFields { get; set; }
+    
+
 }
