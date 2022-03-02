@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using OperationResult;
+using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
@@ -11,7 +14,7 @@ public class ExtraFieldsTagger : ITagger
         _extraFields = extraFields;
     }
 
-    public void Update(IMetadata metadata)
+    public async Task<Status<string>> Update(IMetadata metadata)
     {
         if (metadata.AdditionalFields == null)
         {
@@ -20,9 +23,7 @@ public class ExtraFieldsTagger : ITagger
 
         if (_extraFields.Count % 2 != 0)
         {
-            return;
-            // await console.Error.WriteLineAsync(
-            //     "--meta-additional-fields has to contain an even number of values (e.g. --meta-additional-fields <fieldname> <fieldvalue>)");
+            return Error("metadata.AdditionalFields has to contain an even number of values (<fieldname> <fieldvalue> ...)");
         }
 
         var index = 0;
@@ -42,5 +43,7 @@ public class ExtraFieldsTagger : ITagger
 
             metadata.AdditionalFields[key] = field;
         }
+
+        return await Task.FromResult(Ok());
     }
 }

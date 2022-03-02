@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using CommandLine;
+using OperationResult;
 
 namespace tone.Metadata.Taggers;
 
 public abstract class TaggerBase: ITagger
 {
-    public abstract void Update(IMetadata metadata);
+    public abstract Task<Status<string>> Update(IMetadata metadata);
 
     protected void TransferMetadataProperties(IMetadata source, IMetadata metadata)
     {

@@ -122,17 +122,22 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
             return Error("metadata does not contain any chapters");
         }
 
-        if (input.TotalDuration.TotalMilliseconds > 0)
+        var totalDurationMs = input.TotalDuration.TotalMilliseconds;
+        if (totalDurationMs == 0)
         {
-            var totalDurationAsString = FormatTimeSpan(input.TotalDuration);
-            await output.WriteAsync(Encoding.UTF8.GetBytes($"## {MetadataItemKeyTotalDuration}:{totalDurationAsString}"));
+            totalDurationMs = input.Chapters.Last().EndTime;
+        }
+        if (totalDurationMs > 0)
+        {
+            var totalDurationAsString = FormatTimeSpan(TimeSpan.FromMilliseconds(totalDurationMs));
+            await output.WriteAsync(Encoding.UTF8.GetBytes($"## {MetadataItemKeyTotalDuration}: {totalDurationAsString}"));
         }
 
         foreach (var chapter in input.Chapters)
         {
             var startAsString = FormatTimeSpan(TimeSpan.FromMilliseconds(chapter.StartTime));
             var title = chapter.Title;
-            await output.WriteAsync(Encoding.UTF8.GetBytes($"{startAsString} {title}"));
+            await output.WriteAsync(Encoding.UTF8.GetBytes($"\n{startAsString} {title}"));
         }
         
         return await Task.FromResult(Ok());

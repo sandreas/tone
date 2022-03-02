@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using OperationResult;
+using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
@@ -11,10 +14,11 @@ public class MetadataTagger : TaggerBase
         _source = source;
     }
 
-    public override void Update(IMetadata metadata)
+    public override async Task<Status<string>> Update(IMetadata metadata)
     {
         TransferMetadataProperties(_source, metadata);
         TransferMetadataLists(_source, metadata);
+        return await Task.FromResult(Ok());
     }
 
 }

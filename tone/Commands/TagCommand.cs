@@ -12,7 +12,7 @@ using CliFx.Infrastructure;
 using tone.Services;
 using Serilog;
 using tone.Metadata;
-using tone.Metadata.Parsers;
+using tone.Metadata.Format;
 using tone.Metadata.Taggers;
 
 namespace tone.Commands;
@@ -22,7 +22,7 @@ public class TagCommand : ICommand, IMetadata
 {
     private readonly ILogger _logger;
     private readonly DirectoryLoaderService _dirLoader;
-    private readonly ChptFmtNativeParser _chptFmtParser;
+    private readonly ChptFmtNativeMetadataFormat _chptFmt;
 
     [CommandOption("input", 'i')] public IReadOnlyList<string> Input { get; init; } = new List<string>();
 
@@ -88,6 +88,13 @@ public class TagCommand : ICommand, IMetadata
     [CommandOption("meta-extra-fields-remove")]
     public IReadOnlyList<string> ExtraFieldsRemove { get; init; } = new List<string>();
 
+    [CommandOption("auto-import-chapters")]
+    public bool AutoImportChapters { get; init; } = false;
+
+    [CommandOption("import-chapters-file")]
+    public string ImportChaptersFile { get; init; } = "";
+    
+    
     // fulfil interface contract
     public string? Path => null;
     public TimeSpan TotalDuration => new();
@@ -97,11 +104,11 @@ public class TagCommand : ICommand, IMetadata
 
     public IDictionary<string, string>? AdditionalFields { get; set; }
 
-    public TagCommand(ILogger logger, DirectoryLoaderService dirLoader, ChptFmtNativeParser chptFmtParser)
+    public TagCommand(ILogger logger, DirectoryLoaderService dirLoader, ChptFmtNativeMetadataFormat chptFmtParser)
     {
         _logger = logger;
         _dirLoader = dirLoader;
-        _chptFmtParser = chptFmtParser;
+        _chptFmt = chptFmtParser;
     }
 
     public async ValueTask ExecuteAsync(IConsole console)
@@ -135,15 +142,23 @@ public class TagCommand : ICommand, IMetadata
         tagger.Taggers.Add(new MetadataTagger(this));
         tagger.Taggers.Add(new ExtraFieldsTagger(ExtraFields));
         tagger.Taggers.Add(new ExtraFieldsRemoveTagger(ExtraFieldsRemove));
-        tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chptFmtParser)); // CHPT_FMT_NATIVE
+        if (AutoImportChapters || ImportChaptersFile != "")
+        {
+            tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chptFmt, ImportChaptersFile)); // CHPT_FMT_NATIVE
+        }
         
         var tasks = new List<Task>();
         foreach (var file in inputFilesAsArray)
         {
-            tasks.Add(Task.Run(() =>
+            tasks.Add(Task.Run(async () =>
             {
                 var track = new MetadataTrack(file);
-                tagger.Update(track);
+                var result = await tagger.Update(track);
+                if (!result)
+                {
+                    console.Error.WriteLine($"Could not update tags for file {file}: {result.Error}");
+                    return;
+                }
                 if (!track.Save())
                 {
                     console.Error.WriteLine($"Could not save tags for {file}");

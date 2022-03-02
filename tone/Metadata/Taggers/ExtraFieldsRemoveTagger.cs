@@ -1,5 +1,7 @@
 using System.Collections.Generic;
-using System.IO.Abstractions;
+using System.Threading.Tasks;
+using OperationResult;
+using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
@@ -12,19 +14,19 @@ public class ExtraFieldsRemoveTagger : ITagger
         _removeExtraFields = removeExtraFields;
     }
 
-    public void Update(IMetadata metadata)
+    public async Task<Status<string>> Update(IMetadata metadata)
     {
-        if (metadata.AdditionalFields == null)
+        if (metadata.AdditionalFields != null)
         {
-            return;
-        }
-
-        foreach (var field in _removeExtraFields)
-        {
-            if (metadata.AdditionalFields.ContainsKey(field))
+            foreach (var field in _removeExtraFields)
             {
-                metadata.AdditionalFields.Remove(field);
+                if (metadata.AdditionalFields.ContainsKey(field))
+                {
+                    metadata.AdditionalFields.Remove(field);
+                }
             }
         }
+
+        return await Task.FromResult(Ok());
     }
 }
