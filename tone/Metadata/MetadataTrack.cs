@@ -17,6 +17,9 @@ enum MappingKey
     EncodingTool,
     PurchaseDate,
     MediaType,
+    Narrator,
+    SeriesTitle,
+    SeriesPart,
 }
 
 enum FormatKey
@@ -24,6 +27,9 @@ enum FormatKey
     Mp4,
     Mp3,
 }
+
+// https://wiki.hydrogenaud.io/index.php?title=Tag_Mapping
+// https://help.mp3tag.de/main_tags.html
 
 public class MetadataTrack : Track, IMetadata
 {
@@ -103,7 +109,28 @@ public class MetadataTrack : Track, IMetadata
             MappingKey.MediaType, new[]
             {
                 "stik",
-                null // "TMED" is not correct here
+                null
+            }
+        },
+        {
+            MappingKey.Narrator, new[]
+            {
+                "©nrt",
+                null
+            }
+        },
+        {
+            MappingKey.SeriesTitle, new[]
+            {
+                "----:com.pilabor.tone:SERIES_TITLE",
+                null
+            }
+        },
+        {
+            MappingKey.SeriesPart, new[]
+            {
+                "----:com.pilabor.tone:SERIES_PART",
+                null
             }
         },
     };
@@ -122,7 +149,7 @@ public class MetadataTrack : Track, IMetadata
         set => SetAdditionalField(MappingKey.Group, value);
     }
 
-    public string? SortName
+    public string? SortTitle
     {
         get => GetAdditionalField(MappingKey.SortName);
         set => SetAdditionalField(MappingKey.SortName, value);
@@ -175,7 +202,25 @@ public class MetadataTrack : Track, IMetadata
         get => GetAdditionalField(MappingKey.MediaType);
         set => SetAdditionalField(MappingKey.MediaType, value);
     }
+    
+    public string? Narrator
+    {
+        get => GetAdditionalField(MappingKey.Narrator);
+        set => SetAdditionalField(MappingKey.Narrator, value);
+    }
 
+    public string? SeriesTitle
+    {
+        get => GetAdditionalField(MappingKey.SeriesTitle);
+        set => SetAdditionalField(MappingKey.SeriesTitle, value);
+    }
+    
+    public string? SeriesPart
+    {
+        get => GetAdditionalField(MappingKey.SeriesPart);
+        set => SetAdditionalField(MappingKey.SeriesPart, value);
+    }    
+    
     private string? GetAdditionalField(MappingKey key)
     {
         var resolvedKey = ResolveKey(AudioFormat, key);

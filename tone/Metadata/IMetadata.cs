@@ -66,7 +66,7 @@ public interface IMetadata
 
 
     public string? Group { get; set; }
-    public string? SortName { get; set; }
+    public string? SortTitle { get; set; }
     public string? SortAlbum { get; set; }
     public string? SortArtist { get; set; }
     public string? SortAlbumArtist { get; set; }
@@ -76,6 +76,11 @@ public interface IMetadata
 
     /// <summary>Chapters table of content description</summary>
     public string? ChaptersTableDescription { get; set; }
+
+    public string? Narrator { get; set; }
+    public string? SeriesTitle { get; set; }
+    public string? SeriesPart { get; set; }
+    
     public string? Path { get;}
     
     /// <summary>Publishing date (set to DateTime.MinValue to remove)</summary>

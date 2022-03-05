@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sandreas.Files;
 using Serilog;
 using tone.Commands;
+using tone.Metadata.Format;
 using tone.Services;
 using static System.Environment.SpecialFolder;
 using static System.Environment.SpecialFolderOption;
@@ -47,6 +48,7 @@ services.AddSingleton<TagCommand>();
 // services.AddSingleton<TagService>();
 // services.AddSingleton<JobBuilderService>();
 services.AddSingleton<DirectoryLoaderService>();
+services.AddSingleton<ChptFmtNativeMetadataFormat>();
 services.AddLogging(builder => builder.AddSerilog(dispose: true));
 services.AddSingleton<ILogger>(_ => Log.Logger);
 

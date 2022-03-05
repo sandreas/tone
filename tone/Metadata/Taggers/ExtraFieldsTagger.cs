@@ -16,10 +16,7 @@ public class ExtraFieldsTagger : ITagger
 
     public async Task<Status<string>> Update(IMetadata metadata)
     {
-        if (metadata.AdditionalFields == null)
-        {
-            metadata.AdditionalFields = new Dictionary<string, string>();
-        }
+        metadata.AdditionalFields ??= new Dictionary<string, string>();
 
         if (_extraFields.Count % 2 != 0)
         {

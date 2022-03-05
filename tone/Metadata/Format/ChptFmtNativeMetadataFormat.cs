@@ -18,7 +18,7 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
     private static readonly List<(string, string)> MetadataItemKeyMappings = new()
     {
         ("total-duration:", MetadataItemKeyTotalDuration), 
-        ("total-length", MetadataItemKeyTotalDuration),
+        ("total-length", MetadataItemKeyTotalDuration)
     };
     
     public async Task<Result<IMetadata, string>> ReadAsync(Stream stream)
@@ -44,15 +44,17 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
             }
             
             var currentChapter  = ParseChapterLine(trimmedLine);
-            if (currentChapter != null)
+            if (currentChapter == null)
             {
-                track.Chapters ??= new List<ChapterInfo>();
-                if (track.Chapters.Count > 0)
-                {
-                    track.Chapters.Last().EndTime = currentChapter.StartTime;
-                }
-                track.Chapters.Add(currentChapter);
+                continue;
             }
+            
+            track.Chapters ??= new List<ChapterInfo>();
+            if (track.Chapters.Count > 0)
+            {
+                track.Chapters.Last().EndTime = currentChapter.StartTime;
+            }
+            track.Chapters.Add(currentChapter);
         }
 
         var chapters = track.Chapters;
@@ -66,7 +68,7 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
     }
     
     
-    private ChapterInfo? ParseChapterLine(string line)
+    private static ChapterInfo? ParseChapterLine(string line)
     {
         var parts = line.Split();
         if (parts.Length == 0)
@@ -83,7 +85,7 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
         return new ChapterInfo(start, line[chapterStartString.Length..].Trim());
     }
 
-    private void ParseComment(string line, List<(string, object)> metadata)
+    private static void ParseComment(string line, ICollection<(string, object)> metadata)
     {
         var content = line.TrimStart().TrimStart('#').TrimStart();
         
@@ -94,19 +96,14 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
                 continue;
             }
 
-            if (destinationKey == "total-duration")
+            if (destinationKey == "total-duration" && TimeSpan.TryParse(content.TrimPrefix(key).Trim(), out var totalDuration))
             {
-                var durationValueString = content.TrimPrefix(key).Trim();
-                if(TimeSpan.TryParse(durationValueString, out var duration))
-                {
-                    metadata.Add((destinationKey, duration));
-                    break;
-                }
+                metadata.Add((destinationKey, totalDuration));
             }
 
         }
     }
-
+    
     private static IEnumerable<string?> ReadLines(TextReader sr)
     {
         while (sr.Peek() >= 0)
@@ -143,7 +140,7 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
         return await Task.FromResult(Ok());
     }
 
-    private string FormatTimeSpan(TimeSpan timeSpan)
+    private static string FormatTimeSpan(TimeSpan timeSpan)
     {
         var totalHoursAsString = Math.Floor(timeSpan.TotalHours).ToString(CultureInfo.InvariantCulture)
             .PadLeft(2, '0');
