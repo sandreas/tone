@@ -13,7 +13,7 @@ using tone.Services;
 using Serilog;
 using tone.Common.Extensions.Stream;
 using tone.Metadata;
-using tone.Metadata.Format;
+using tone.Metadata.Formats;
 using tone.Metadata.Taggers;
 
 namespace tone.Commands;
@@ -26,6 +26,7 @@ public class TagCommand : ICommand, IMetadata
     private readonly ChptFmtNativeMetadataFormat _chapterFormat;
 
     [CommandOption("input", 'i')] public IReadOnlyList<string> Input { get; init; } = new List<string>();
+    [CommandOption("path-pattern", 'p')] public IReadOnlyList<string> PathPattern { get; init; } = new List<string>();
 
     [CommandOption("assume-yes", 'y')] public bool AssumeYes { get; init; } = false;
 
@@ -80,7 +81,7 @@ public class TagCommand : ICommand, IMetadata
 
     [CommandOption("meta-original-artist")]
     public string? OriginalArtist { get; set; }
-
+    
     [CommandOption("meta-narrator")] public string? Narrator { get; set; }
 
     [CommandOption("meta-series-title")] public string? SeriesTitle { get; set; }
@@ -95,6 +96,9 @@ public class TagCommand : ICommand, IMetadata
     [CommandOption("meta-extra-fields-remove")]
     public IReadOnlyList<string> ExtraFieldsRemove { get; init; } = new List<string>();
 
+    [CommandOption("meta-equate")] public IReadOnlyList<string> Equate { get; init; } = new List<string>();
+    
+    
     [CommandOption("auto-import-chapters")]
     public bool AutoImportChapters { get; init; } = false;
 
@@ -147,14 +151,22 @@ public class TagCommand : ICommand, IMetadata
 
         var tagger = new TaggerComposite();
         tagger.Taggers.Add(new MetadataTagger(this));
+
+        var defaultCustomPatterns = new[]
+        {
+            "NOTDIRSEP [^/\\\\]*"
+        };
+        tagger.Taggers.Add(new PathPatternTagger(PathPattern, defaultCustomPatterns));
+
         tagger.Taggers.Add(new ExtraFieldsTagger(ExtraFields));
         tagger.Taggers.Add(new ExtraFieldsRemoveTagger(ExtraFieldsRemove));
         if (AutoImportChapters || ImportChaptersFile != "")
         {
             tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chapterFormat,
-                ImportChaptersFile)); // CHPT_FMT_NATIVE
+                ImportChaptersFile));
         }
-
+        
+        tagger.Taggers.Add(new EquateTagger(Equate));
         tagger.Taggers.Add(new M4BFillUpTagger());
 
         var tasks = inputFilesAsArray.Select(file => Task.Run(async () =>
@@ -167,7 +179,7 @@ public class TagCommand : ICommand, IMetadata
                     return;
                 }
 
-                await DumpMetadata(console, track, ShortDump);
+                // await DumpMetadata(console, track, ShortDump);
 
                 if (!track.Save())
                 {

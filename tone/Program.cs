@@ -7,10 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Sandreas.Files;
 using Serilog;
 using tone.Commands;
-using tone.Metadata.Format;
+using tone.Metadata.Formats;
 using tone.Services;
 using static System.Environment.SpecialFolder;
 using static System.Environment.SpecialFolderOption;
+
+
+// var stream = new MemoryStream(Encoding.Default.GetBytes("NOTDIRSEP [^/\\\\]*"));
+// var grok = new Grok("input/%{NOTDIRSEP:genre}/", stream);
+// var result = grok.Parse("input/Fantasy/");
+
+
 
 var configBuilder = new ConfigurationBuilder().AddEnvironmentVariables();
 

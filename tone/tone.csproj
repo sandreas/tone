@@ -39,6 +39,7 @@
       <PackageReference Include="CliFx" Version="2.2.2" />
       <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
+      <PackageReference Include="grok.net" Version="1.1.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />

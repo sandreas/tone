@@ -3,7 +3,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using OperationResult;
-using tone.Metadata.Format;
+using tone.Metadata.Formats;
 using static System.Array;
 using static OperationResult.Helpers;
 
@@ -14,7 +14,7 @@ public class ChptFmtNativeTagger : TaggerBase
     private readonly IFileSystem? _fs;
     private readonly ChptFmtNativeMetadataFormat _parser;
     private readonly string _forceChapterFilename;
-
+    
     public ChptFmtNativeTagger(IFileSystem? fileSystem, ChptFmtNativeMetadataFormat parser, string forceChapterFilename="")
     {
         _fs = fileSystem;

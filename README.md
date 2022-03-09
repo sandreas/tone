@@ -1,7 +1,17 @@
 # tone
 Audio converter and  tagger
 
+
+
 # todo
+- grok (https://github.com/Marusyk/grok.net) - debugger: https://grokdebug.herokuapp.com/
+  - ```
+    input/Fantasy/J.K. Rowling/Harry Potter/1 - Harry Potter and the Philosopher's Stone/
+    input/%{NONSLASH:genre}/%{NONSLASH:author}/%{NONSLASH:series}/%{WORD:part} - %{NONSLASH:title}
+    // Add custom patterns Keep Empty Captures Named Captures Only Singles
+    NONSLASH [^/\\]*
+    NONSPACE [^ ]* 
+    ```
 - https://github.com/Zeugma440/atldotnet/wiki/3.-Usage-_-Code-snippets#base
 - Libs
   - OperationResult (https://github.com/gnaeus/OperationResult)

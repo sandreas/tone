@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using ATL;
 using OperationResult;
 using tone.Common.Extensions.String;
-using static OperationResult.Helpers;
-namespace tone.Metadata.Format;
+
+namespace tone.Metadata.Formats;
 
 public class ChptFmtNativeMetadataFormat: IMetadataFormat
 {
@@ -116,7 +116,7 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
     {
         if (input.Chapters == null || input.Chapters.Count == 0)
         {
-            return Error("metadata does not contain any chapters");
+            return Helpers.Error("metadata does not contain any chapters");
         }
 
         var totalDurationMs = input.TotalDuration.TotalMilliseconds;
@@ -137,7 +137,7 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
             await output.WriteAsync(Encoding.UTF8.GetBytes($"\n{startAsString} {title}"));
         }
         
-        return await Task.FromResult(Ok());
+        return await Task.FromResult(Helpers.Ok());
     }
 
     private static string FormatTimeSpan(TimeSpan timeSpan)

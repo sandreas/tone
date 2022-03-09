@@ -48,8 +48,6 @@ public abstract class TaggerBase: ITagger
         metadata.Narrator = TransferMetadataProperty( source.Narrator, metadata.Narrator);
         metadata.SeriesTitle = TransferMetadataProperty( source.SeriesTitle, metadata.SeriesTitle);
         metadata.SeriesPart = TransferMetadataProperty( source.SeriesPart, metadata.SeriesPart);
-        
-        
     }
 
     private static T? TransferMetadataProperty<T>(params T?[] source)
@@ -88,5 +86,7 @@ public abstract class TaggerBase: ITagger
             destination.Add(s);
         }
     }
+
+
     
 }    

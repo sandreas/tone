@@ -5,10 +5,10 @@ using ATL;
 using tone.Common.Extensions.Stream;
 using tone.Common.Extensions.String;
 using tone.Metadata;
-using tone.Metadata.Format;
+using tone.Metadata.Formats;
 using Xunit;
 
-namespace tone.Tests.Metadata.Format;
+namespace tone.Tests.Metadata.Formats;
 
 public class ChptFmtNativeMetadataFormatTest
 {
