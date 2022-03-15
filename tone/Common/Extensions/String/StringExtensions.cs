@@ -23,4 +23,9 @@ public static class StringExtensions
             Position = 0
         };
     }
+    
+    public static string TrimDirectorySeparatorEnd(this string str)
+    {
+        return str.TrimEnd('/', '\\');
+    }
 }

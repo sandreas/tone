@@ -8,6 +8,7 @@ using Sandreas.Files;
 using Serilog;
 using tone.Commands;
 using tone.Metadata.Formats;
+using tone.Metadata.Serializers;
 using tone.Services;
 using static System.Environment.SpecialFolder;
 using static System.Environment.SpecialFolderOption;
@@ -51,11 +52,16 @@ var services = new ServiceCollection();
 services.AddTransient<StringWriter>();
 services.AddSingleton<FileSystem>();
 services.AddSingleton<FileWalker>();
+services.AddSingleton<DirectoryLoaderService>();
+services.AddSingleton<GrokPatternService>();
+services.AddSingleton<ChptFmtNativeMetadataFormat>();
+services.AddSingleton<MetadataTextSerializer>();
+services.AddSingleton<SerializerService>();
+
 services.AddSingleton<TagCommand>();
+services.AddSingleton<DumpCommand>();
 // services.AddSingleton<TagService>();
 // services.AddSingleton<JobBuilderService>();
-services.AddSingleton<DirectoryLoaderService>();
-services.AddSingleton<ChptFmtNativeMetadataFormat>();
 services.AddLogging(builder => builder.AddSerilog(dispose: true));
 services.AddSingleton<ILogger>(_ => Log.Logger);
 

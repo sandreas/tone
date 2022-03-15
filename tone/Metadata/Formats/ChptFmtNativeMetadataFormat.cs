@@ -21,11 +21,11 @@ public class ChptFmtNativeMetadataFormat: IMetadataFormat
         ("total-length", MetadataItemKeyTotalDuration)
     };
     
-    public async Task<Result<IMetadata, string>> ReadAsync(Stream stream)
+    public async Task<Result<IMetadata, string>> ReadAsync(Stream input)
     {
         var track = new MetadataTrack();
         
-        using var sr = new StreamReader(stream);
+        using var sr = new StreamReader(input);
         var lines = ReadLines(sr).ToArray();
         var commentTags = new List<(string, object)>();
         

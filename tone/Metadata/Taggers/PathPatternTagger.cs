@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GrokNet;
 using OperationResult;
@@ -18,68 +16,9 @@ public class PathPatternTagger: TaggerBase
 {
     private readonly IEnumerable<Grok> _grokPatterns;
 
-    public PathPatternTagger(IEnumerable<string>? grokDefinitions, IEnumerable<string>? customPatterns=null): this(ConvertStrings(grokDefinitions, customPatterns))
+    public PathPatternTagger(IEnumerable<Grok> grokPatterns)
     {
-    }
-    private PathPatternTagger(IEnumerable<Grok>? grokPatterns = null)
-    {
-        _grokPatterns = grokPatterns ?? Array.Empty<Grok>();
-    }
-    
-    private static IEnumerable<Grok>? ConvertStrings(IEnumerable<string>? grokDefinitions, IEnumerable<string>? customPatterns = null)
-    {
-        var patternsString = string.Join("\n", customPatterns ?? Array.Empty<string>());
-        var patternsStream = patternsString.StringToStream();
-        return grokDefinitions?.Select(pattern => new Grok(PreparePattern(pattern), patternsStream));
-    }
-
-    private static string PreparePattern(string pattern)
-    {
-        var buffer = new StringBuilder();
-        var isPlaceholder = false;
-        var placeHolders = new Dictionary<char, string>()
-        {
-            {'a', "{NOTDIRSEP:Artist}" }, // artist: ,
-            {'A', "{NOTDIRSEP:SortArtist}" }, // sort_artist: ,
-            {'c', "{NOTDIRSEP:Comment}" }, // comment: ,
-            {'C', "{NOTDIRSEP:Copyright}" }, // copyright: ,
-            {'d', "{NOTDIRSEP:Description}" }, // description: ,
-            {'D', "{NOTDIRSEP:LongDescription}" }, // long_description: ,
-            //{'e', "" }, // encoded_by: ,
-            {'g', "{NOTDIRSEP:Genre}" }, // genre: ,
-            {'m', "{NOTDIRSEP:Album}" }, // album: ,
-            {'M', "{NOTDIRSEP:SortAlbum}" }, // sort_album: ,
-            {'n', "{NOTDIRSEP:Title}" }, // title / name: 
-            {'N', "{NOTDIRSEP:SortTitle}" }, // sort_name: 
-            {'p', "{WORD:SeriesPart}" }, // series_part: ,
-            {'s', "{NOTDIRSEP:SeriesTitle}" }, // series: ,
-            {'t', "{NOTDIRSEP:AlbumArtist}" }, // album_artist: ,
-            {'w', "{NOTDIRSEP:Composer}" }, // writer: ,
-            {'y', "{NOTDIRSEP:ReleaseDate}" }, // year: ,
-        };
-        foreach (var c in pattern)
-        {
-            if (isPlaceholder && placeHolders.ContainsKey(c))
-            {
-                buffer.Append("%" + placeHolders[c]);
-                isPlaceholder = false;
-                continue;
-            } 
-            if (!isPlaceholder && c == '%')
-            {
-                isPlaceholder = true;
-                continue;
-            }
-
-            buffer.Append(c);
-            isPlaceholder = false;
-        }
-        return NormalizePath(buffer.ToString());
-    }
-
-    private static string NormalizePath(string path)
-    {
-        return path.TrimEnd('/', '\\');
+        _grokPatterns = grokPatterns;
     }
     
     public override async Task<Status<string>> Update(IMetadata metadata)
@@ -89,7 +28,7 @@ public class PathPatternTagger: TaggerBase
             return await Task.FromResult(Ok());
         }
 
-        var normalizedMetadataPath = NormalizePath(metadata.Path ?? "");
+        var normalizedMetadataPath = (metadata.Path ?? "").TrimDirectorySeparatorEnd();
         if (normalizedMetadataPath == "")
         {
             return Error("metadata path cannot be empty");
@@ -163,7 +102,7 @@ public class PathPatternTagger: TaggerBase
 
     private static DateTime? MapDateResult(string grokItemKey, object grokItemValue, string propertyName, DateTime? defaultValue)
     {
-        if (string.Equals(grokItemKey, propertyName, StringComparison.CurrentCultureIgnoreCase) && TryParseDateTime(grokItemValue.ToString(), out var dateTime))
+        if (string.Equals(grokItemKey, propertyName, StringComparison.CurrentCultureIgnoreCase) && TryParseDateTime(grokItemValue?.ToString() ?? "", out var dateTime))
         {
             return dateTime;
         }

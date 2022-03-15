@@ -1,57 +1,69 @@
-using System.IO;
-
 namespace tone.Common.StringParser;
-public class Scanner:StringReader
+
+public class Scanner
 {
-    private readonly string _input;
+    private readonly char[] _input;
     private readonly int _maxIndex;
-    public int Index { get; private set; }
-    
-    // https://stackoverflow.com/questions/289792/int-to-char-in-c-sharp
-    // todo: change to stream? Additional ctor: https://stackoverflow.com/questions/45351430/converting-string-to-stream
-    // MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(input));
-    // + disposable?
-    /* https://stackoverflow.com/questions/1879395/how-do-i-generate-a-stream-from-a-string
-  public static Stream GenerateStreamFromString(string s)
-{
-    var stream = new MemoryStream();
-    var writer = new StreamWriter(stream);
-    writer.Write(s);
-    writer.Flush();
-    stream.Position = 0;
-    return stream;
-}
-using (var stream = GenerateStreamFromString("a,b \n c,d"))
-{
-    // ... Do stuff to stream
-}
-     */
-    public Scanner(string input) : base(input)
+    public int Index { get; set; }
+
+    public Scanner(string input)
     {
-        _input = input;
-        _maxIndex = input.Length - 1;
+        _input = input.ToCharArray();
         Index = 0;
+        _maxIndex = _input.Length - 1;
     }
-    
+
     public char? Peek()
     {
-        return Index < _maxIndex ? _input[Index] : null;
+        return CharAtOffset(0);
     }
-    
+
     public char? Poke()
     {
         var value = Peek();
-        if(value != null)
+        if (value != null)
         {
             Index++;
         }
+
         return value;
     }
-    
-    public bool HasNext()
+
+    private char? CharAtOffset(int offset)
+    {
+        var i = Index + offset;
+        return i >= 0 && i <= _maxIndex ? _input[i] : null;
+    }
+
+    public bool HasNextChar()
     {
         return Peek() != null;
     }
+
+
+    public string ReadLine()
+    {
+        return ReadLineWithDelimiter().TrimEnd('\r', '\n');
+    }
     
-    // todo: readline
+    private string ReadLineWithDelimiter()
+    {
+        var line = "";
+        while (HasNextChar())
+        {
+            var currentChar = Poke();
+            line += currentChar;
+            if (currentChar == '\r' && Peek() != '\n')
+            {
+                break;
+            }
+
+            if (currentChar == '\n')
+            {
+                break;
+            }
+        }
+
+        return line;
+    }
 }

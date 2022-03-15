@@ -29,4 +29,8 @@
       <ProjectReference Include="..\tone\tone.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Parsers" />
+    </ItemGroup>
+
 </Project>

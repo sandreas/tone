@@ -1,75 +1,56 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace tone.Common.StringParser;
 
-public class Tokenizer<TScanner, TTokenList, TToken, TTokenType>
-    where TScanner : Scanner
-    where TTokenList : IEnumerable<TToken?>, new()
-    where TToken : IToken<TTokenType>
-    where TTokenType : struct, Enum
+public class Tokenizer<TToken>
 {
-    private readonly Grammar<TScanner, TTokenList, TToken> _grammar;
-    private readonly TToken _defaultToken;
-
-    public int MaxFailedCount { get; set; } = 1;
+    public int MaximumRoundsWithoutResult { get; set; } = 3;
     
-    public Tokenizer(Grammar<TScanner, TTokenList, TToken> grammar, TToken defaultToken)
+    private readonly Action<Scanner, IList<TToken>>[] _tokenBuilders;
+
+    public Tokenizer(params Action<Scanner, IList<TToken>>[] tokenBuilders)
     {
-        _grammar = grammar;
-        _defaultToken = defaultToken;
+        _tokenBuilders = tokenBuilders;
     }
-    
-    public TTokenList Tokenize(TScanner scanner)
-    {
-        // todo: check IEnumerable and yield return?
 
-        var tokens = new TTokenList();
-        var fallbackToken = _defaultToken;
-        var maxFailedCount = MaxFailedCount;
-        while(scanner.HasNext()){
-            var lastScannerPosition = scanner.Index;
-            var token = _grammar.BuildNextToken(ref scanner, ref tokens);
+    public IEnumerable<TToken> Tokenize(Scanner scanner)
+    {
+        var tokens = new List<TToken>();
+        var resultLessRounds = 0;
+        while (scanner.HasNextChar())
+        {
+            var scannerIndex = scanner.Index;
             
-            if(token == null)
+            foreach (var builder in _tokenBuilders)
             {
-                fallbackToken.Append(token);
-                continue;
-            }   
-            
-            if(MaxFailedCount > 0 && scanner.Index <= lastScannerPosition && --maxFailedCount < 1)
-            {
-                throw new Exception(
-                    $"Scanner as not moved forward since %s iterations (at position {scanner.Index}), so there seems to be something wrong with your grammar - to prevent endless loops, the tokenizer has been stopped");
-            }  
-            // EqualityComparer<T>.Default.Equals(
-            // if token == null or scannerpositon rewind, throw exception?
-            if(EqualityComparer<TTokenType>.Default.Equals(token.Type, fallbackToken.Type))
-            {
-                fallbackToken.Append(token.Value);
-                continue;
+                var builderIndex = scanner.Index;
+                var tokenCount = tokens.Count;
+                
+                builder(scanner, tokens);
+                if (tokenCount < tokens.Count)
+                {
+                    break;
+                }
+
+                scanner.Index = builderIndex;
             }
 
-            AppendTokensWithValue(ref tokens, fallbackToken, token);
+            if (scanner.Index <= scannerIndex)
+            {
+                resultLessRounds++;
+            }
+            else
+            {
+                resultLessRounds = 0;
+            }
 
+            if (resultLessRounds > MaximumRoundsWithoutResult)
+            {
+                throw new Exception($"Exceeded {MaximumRoundsWithoutResult} of scanner not changing its index - tokenizer is not configured properly");
+            }
         }
 
-        AppendTokensWithValue(ref tokens, fallbackToken);
-        
         return tokens;
     }
-
-    private void AppendTokensWithValue(ref TTokenList tokenList, params TToken[] tokens)
-    {
-        foreach (var token in tokens)
-        {
-            if (token.HasValue)
-            {
-                _ = tokenList.Append(token);
-            }
-        }
-    }
 }
-
-
