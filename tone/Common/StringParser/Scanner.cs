@@ -1,24 +1,24 @@
 namespace tone.Common.StringParser;
 
-public class Scanner
+public class Scanner<T>
 {
-    private readonly char[] _input;
-    private readonly int _maxIndex;
+    private readonly T[] _input;
+    private readonly int _lastValidIndex;
     public int Index { get; set; }
 
-    public Scanner(string input)
+    public Scanner(T[] input)
     {
-        _input = input.ToCharArray();
+        _input = input;
         Index = 0;
-        _maxIndex = _input.Length - 1;
+        _lastValidIndex = _input.Length - 1;
     }
 
-    public char? Peek()
+    public T? Peek()
     {
         return CharAtOffset(0);
     }
 
-    public char? Poke()
+    public T? Read()
     {
         var value = Peek();
         if (value != null)
@@ -29,41 +29,25 @@ public class Scanner
         return value;
     }
 
-    private char? CharAtOffset(int offset)
+    
+    public T? Next()
     {
-        var i = Index + offset;
-        return i >= 0 && i <= _maxIndex ? _input[i] : null;
-    }
-
-    public bool HasNextChar()
-    {
-        return Peek() != null;
-    }
-
-
-    public string ReadLine()
-    {
-        return ReadLineWithDelimiter().TrimEnd('\r', '\n');
+        if (Index == _lastValidIndex)
+        {
+            return default;
+        }
+        Index++;
+        return Peek();
     }
     
-    private string ReadLineWithDelimiter()
+    private T? CharAtOffset(int offset)
     {
-        var line = "";
-        while (HasNextChar())
-        {
-            var currentChar = Poke();
-            line += currentChar;
-            if (currentChar == '\r' && Peek() != '\n')
-            {
-                break;
-            }
+        var i = Index + offset;
+        return i >= 0 && i <= _lastValidIndex ? _input[i] : default;
+    }
 
-            if (currentChar == '\n')
-            {
-                break;
-            }
-        }
-
-        return line;
+    public bool CanPeek()
+    {
+        return Index <= _lastValidIndex;
     }
 }

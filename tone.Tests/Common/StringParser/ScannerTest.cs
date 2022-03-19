@@ -10,7 +10,7 @@ public class ScannerTest
     [Fact]
     public void TestReadLineMultiLineComplex()
     {
-        var scanner = new Scanner(MultiLineComplex);
+        var scanner = new CharScanner(MultiLineComplex);
         Assert.Equal("abcd", scanner.ReadLine());
         Assert.Equal("efgh", scanner.ReadLine());
         Assert.Equal("", scanner.ReadLine());

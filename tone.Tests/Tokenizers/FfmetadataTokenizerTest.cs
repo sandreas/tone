@@ -52,14 +52,14 @@ title=003";
     [Fact]
     public void TestSimpleFfmetadata()
     {
-        var tokens = subject.Tokenize(new Scanner(SimpleFfmetadata));
-        Assert.Equal(16, tokens.Count());
+        var tokens = subject.Tokenize(new CharScanner(SimpleFfmetadata));
+        Assert.Equal(11, tokens.Count());
     }
     
     [Fact]
     public void TestFfmetadataWithChapters()
     {
-        var tokens = subject.Tokenize(new Scanner(FfmetadataWithChapters));
-        Assert.Equal(16, tokens.Count());
+        var tokens = subject.Tokenize(new CharScanner(FfmetadataWithChapters));
+        Assert.Equal(50, tokens.Count());
     }
 }

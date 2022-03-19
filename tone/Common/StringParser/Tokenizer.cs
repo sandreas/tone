@@ -7,18 +7,18 @@ public class Tokenizer<TToken>
 {
     public int MaximumRoundsWithoutResult { get; set; } = 3;
     
-    private readonly Action<Scanner, IList<TToken>>[] _tokenBuilders;
+    private readonly Action<CharScanner, IList<TToken>>[] _tokenBuilders;
 
-    public Tokenizer(params Action<Scanner, IList<TToken>>[] tokenBuilders)
+    public Tokenizer(params Action<CharScanner, IList<TToken>>[] tokenBuilders)
     {
         _tokenBuilders = tokenBuilders;
     }
 
-    public IEnumerable<TToken> Tokenize(Scanner scanner)
+    public IEnumerable<TToken> Tokenize(CharScanner scanner)
     {
         var tokens = new List<TToken>();
         var resultLessRounds = 0;
-        while (scanner.HasNextChar())
+        while (scanner.CanPeek())
         {
             var scannerIndex = scanner.Index;
             

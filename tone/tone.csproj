@@ -62,7 +62,6 @@
 
     <ItemGroup>
       <Folder Include="Common\Extensions\IEnumerable" />
-      <Folder Include="Common\StringParser" />
       <Folder Include="var\data\input-batch\Fantasy\A. L. Knorr\Der Ursprung der Elemente\1 - Tochter des Meeres\Files" />
       <Folder Include="var\data\input-batch\Jugend-Hörbücher\Marlene Beer\Die unwissende Magierin" />
       <Folder Include="var\data\output" />

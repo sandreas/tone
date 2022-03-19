@@ -11,7 +11,7 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
     {
     }
 
-    private static void HeaderLine(Scanner scanner, IList<Token<FfmetadataToken>> tokenList)
+    private static void HeaderLine(CharScanner scanner, IList<Token<FfmetadataToken>> tokenList)
     {
         if (tokenList.Any())
         {
@@ -25,7 +25,7 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
         }
     }
 
-    private static void CommentLine(Scanner scanner, IList<Token<FfmetadataToken>> tokenList)
+    private static void CommentLine(CharScanner scanner, IList<Token<FfmetadataToken>> tokenList)
     {
         var firstChar = scanner.Peek();
         var tokenValue = scanner.ReadLine();
@@ -36,7 +36,7 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
         }
     }
 
-    private static void ChapterMarker(Scanner scanner, IList<Token<FfmetadataToken>> tokenList)
+    private static void ChapterMarker(CharScanner scanner, IList<Token<FfmetadataToken>> tokenList)
     {
         var line = scanner.ReadLine();
         if (line.ToLower() != "[chapter]")
@@ -47,7 +47,7 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
         tokenList.Add(new Token<FfmetadataToken>(FfmetadataToken.ChapterMarker, line));
     }
 
-    private static void StreamMarker(Scanner scanner, IList<Token<FfmetadataToken>> tokenList)
+    private static void StreamMarker(CharScanner scanner, IList<Token<FfmetadataToken>> tokenList)
     {
         var line = scanner.ReadLine();
         if (line.ToLower() != "[stream]")
@@ -57,15 +57,15 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
 
         tokenList.Add(new Token<FfmetadataToken>(FfmetadataToken.StreamMarker, line));
     }
-    private static void MetadataProperty(Scanner scanner, IList<Token<FfmetadataToken>> tokenList)
+    private static void MetadataProperty(CharScanner scanner, IList<Token<FfmetadataToken>> tokenList)
     {
         var buffer = "";
         var propertyName = "";
         var separatorChar = '=';
         var escaped = false;
-        while (scanner.HasNextChar())
+        while (scanner.CanPeek())
         {
-            var currentChar = scanner.Poke();
+            var currentChar = scanner.Read();
             if (escaped)
             {
                 buffer += currentChar;
