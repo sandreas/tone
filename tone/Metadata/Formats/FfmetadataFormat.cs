@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,11 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using ATL;
 using OperationResult;
-using tone.Common.Extensions.Enumerable;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Formats;
 
+enum SectionType
+{
+    Default,
+    Chapter,
+    Stream,
+    EndOfStream
+}
 public class FfmetadataFormat : IMetadataFormat
 {
     // https://ffmpeg.org/ffmpeg-formats.html#Description
@@ -32,40 +37,78 @@ public class FfmetadataFormat : IMetadataFormat
             return Error(headerResult.Error);
         }
 
-        var properties = new Dictionary<string, string>();
-        var lineNumber = -1;
-        while (sr.Peek() >= 0)
+        var currentSectionType = SectionType.Default;
+        while (currentSectionType != SectionType.EndOfStream)
         {
-            lineNumber++;
-            var line = await sr.ReadLineAsync();
-            if (line == null)
+            var properties = ReadSectionProperties(sr, currentSectionType, out currentSectionType);
+            switch (currentSectionType)
             {
-                return Error($"Could not read line {lineNumber}");
-            }
-            var trimmedLine = line.Trim();
-            if (line.StartsWith(";") || trimmedLine == "")
-            {
-                continue;
-            }
-            
-            if(string.Equals(trimmedLine, "[CHAPTER]", StringComparison.CurrentCultureIgnoreCase))
-            {
-                var chapters = ReadChapters(sr);
-                foreach (var chapter in chapters)
-                {
-                    metadata.Chapters.Add(chapter);                    
-                }
-            }
-            else
-            {
-                var (propertyName, propertyValue) = ReadProperty(line, sr);
+                case SectionType.Chapter:
+                    ParseChapterProperties(properties, metadata);
+                    break;
+                default:
+                    ParseMetadataProperties(properties, metadata);
+                    break;
+                    
             }
         }
 
         return metadata;
     }
 
-    private (string, string) ReadProperty(string line, StreamReader sr)
+    private static void ParseMetadataProperties(Dictionary<string, string> properties, MetadataTrack metadata)
+    {
+    }
+
+    private static void ParseChapterProperties(Dictionary<string, string> properties, MetadataTrack metadata)
+    {
+    }
+
+    private Dictionary<string, string> ReadSectionProperties(StreamReader sr, SectionType currentSectionType, out SectionType nextSectionType)
+    {
+        var properties = new Dictionary<string, string>();
+        nextSectionType = SectionType.Default;
+        while (sr.Peek() != -1)
+        {
+            var line = sr.ReadLine();
+            if (line == null)
+            {
+                nextSectionType = SectionType.EndOfStream;
+                break;
+            }
+            if (line.StartsWith(";") || line.StartsWith("#"))
+            {
+                continue;
+            }
+
+            while (line.EndsWith("\\") && sr.Peek() != -1)
+            {
+                line += sr.ReadLine();
+            }
+
+            var trimmedLowerLine = line.Trim().ToLower();
+            if (trimmedLowerLine == "[chapter]")
+            {
+                nextSectionType = SectionType.Chapter;
+                break;
+            }
+            if (trimmedLowerLine == "[stream]")
+            {
+                nextSectionType = SectionType.Stream;
+                break;
+            }
+
+            var (name, value) = ReadProperty(line);
+            if (name != "")
+            {
+                properties[name] = value;
+            }
+        }
+        
+        return properties;
+    }
+
+    private (string, string) ReadProperty(string line)
     {
         var propertyNameBuilder = new StringBuilder();
         var propertyValueBuilder = new StringBuilder();
@@ -89,15 +132,8 @@ public class FfmetadataFormat : IMetadataFormat
             }
             activeBuilder.Append(c);
         }
-        /*
-        while (propertyValue.TrimEnd().EndsWith("\\"))
-        {
-            propertyValue += sr.ReadLine();
-        }
-*/
-        return (propertyNameBuilder.ToString(), propertyValueBuilder.ToString());
-
         
+        return (propertyNameBuilder.ToString(), propertyValueBuilder.ToString());
     }
 
     private static string Unescape(string escapedString)
@@ -143,7 +179,7 @@ public class FfmetadataFormat : IMetadataFormat
     }
 
 
-    private async Task<Status<string>> ReadHeaderAsync(StreamReader sr)
+    private static async Task<Status<string>> ReadHeaderAsync(StreamReader sr)
     {
         var headerLine = await sr.ReadLineAsync() ?? "";
         if (!headerLine.StartsWith(FfmetadataHeader))

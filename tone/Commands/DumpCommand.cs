@@ -41,7 +41,7 @@ public class DumpCommand : ICommand
             // - FfmetadataSerializer
             // - SerializerService with Format - serializerService.Serialize(track, Format.Json);
             var track = new MetadataTrack(file);
-            var output = await _serializerService.SerializeAsync(track);
+            var output = await _serializerService.SerializeAsync(track, SerializerFormat.SpectreConsole);
             await console.Output.WriteLineAsync(output);
         }
     }

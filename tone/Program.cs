@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sandreas.Files;
 using Serilog;
+using Spectre.Console;
 using tone.Commands;
 using tone.Metadata.Formats;
 using tone.Metadata.Serializers;
@@ -56,6 +57,7 @@ services.AddSingleton<DirectoryLoaderService>();
 services.AddSingleton<GrokPatternService>();
 services.AddSingleton<ChptFmtNativeMetadataFormat>();
 services.AddSingleton<MetadataTextSerializer>();
+services.AddSingleton<SpectreConsoleSerializer>();
 services.AddSingleton<SerializerService>();
 
 services.AddSingleton<TagCommand>();
@@ -64,6 +66,7 @@ services.AddSingleton<DumpCommand>();
 // services.AddSingleton<JobBuilderService>();
 services.AddLogging(builder => builder.AddSerilog(dispose: true));
 services.AddSingleton<ILogger>(_ => Log.Logger);
+services.AddSingleton(_ => AnsiConsole.Console);
 
 var serviceProvider = services.BuildServiceProvider();
 try
