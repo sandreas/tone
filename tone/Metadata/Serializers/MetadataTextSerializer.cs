@@ -46,41 +46,36 @@ public class MetadataTextSerializer : IMetadataSerializer
     private async Task<string> DumpMetadata(IMetadata track, bool shortDump)
     {
         var result = "";
-        
-
-        
-
-
         result += DumpOptionalTag("\nduration: ", track.TotalDuration)+
-                        DumpOptionalTag("\ngenre: ", track.Genre)+
-                        DumpOptionalTag("\nartist: ", track.Artist)+
-                        DumpOptionalTag("\nsort-artist: ", track.SortArtist)+
-                        DumpOptionalTag("\nalbum-artist: ", track.AlbumArtist)+
-                        DumpOptionalTag("\nsort-album-artist: ", track.SortAlbumArtist)+
-                        DumpOptionalTag("\noriginal-artist: ", track.OriginalArtist)+
-                        DumpOptionalTag("\nnarrator: ", track.Narrator)+
-                        DumpOptionalTag("\ncomposer: ", track.Composer)+
-                        DumpOptionalTag("\npublisher: ", track.Publisher)+
-                        DumpOptionalTag("\nalbum: ", track.Album)+
-                        DumpOptionalTag("\nsort-album: ", track.SortAlbum)+
-                        DumpOptionalTag("\noriginal-album: ", track.OriginalAlbum)+
-                        DumpOptionalTag("\ntitle: ", track.Title)+
-                        DumpOptionalTag("\nsort-title: ", track.SortTitle)+
-                        DumpOptionalTag("\nseries-title: ", track.SeriesTitle)+
-                        DumpOptionalTag("\nseries-part: ", track.SeriesPart)+
-                        DumpOptionalTag("\ndisc-number: ", track.DiscNumber, 0)+
-                        DumpOptionalTag("\ndisc-total: ", track.DiscTotal, 0)+
-                        DumpOptionalTag("\ntrack-number: ", track.TrackNumber, 0)+
-                        DumpOptionalTag("\ntrack-total: ", track.TrackTotal, 0)+
-                        DumpOptionalTag("\ncopyright: ", track.Copyright)+
-                        DumpOptionalTag("\npublishing-date: ", track.PublishingDate, DateTime.MinValue)+
-                        DumpOptionalTag("\nrecording-date: ", track.RecordingDate, DateTime.MinValue)+
-                        DumpOptionalTag("\npurchase-date: ", track.PurchaseDate, DateTime.MinValue)+
-                        DumpOptionalTag("\ngroup: ", track.Group)+
-                        DumpOptionalTag("\nencoding-tool: ", track.EncodingTool)+
-                        DumpOptionalTag("\nmedia-type: ", track.MediaType)+
-                        DumpOptionalTag("\npopularity: ", track.Popularity, 0)+
-                        DumpOptionalTag("\nconductor: ", track.Conductor)
+                  DumpOptionalTag("\ngenre: ", track.Genre)+
+                  DumpOptionalTag("\nartist: ", track.Artist)+
+                  DumpOptionalTag("\nsort-artist: ", track.SortArtist)+
+                  DumpOptionalTag("\nalbum-artist: ", track.AlbumArtist)+
+                  DumpOptionalTag("\nsort-album-artist: ", track.SortAlbumArtist)+
+                  DumpOptionalTag("\noriginal-artist: ", track.OriginalArtist)+
+                  DumpOptionalTag("\nnarrator: ", track.Narrator)+
+                  DumpOptionalTag("\ncomposer: ", track.Composer)+
+                  DumpOptionalTag("\npublisher: ", track.Publisher)+
+                  DumpOptionalTag("\nalbum: ", track.Album)+
+                  DumpOptionalTag("\nsort-album: ", track.SortAlbum)+
+                  DumpOptionalTag("\noriginal-album: ", track.OriginalAlbum)+
+                  DumpOptionalTag("\ntitle: ", track.Title)+
+                  DumpOptionalTag("\nsort-title: ", track.SortTitle)+
+                  DumpOptionalTag("\nseries-title: ", track.SeriesTitle)+
+                  DumpOptionalTag("\nseries-part: ", track.SeriesPart)+
+                  DumpOptionalTag("\ndisc-number: ", track.DiscNumber, 0)+
+                  DumpOptionalTag("\ndisc-total: ", track.DiscTotal, 0)+
+                  DumpOptionalTag("\ntrack-number: ", track.TrackNumber, 0)+
+                  DumpOptionalTag("\ntrack-total: ", track.TrackTotal, 0)+
+                  DumpOptionalTag("\ncopyright: ", track.Copyright)+
+                  DumpOptionalTag("\npublishing-date: ", track.PublishingDate, DateTime.MinValue)+
+                  DumpOptionalTag("\nrecording-date: ", track.RecordingDate, DateTime.MinValue)+
+                  DumpOptionalTag("\npurchase-date: ", track.PurchaseDate, DateTime.MinValue)+
+                  DumpOptionalTag("\ngroup: ", track.Group)+
+                  DumpOptionalTag("\nencoding-tool: ", track.EncodingTool)+
+                  DumpOptionalTag("\nmedia-type: ", track.MediaType)+
+                  DumpOptionalTag("\npopularity: ", track.Popularity, 0)+
+                  DumpOptionalTag("\nconductor: ", track.Conductor)
                      ;
         if (track.AdditionalFields != null)
         {

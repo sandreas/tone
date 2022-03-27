@@ -34,14 +34,12 @@ public class DirectoryLoaderService
         "wav",
         "wma",        
     };
-    private readonly ILogger _logger;
     private readonly FileWalker _fileWalker;
 
     public IFileSystem? FileSystem => _fileWalker?.FileSystem;
     
-    public DirectoryLoaderService(ILogger logger, FileWalker fileWalker)
+    public DirectoryLoaderService(FileWalker fileWalker)
     {
-        _logger = logger;
         _fileWalker = fileWalker;
     }
 
@@ -62,7 +60,7 @@ public class DirectoryLoaderService
         return fileWalker.WalkRecursive(inputPath)
             .Catch((path, ex) =>
             {
-                _logger.Warning("{Path} could not be loaded: {Message}", path, ex.Message);
+                // _logger.Warning("{Path} could not be loaded: {Message}", path, ex.Message);
                 return FileWalkerBehaviour.Default;
             });
     }
