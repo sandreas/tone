@@ -79,9 +79,9 @@ public class TagCommand : ICommand, IMetadata
     
     [CommandOption("meta-narrator")] public string? Narrator { get; set; }
 
-    [CommandOption("meta-series-title")] public string? SeriesTitle { get; set; }
+    [CommandOption("meta-series-title")] public string? MovementName { get; set; }
 
-    [CommandOption("meta-series-part")] public string? SeriesPart { get; set; }
+    [CommandOption("meta-series-part")] public string? Movement { get; set; }
 
     [CommandOption("meta-publishing-date")]
     public DateTime? PublishingDate { get; set; }

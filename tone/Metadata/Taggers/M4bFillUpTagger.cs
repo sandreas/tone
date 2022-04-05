@@ -53,8 +53,8 @@ public class M4BFillUpTagger : TaggerBase
             seriesString = seriesString[..^seriesPartString.Length].Trim();
         }
 
-        metadata.SeriesTitle = seriesString;
-        metadata.SeriesPart = seriesPartString == "" ? null : seriesPartString;
+        metadata.MovementName = seriesString;
+        metadata.Movement = seriesPartString == "" ? null : seriesPartString;
     }
 
     private static bool IsPartNumber(string seriesPartString)
@@ -75,9 +75,9 @@ public class M4BFillUpTagger : TaggerBase
 
     private void UpdateSortProperties(IMetadata metadata)
     {
-        if (metadata.SeriesTitle != null && metadata.SortTitle == metadata.Title)
+        if (metadata.MovementName != null && metadata.SortTitle == metadata.Title)
         {
-            metadata.SortTitle = (metadata.SeriesTitle + " " + metadata.SeriesPart).Trim() + " - " + metadata.Title;
+            metadata.SortTitle = (metadata.MovementName + " " + metadata.Movement).Trim() + " - " + metadata.Title;
         }
 
         metadata.SortAlbum ??= metadata.SortTitle;
@@ -85,7 +85,7 @@ public class M4BFillUpTagger : TaggerBase
 
     private bool IsM4b(IMetadata metadata)
     {
-        if (metadata.MediaType != "2")
+        if (metadata.ItunesMediaType != ItunesMediaType.Audiobook)
         {
             return false;
         }

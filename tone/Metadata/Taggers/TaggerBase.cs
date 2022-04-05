@@ -39,15 +39,15 @@ public abstract class TaggerBase: ITagger
         metadata.SortAlbumArtist = TransferMetadataProperty( source.SortAlbumArtist, metadata.SortAlbumArtist);
         metadata.LongDescription = TransferMetadataProperty( source.LongDescription, metadata.LongDescription);
         metadata.EncodingTool = TransferMetadataProperty( source.EncodingTool, metadata.EncodingTool);
-        metadata.MediaType = TransferMetadataProperty( source.MediaType, metadata.MediaType);
+        metadata.ItunesMediaType = TransferMetadataProperty( source.ItunesMediaType, metadata.ItunesMediaType);
         metadata.ChaptersTableDescription = TransferMetadataProperty( source.ChaptersTableDescription, metadata.ChaptersTableDescription);
         metadata.PublishingDate = TransferMetadataProperty( source.PublishingDate, metadata.PublishingDate);
         metadata.RecordingDate = TransferMetadataProperty( source.RecordingDate, metadata.RecordingDate);
         metadata.PurchaseDate = TransferMetadataProperty( source.PurchaseDate, metadata.PurchaseDate);
         metadata.Lyrics = TransferMetadataProperty( source.Lyrics, metadata.Lyrics);
         metadata.Narrator = TransferMetadataProperty( source.Narrator, metadata.Narrator);
-        metadata.SeriesTitle = TransferMetadataProperty( source.SeriesTitle, metadata.SeriesTitle);
-        metadata.SeriesPart = TransferMetadataProperty( source.SeriesPart, metadata.SeriesPart);
+        metadata.MovementName = TransferMetadataProperty( source.MovementName, metadata.MovementName);
+        metadata.Movement = TransferMetadataProperty( source.Movement, metadata.Movement);
     }
 
     private static T? TransferMetadataProperty<T>(params T?[] source)

@@ -61,8 +61,8 @@ public class MetadataTextSerializer : IMetadataSerializer
                   DumpOptionalTag("\noriginal-album: ", track.OriginalAlbum)+
                   DumpOptionalTag("\ntitle: ", track.Title)+
                   DumpOptionalTag("\nsort-title: ", track.SortTitle)+
-                  DumpOptionalTag("\nseries-title: ", track.SeriesTitle)+
-                  DumpOptionalTag("\nseries-part: ", track.SeriesPart)+
+                  DumpOptionalTag("\nseries-title: ", track.MovementName)+
+                  DumpOptionalTag("\nseries-part: ", track.Movement)+
                   DumpOptionalTag("\ndisc-number: ", track.DiscNumber, 0)+
                   DumpOptionalTag("\ndisc-total: ", track.DiscTotal, 0)+
                   DumpOptionalTag("\ntrack-number: ", track.TrackNumber, 0)+
@@ -73,7 +73,7 @@ public class MetadataTextSerializer : IMetadataSerializer
                   DumpOptionalTag("\npurchase-date: ", track.PurchaseDate, DateTime.MinValue)+
                   DumpOptionalTag("\ngroup: ", track.Group)+
                   DumpOptionalTag("\nencoding-tool: ", track.EncodingTool)+
-                  DumpOptionalTag("\nmedia-type: ", track.MediaType)+
+                  DumpOptionalTag("\nmedia-type: ", track.ItunesMediaType)+
                   DumpOptionalTag("\npopularity: ", track.Popularity, 0)+
                   DumpOptionalTag("\nconductor: ", track.Conductor)
                      ;

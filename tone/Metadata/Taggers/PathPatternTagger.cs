@@ -86,7 +86,7 @@ public class PathPatternTagger: TaggerBase
             metadata.SortAlbumArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortAlbumArtist), metadata.SortAlbumArtist);
             metadata.LongDescription = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.LongDescription), metadata.LongDescription);
             metadata.EncodingTool = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.EncodingTool), metadata.EncodingTool);
-            metadata.MediaType = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.MediaType), metadata.MediaType);
+            metadata.ItunesMediaType = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.ItunesMediaType), metadata.ItunesMediaType);
             metadata.ChaptersTableDescription = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.ChaptersTableDescription), metadata.ChaptersTableDescription);
             
             metadata.PublishingDate = MapDateResult(grokItem.Key, grokItem.Value, nameof(metadata.PublishingDate), metadata.PublishingDate);
@@ -95,8 +95,8 @@ public class PathPatternTagger: TaggerBase
             
             // metadata.Lyrics = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Lyrics), metadata.Lyrics);
             metadata.Narrator = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Narrator), metadata.Narrator);
-            metadata.SeriesTitle = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SeriesTitle), metadata.SeriesTitle);
-            metadata.SeriesPart = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SeriesPart), metadata.SeriesPart);
+            metadata.MovementName = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.MovementName), metadata.MovementName);
+            metadata.Movement = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Movement), metadata.Movement);
         }
     }
 

@@ -36,8 +36,8 @@ public class MockMetadata: IMetadata
     public string? MediaType { get; set; }
     public string? ChaptersTableDescription { get; set; }
     public string? Narrator { get; set; }
-    public string? SeriesTitle { get; set; }
-    public string? SeriesPart { get; set; }
+    public string? MovementName { get; set; }
+    public string? Movement { get; set; }
     public string? Path { get; set; }
     public DateTime? PublishingDate { get; set; }
     public DateTime? RecordingDate { get; set; }

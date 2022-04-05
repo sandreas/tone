@@ -196,8 +196,8 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         Stringify(metadata.OriginalAlbum, s => properties.AddRow("original-album", Markup.Escape(s)));
         Stringify(metadata.Title, s => properties.AddRow("title", Markup.Escape(s)));
         Stringify(metadata.SortTitle, s => properties.AddRow("sort-title", Markup.Escape(s)));
-        Stringify(metadata.SeriesTitle, s => properties.AddRow("series-title", Markup.Escape(s)));
-        Stringify(metadata.SeriesPart, s => properties.AddRow("series-part", Markup.Escape(s)));
+        Stringify(metadata.MovementName, s => properties.AddRow("series-title", Markup.Escape(s)));
+        Stringify(metadata.Movement, s => properties.AddRow("series-part", Markup.Escape(s)));
         Stringify(metadata.DiscNumber, s => properties.AddRow("disc-number", Markup.Escape(s)), 0);
         Stringify(metadata.DiscTotal, s => properties.AddRow("disc-total", Markup.Escape(s)), 0);
         Stringify(metadata.TrackNumber, s => properties.AddRow("track-number", Markup.Escape(s)), 0);
@@ -208,7 +208,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         Stringify(metadata.PurchaseDate, s => properties.AddRow("purchase-date", Markup.Escape(s)), DateTime.MinValue);
         Stringify(metadata.Group, s => properties.AddRow("group", Markup.Escape(s)));
         Stringify(metadata.EncodingTool, s => properties.AddRow("encoding-tool", Markup.Escape(s)));
-        Stringify(metadata.MediaType, s => properties.AddRow("media-type", Markup.Escape(s)));
+        Stringify(metadata.ItunesMediaType, s => properties.AddRow("media-type", Markup.Escape(s)));
         Stringify(metadata.Popularity, s => properties.AddRow("popularity", Markup.Escape(s)), 0);
         Stringify(metadata.Conductor, s => properties.AddRow("conductor", Markup.Escape(s)));
         _console.Write(properties);

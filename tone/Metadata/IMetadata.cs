@@ -72,14 +72,14 @@ public interface IMetadata
     public string? SortAlbumArtist { get; set; }
     public string? LongDescription { get; set; }
     public string? EncodingTool { get; set; }
-    public string? MediaType { get; set; }
+    public ItunesMediaType? ItunesMediaType { get; set; }
 
     /// <summary>Chapters table of content description</summary>
     public string? ChaptersTableDescription { get; set; }
 
     public string? Narrator { get; set; }
-    public string? SeriesTitle { get; set; }
-    public string? SeriesPart { get; set; }
+    public string? MovementName { get; set; }
+    public string? Movement { get; set; }
     
     public string? Path { get;}
     
