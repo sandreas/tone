@@ -16,8 +16,6 @@ public class ExtraFieldsTagger : ITagger
 
     public async Task<Status<string>> Update(IMetadata metadata)
     {
-        metadata.AdditionalFields ??= new Dictionary<string, string>();
-
         if (_extraFields.Count % 2 != 0)
         {
             return Error("metadata.AdditionalFields has to contain an even number of values (<fieldname> <fieldvalue> ...)");

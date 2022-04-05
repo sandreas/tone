@@ -10,6 +10,7 @@ public class MockMetadata: IMetadata
 {
     public int? TrackNumber { get; set; }
     public int? TrackTotal { get; set; }
+    public ItunesPlayGap? ItunesPlayGap { get; set; }
     public int? DiscNumber { get; set; }
     public int? DiscTotal { get; set; }
     public float? Popularity { get; set; }
@@ -31,9 +32,15 @@ public class MockMetadata: IMetadata
     public string? SortAlbum { get; set; }
     public string? SortArtist { get; set; }
     public string? SortAlbumArtist { get; set; }
+    public string? SortComposer { get; set; }
     public string? LongDescription { get; set; }
     public string? EncodingTool { get; set; }
-    public string? MediaType { get; set; }
+    public int? Bpm { get; set; }
+    public string? EncodedBy { get; set; }
+    public string? EncoderSettings { get; set; }
+    public string? Subtitle { get; set; }
+    public ItunesCompilation? ItunesCompilation { get; set; }
+    public ItunesMediaType? ItunesMediaType { get; set; }
     public string? ChaptersTableDescription { get; set; }
     public string? Narrator { get; set; }
     public string? MovementName { get; set; }

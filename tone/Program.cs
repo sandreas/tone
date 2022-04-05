@@ -1,6 +1,8 @@
-﻿using System.IO.Abstractions;
+﻿using System;
+using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Sandreas.Files;
+using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands;
 using tone.DependencyInjection;
@@ -16,7 +18,8 @@ services.AddSingleton<FileWalker>();
 services.AddSingleton<DirectoryLoaderService>();
 services.AddSingleton<GrokPatternService>();
 services.AddSingleton<ChptFmtNativeMetadataFormat>();
-services.AddSingleton<MetadataTextSerializer>();
+services.AddSingleton<FfmetadataFormat>();
+services.AddSingleton<FfmetadataSerializer>();
 services.AddSingleton<SpectreConsoleSerializer>();
 services.AddSingleton<SerializerService>();
 //
@@ -39,8 +42,15 @@ app.Configure(config =>
     config.SetApplicationName("tone");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
-        .WithDescription("Dump metadata for files - directories are traversed recursively")
-        .WithExample(new[] { "dump", "input/" });
+        .WithDescription("Dump metadata for files and directories (directories are traversed recursively)")
+        .WithExample(new[] { "dump", "input.mp3" });
 });
-
-return await app.RunAsync(args).ConfigureAwait(false);
+try
+{
+    return await app.RunAsync(args).ConfigureAwait(false);
+}
+catch (Exception e)
+{
+    AnsiConsole.WriteException(e);
+    return 1;
+}

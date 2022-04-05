@@ -24,14 +24,42 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         DumpFileProperties(metadata, color);
         DumpEmbeddedPictures(metadata, color);
         DumpMetadata(metadata, color);
+        DumpAdditionalFields(metadata, color);
+        DumpLongText("comment", metadata.Comment, color);
         DumpLyrics(metadata.Lyrics, color);
         DumpLongText("chapters table description", metadata.ChaptersTableDescription, color);
         DumpChapters(metadata, color);
         DumpLongText("description", metadata.Description, color);
         DumpLongText("long description", metadata.LongDescription, color);
-
-        _console.WriteLine();
         return await Task.FromResult("");
+    }
+
+    private void DumpAdditionalFields(IMetadata metadata, Color color)
+    {
+        var firstCol = new TableColumn("property")
+        {
+            Width = 17,
+        }.RightAligned();
+        var properties = new Table()
+            .AddColumn(firstCol)
+            .AddColumn("value")
+            .HideHeaders()
+            .BorderColor(color);
+
+        properties.Title = new TableTitle("additional metadata fields", new Style(color));
+        
+        var additionalFields = metadata is MetadataTrack m ? m.UnmappedAdditionalFields : metadata.AdditionalFields;
+        var counter = 0;
+        foreach (var (key, value) in additionalFields)
+        {
+            properties.AddRow(Markup.Escape(key), Markup.Escape(value));
+            counter++;
+        }
+
+        if (counter > 0)
+        {
+            _console.Write(properties);            
+        }
     }
 
     private void DumpLyrics(LyricsInfo? lyricsContainer, Color color)
@@ -140,7 +168,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
 
     private void DumpEmbeddedPictures(IMetadata metadata, Color color)
     {
-        if (metadata.EmbeddedPictures == null)
+        if (metadata.EmbeddedPictures.Count == 0)
         {
             return;
         }
@@ -182,6 +210,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
             .HideHeaders()
             .BorderColor(color);
         properties.Title = new TableTitle("metadata", new Style(color));
+
         Stringify(metadata.Genre, s => properties.AddRow("genre", Markup.Escape(s)));
         Stringify(metadata.Artist, s => properties.AddRow("artist", Markup.Escape(s)));
         Stringify(metadata.SortArtist, s => properties.AddRow("sort-artist", Markup.Escape(s)));
@@ -190,11 +219,13 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         Stringify(metadata.OriginalArtist, s => properties.AddRow("original-artist", Markup.Escape(s)));
         Stringify(metadata.Narrator, s => properties.AddRow("narrator", Markup.Escape(s)));
         Stringify(metadata.Composer, s => properties.AddRow("composer", Markup.Escape(s)));
+        Stringify(metadata.SortComposer, s => properties.AddRow("sort-composer", Markup.Escape(s)));
         Stringify(metadata.Publisher, s => properties.AddRow("publisher", Markup.Escape(s)));
         Stringify(metadata.Album, s => properties.AddRow("album", Markup.Escape(s)));
         Stringify(metadata.SortAlbum, s => properties.AddRow("sort-album", Markup.Escape(s)));
         Stringify(metadata.OriginalAlbum, s => properties.AddRow("original-album", Markup.Escape(s)));
         Stringify(metadata.Title, s => properties.AddRow("title", Markup.Escape(s)));
+        Stringify(metadata.Subtitle, s => properties.AddRow("subtitle", Markup.Escape(s)));
         Stringify(metadata.SortTitle, s => properties.AddRow("sort-title", Markup.Escape(s)));
         Stringify(metadata.MovementName, s => properties.AddRow("series-title", Markup.Escape(s)));
         Stringify(metadata.Movement, s => properties.AddRow("series-part", Markup.Escape(s)));
@@ -203,20 +234,27 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         Stringify(metadata.TrackNumber, s => properties.AddRow("track-number", Markup.Escape(s)), 0);
         Stringify(metadata.TrackTotal, s => properties.AddRow("track-total", Markup.Escape(s)), 0);
         Stringify(metadata.Copyright, s => properties.AddRow("copyright", Markup.Escape(s)));
-        Stringify(metadata.PublishingDate, s => properties.AddRow("publishing-date", Markup.Escape(s)), DateTime.MinValue);
-        Stringify(metadata.RecordingDate, s => properties.AddRow("recording-date", Markup.Escape(s)), DateTime.MinValue);
+        Stringify(metadata.PublishingDate, s => properties.AddRow("publishing-date", Markup.Escape(s)),
+            DateTime.MinValue);
+        Stringify(metadata.RecordingDate, s => properties.AddRow("recording-date", Markup.Escape(s)),
+            DateTime.MinValue);
         Stringify(metadata.PurchaseDate, s => properties.AddRow("purchase-date", Markup.Escape(s)), DateTime.MinValue);
         Stringify(metadata.Group, s => properties.AddRow("group", Markup.Escape(s)));
         Stringify(metadata.EncodingTool, s => properties.AddRow("encoding-tool", Markup.Escape(s)));
-        Stringify(metadata.ItunesMediaType, s => properties.AddRow("media-type", Markup.Escape(s)));
+        Stringify(metadata.EncodedBy, s => properties.AddRow("encoded-by", Markup.Escape(s)));
+        Stringify(metadata.EncoderSettings, s => properties.AddRow("encoder-settings", Markup.Escape(s)));
+        Stringify(metadata.ItunesMediaType, s => properties.AddRow("itunes-media-type", Markup.Escape(s)));
+        Stringify(metadata.ItunesPlayGap, s => properties.AddRow("itunes-play-gap", Markup.Escape(s)));
+        //Stringify(metadata.ItunesCompilation, s => properties.AddRow("itunes-compilation", Markup.Escape(s)));
         Stringify(metadata.Popularity, s => properties.AddRow("popularity", Markup.Escape(s)), 0);
         Stringify(metadata.Conductor, s => properties.AddRow("conductor", Markup.Escape(s)));
+        Stringify(metadata.Bpm, s => properties.AddRow("bpm", Markup.Escape(s)), 0);
         _console.Write(properties);
     }
 
     private void DumpChapters(IMetadata metadata, Color color)
     {
-        if (metadata.Chapters == null || metadata.Chapters.Count == 0)
+        if (metadata.Chapters.Count == 0)
         {
             return;
         }
@@ -291,6 +329,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
                 Math.Floor(duration.TotalHours).ToString(CultureInfo.InvariantCulture).PadLeft(2, '0') +
                 duration.ToString(@"\:mm\:ss\.fff"),
             DateTime dateTime => dateTime.ToString(CultureInfo.InvariantCulture).Replace(" 00:00:00", ""),
+            Enum e => (int)(object)e + " (" + e + ")",
             _ => value?.ToString() ?? ""
         };
 

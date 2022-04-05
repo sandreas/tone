@@ -7,17 +7,38 @@ namespace tone.Metadata;
 // TagData
 public interface IMetadata
 {
-    /// <summary>Track number</summary>
-    public int? TrackNumber { get; set; }
+    /// <summary>Beats per minute</summary>
+    public int? Bpm { get; set; }
 
-    /// <summary>Total track number</summary>
-    public int? TrackTotal { get; set; }
-
+    /// <summary>Encoded by</summary>
+    public string? EncodedBy { get; set; }
+    
+    /// <summary>Encoder settings</summary>
+    public string? EncoderSettings { get; set; }
+    
+    /// <summary>Subtitle</summary>
+    public string? Subtitle { get; set; }
+    
+    /// <summary>Itunes compilation marker (valid values: 1 or null)</summary>
+    public ItunesCompilation? ItunesCompilation { get; set; }
+    
+    /// <summary>Itunes media type</summary>
+    public ItunesMediaType? ItunesMediaType { get; set; }
+    
+    /// <summary>Itunes </summary>
+    public ItunesPlayGap? ItunesPlayGap { get; set; }
+    
     /// <summary>Disc number</summary>
     public int? DiscNumber { get; set; }
 
     /// <summary>Total disc number</summary>
     public int? DiscTotal { get; set; }
+
+    /// <summary>Track number</summary>
+    public int? TrackNumber { get; set; }
+
+    /// <summary>Total track number</summary>
+    public int? TrackTotal { get; set; }
 
     /// <summary>
     /// Popularity (0% = 0 stars to 100% = 5 stars)
@@ -70,9 +91,9 @@ public interface IMetadata
     public string? SortAlbum { get; set; }
     public string? SortArtist { get; set; }
     public string? SortAlbumArtist { get; set; }
+    public string? SortComposer { get; set; }
     public string? LongDescription { get; set; }
     public string? EncodingTool { get; set; }
-    public ItunesMediaType? ItunesMediaType { get; set; }
 
     /// <summary>Chapters table of content description</summary>
     public string? ChaptersTableDescription { get; set; }
@@ -80,9 +101,9 @@ public interface IMetadata
     public string? Narrator { get; set; }
     public string? MovementName { get; set; }
     public string? Movement { get; set; }
-    
-    public string? Path { get;}
-    
+
+    public string? Path { get; }
+
     /// <summary>Publishing date (set to DateTime.MinValue to remove)</summary>
     public DateTime? PublishingDate { get; set; }
 
@@ -90,16 +111,16 @@ public interface IMetadata
     public DateTime? RecordingDate { get; set; }
 
     public DateTime? PurchaseDate { get; set; }
-    
+
     /// <summary>Synchronized and unsynchronized lyrics</summary>
     public LyricsInfo? Lyrics { get; set; }
 
-    public TimeSpan TotalDuration { get;}
-    
+    public TimeSpan TotalDuration { get; }
+
     /// <summary>
     /// Contains any other metadata field that is not represented by a getter in the above interface
     /// </summary>
-    public IList<ChapterInfo>? Chapters { get;  }
+    public IList<ChapterInfo> Chapters { get; }
 
     /// <summary>
     /// List of picture IDs stored in the tag
@@ -107,11 +128,10 @@ public interface IMetadata
     ///     PictureInfo.NativePicCode : native picture code (useful when exploiting the UNSUPPORTED picture type)
     ///     NB : PictureInfo.PictureData (raw binary picture data) is _not_ valued here; see EmbeddedPictures field
     /// </summary>
-    public IList<PictureInfo>? EmbeddedPictures { get; }
+    public IList<PictureInfo> EmbeddedPictures { get; }
+
     /// <summary>
     /// Contains any other metadata field that is not represented by a getter in the above interface
     /// </summary>
-    public IDictionary<string, string>? AdditionalFields { get; set; }
-    
-
+    public IDictionary<string, string> AdditionalFields { get; }
 }

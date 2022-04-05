@@ -14,13 +14,13 @@ public abstract class TaggerBase: ITagger
     protected static void TransferMetadataProperties(IMetadata source, IMetadata metadata)
     {
         // https://stackoverflow.com/questions/1402803/passing-properties-by-reference-in-c-sharp
+        metadata.Artist = TransferMetadataProperty( source.Artist, metadata.Artist);
         metadata.TrackNumber = TransferMetadataProperty( source.TrackNumber, metadata.TrackNumber);
         metadata.TrackTotal = TransferMetadataProperty( source.TrackTotal, metadata.TrackTotal);
         metadata.DiscNumber = TransferMetadataProperty( source.DiscNumber, metadata.DiscNumber);
         metadata.DiscTotal = TransferMetadataProperty( source.DiscTotal, metadata.DiscTotal);
         metadata.Popularity = TransferMetadataProperty( source.Popularity, metadata.Popularity);
         metadata.Title = TransferMetadataProperty( source.Title, metadata.Title);
-        metadata.Artist = TransferMetadataProperty( source.Artist, metadata.Artist);
         metadata.Composer = TransferMetadataProperty( source.Composer, metadata.Composer);
         metadata.Comment = TransferMetadataProperty( source.Comment, metadata.Comment);
         metadata.Genre = TransferMetadataProperty( source.Genre, metadata.Genre);

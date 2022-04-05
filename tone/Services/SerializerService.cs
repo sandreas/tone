@@ -8,23 +8,22 @@ using tone.Metadata.Serializers;
 namespace tone.Services;
 public enum SerializerFormat {
     Default,
-    SpectreConsole,
-    Json
+    Ffmetadata
 }
 public class SerializerService
 {
-    private readonly MetadataTextSerializer _text;
+    private readonly FfmetadataSerializer _ffmetaSerializer;
     private readonly SpectreConsoleSerializer _spectreConsoleSerializer;
 
-    public SerializerService(SpectreConsoleSerializer spectreConsoleSerializer, MetadataTextSerializer text)
+    public SerializerService(SpectreConsoleSerializer spectreConsoleSerializer, FfmetadataSerializer ffmetaSerializer)
     {
         _spectreConsoleSerializer = spectreConsoleSerializer;
-        _text = text;
+        _ffmetaSerializer = ffmetaSerializer;
     }
 
     public async Task<string> SerializeAsync(IMetadata metadata, SerializerFormat? format = null) => format switch
     {
-        SerializerFormat.SpectreConsole => await _spectreConsoleSerializer.SerializeAsync(metadata),
-        _ => await _text.SerializeAsync(metadata)
+        SerializerFormat.Ffmetadata => await _ffmetaSerializer.SerializeAsync(metadata),
+        _ => await _spectreConsoleSerializer.SerializeAsync(metadata)
     };
 }
