@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using ATL;
 using ATL.AudioData;
 
 namespace tone.Metadata;
+
 
 /*
 Group
@@ -128,11 +132,115 @@ enum ItunesMediaType
     Ringtone = 14,
     ItunesU = 23,
 }
+/*
+class Track {
 
+    private Format _format { get; set; }
+    public IDictionary<string, string> AdditionalFields { get; set; }
+
+    public string? Group
+    {
+        get => GetAdditionalField(_format);
+        set => SetAdditionalField(_format, value); // if _format == MP4, key for Group = ©nam
+    }
+
+    private void SetAdditionalField<T>(Format format, T? value, [CallerMemberName] string key=null)
+    {
+        var mappedKey = MapAdditionalField(format, key);
+        if (mappedKey == null)
+        {
+            return;
+        }
+
+        if (value == null)
+        {
+            if (AdditionalFields.ContainsKey(mappedKey))
+            {
+                AdditionalFields.Remove(mappedKey);
+            }
+
+            return;
+        }
+        AdditionalFields[mappedKey] = Stringify(value);
+    }
+
+    private string Stringify<T>(T value)
+    {
+        if (value is string s)
+        {
+            return s;
+        }
+
+        if (value is DateTime d)
+        {
+            return d.ToString();
+        }
+
+        if (value is int i)
+        {
+            return i.ToString();
+        }
+        return "";
+    }
+
+    private string? GetAdditionalField(Format format, [CallerMemberName] string key=null)
+    {
+        var mappedKey = MapAdditionalField(format, key);
+        if (mappedKey == null)
+        {
+            return null;
+        }
+        return AdditionalFields.ContainsKey(mappedKey) ? AdditionalFields[mappedKey] : null;
+    }
+
+    // this is new
+    public string? MapAdditionalField(Format format, string key) => format.ID switch
+    {
+        // Format is not really appropriate, because it should be the TaggingFormat (id3v2, etc.), not the audio file format
+        AudioDataIOFactory.CID_MP3 => MapMp3(key),
+        AudioDataIOFactory.CID_MP4 => MapMp4(key),
+        _ => null
+    };
+    
+    private static string? MapMp3(string key) => key switch
+    {
+        nameof(Group)    => "TIT1",
+        _ => null,
+    };
+    
+    private static string? MapMp4(string key) => key switch
+    {
+        nameof(Group)    => "©grp",
+        _ => null,
+    };
+    // ...
+}
+*/
 public class MetadataTrack : Track, IMetadata
 {
     public new string? Path => base.Path;
 
+    public static Dictionary<string, (string id3v23, string id3v24, string mp4)> TagMapping { get; set; } = new()
+    {
+        {nameof(Group), ("TIT1", "TIT1", "grp")},
+        /*
+
+    ALBUMSORT (SortAlbum): ["TSOA","TSOA","soal","T=50 SORT_WITH","WM/AlbumSortOrder",""]
+    ALBUMARTISTSORT (SortAlbumArtist): ["TSO2","TSO2","soaa","T=30","",""]
+    ARTISTSORT (SortArtist): ["TSOP","TSOP","soar","T=30","WM/ArtistSortOrder",""]
+    CONTENTGROUP (Group): ["TIT1","TIT1","©grp","T=30","WM/ContentGroupDescription",""]
+    ENCODEDBY (EncodedBy): ["TENC","TENC","","T=30 ENCODED_BY","WM/EncodedBy",""]
+    ENCODERSETTINGS (EncoderSettings): ["TSSE","TSSE","©enc","T=30","WM/EncodingSettings",""]
+    MOVEMENTNAME (SeriesTitle): ["MVNM","MVNM","©mvn","T=20 TITLE","",""]
+    MOVEMENT (SeriesPart): ["MVIN","MVIN","©mvi","T=20 PART_NUMBER","",""]
+    MOVEMENTTOTAL (SeriesPartsTotal): ["MVIN","MVIN","©mvc","T=30","",""]
+    PODCASTDESC (LongDescription): ["TDES","TDES","ldes","T=30","",""]
+    SUBTITLE (Subtitle): ["TIT3","TIT3","----:com.apple.iTunes:SUBTITLE","T=30","WM/SubTitle",""]
+    TITLESORT (SortTitle): ["TSOT","TSOT","sonm","T=30 SORT_WITH","WM/TitleSortOrder",""]
+
+         */
+    };
+    
     public DateTime? RecordingDate
     {
         get => Date;
@@ -147,14 +255,174 @@ public class MetadataTrack : Track, IMetadata
         set => _totalDuration = value;
     }
 
-    private string? _group = "";
-
     public string? Group
     {
-        get => _group;
-        set => SetValue(ref _group, value, nameof(Group));
+        get => GetAdditionalField(StringField); // todo: if not string, convert GetAdditionalField<DateTime>();
+        set => SetAdditionalField(value); // if _format == MP4, key for Group = ©nam
     }
 
+    private static string? StringField(string? value) => value;
+    private static int? IntField(string? value) => int.TryParse(value, out var result) ? result : default;
+    
+    private T? GetAdditionalField<T>(Func<string, T?> converter, [CallerMemberName] string key = "")
+    {
+        var mappedKey = MapAdditionalField(AudioFormat, key);
+        if (mappedKey == null || !AdditionalFields.ContainsKey(mappedKey) || AdditionalFields[mappedKey] == null)
+        {
+            return default;
+        }
+        return converter(AdditionalFields[mappedKey]);
+    }
+
+    
+    private void SetAdditionalField<T>(T? value, [CallerMemberName] string key="")
+    {
+        var mappedKey = MapAdditionalField(AudioFormat, key);
+        if (mappedKey == null)
+        {
+            return;
+        }
+
+        if (value == null)
+        {
+            if (AdditionalFields.ContainsKey(mappedKey))
+            {
+                AdditionalFields.Remove(mappedKey);
+            }
+
+            return;
+        }
+        
+        AdditionalFields[mappedKey] = value switch
+        {
+            DateTime d => DateTimeAsString(d, AudioFormat),
+            _ => value.ToString()??""
+        };
+    }
+    
+    private static string DateTimeAsString(DateTime value, Format format)
+    {
+        return value.ToString("yyyy/MM/dd");
+    }
+
+
+    // private T? GetAdditionalField<T>(T field, [CallerMemberName] string key="")
+    // {
+    //     var mappedKey = MapAdditionalField(AudioFormat, key);
+    //     if (mappedKey == null || !AdditionalFields.ContainsKey(mappedKey) || AdditionalFields[mappedKey] == null)
+    //     {
+    //         return default;
+    //     }
+    //
+    //     return field switch
+    //     {
+    //         string s => GetAsString()
+    //     };
+        /*
+        try
+        {
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            return (T)converter.ConvertFromString(AdditionalFields[mappedKey])!;
+        }
+        catch (NotSupportedException)
+        {
+            return default;
+        }
+        */
+        
+        
+        
+        
+        // if (typeof(T) == typeof(string))
+        // {
+        //     return (T)Convert.ChangeType(AdditionalFields[mappedKey], typeof(T));
+        // }
+        //
+        // if (typeof(T) == typeof(DateTime))
+        // {
+        //     return (T)Convert.ChangeType(TryParse<DateTime>(AdditionalFields[mappedKey], DateTime.TryParse), typeof(DateTime));
+        // }
+        
+        
+        /*
+        if (typeof(T) == typeof(DateTime))
+        {
+            if (DateTime.TryParse(AdditionalFields[mappedKey], out var value))
+            {
+                return (T)Convert.ChangeType(value, typeof(T));                
+            }
+
+            return default;
+        }
+        
+        
+        if (typeof(T) == typeof(int))
+        {
+            if (int.TryParse(AdditionalFields[mappedKey], out var value))
+            {
+                return (T)Convert.ChangeType(value, typeof(T));                
+            }
+
+            return default;
+        }
+        return default;
+        */
+    // }
+    
+    // delegate is required because out is not part of the Func spec (see https://stackoverflow.com/questions/1283127/funct-with-out-parameter)
+    // public delegate bool TryParseHandler<T>(string value, out T result);
+    // public static T? TryParse<T>(string value, TryParseHandler<T> handler) where T : struct
+    // {
+    //     return handler(value, out var result) ? result : default;
+    // }
+    /*
+    public static T Convert<T>(string? input)
+    {
+        try
+        {
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            if(converter != null)
+            {
+                // Cast ConvertFromString(string text) : object to (T)
+                return (T)converter.ConvertFromString(input);
+            }
+            return default(T);
+        }
+        catch (NotSupportedException)
+        {
+            return default(T);
+        }
+    }
+    */
+    
+
+
+    private static string? MapAdditionalField(Format format, string key) => format.ID switch
+    {
+        // Format is not really appropriate, because it should be the TaggingFormat (id3v2, etc.), not the audio file format
+        AudioDataIOFactory.CID_MP3 => MapId3MetadataField(key),
+        AudioDataIOFactory.CID_MP4 => MapMp4MetadataField(key),
+        _ => null
+    };
+    
+
+
+    private static string? MapId3MetadataField(string key) => key switch
+    {
+        nameof(Group)    => "TIT1",
+        _ => null,
+    };
+    
+    private static string? MapMp4MetadataField(string key) => key switch
+    {
+        nameof(Group)    => "©grp",
+        _ => null,
+    };
+    
+    
+    
+    
+    
     private string? _subtitle = "";
 
     public string? Subtitle
@@ -162,6 +430,8 @@ public class MetadataTrack : Track, IMetadata
         get => _subtitle;
         set => SetValue(ref _subtitle, value, nameof(Subtitle));
     }
+
+   
 
     private string? _sortTitle = "";
 
@@ -600,73 +870,73 @@ var list = new[]
     };
 
 
-    private string? GetAdditionalField(MappingKey key)
-    {
-        var resolvedKeys = ResolveKey(AudioFormat, key);
-        if (resolvedKeys.Length == 0)
-        {
-            return null;
-        }
+    // private string? GetAdditionalField(MappingKey key)
+    // {
+    //     var resolvedKeys = ResolveKey(AudioFormat, key);
+    //     if (resolvedKeys.Length == 0)
+    //     {
+    //         return null;
+    //     }
+    //
+    //     foreach (var resolvedKey in resolvedKeys)
+    //     {
+    //         if (AdditionalFields.ContainsKey(resolvedKey) && AdditionalFields[resolvedKey] != null &&
+    //             AdditionalFields[resolvedKey] != "")
+    //         {
+    //             return AdditionalFields[resolvedKey];
+    //         }
+    //     }
+    //
+    //     return null;
+    // }
 
-        foreach (var resolvedKey in resolvedKeys)
-        {
-            if (AdditionalFields.ContainsKey(resolvedKey) && AdditionalFields[resolvedKey] != null &&
-                AdditionalFields[resolvedKey] != "")
-            {
-                return AdditionalFields[resolvedKey];
-            }
-        }
+    // private DateTime? GetAdditionalFieldDate(MappingKey key)
+    // {
+    //     var stringValue = GetAdditionalField(key);
+    //     if (stringValue == null)
+    //     {
+    //         return null;
+    //     }
+    //
+    //     if (DateTime.TryParse(stringValue, out var result))
+    //     {
+    //         return result;
+    //     }
+    //
+    //     return null;
+    // }
 
-        return null;
-    }
+    // private void SetAdditionalField(MappingKey key, string? value)
+    // {
+    //     var resolvedKeys = ResolveKey(AudioFormat, key);
+    //     if (resolvedKeys.Length == 0)
+    //     {
+    //         return;
+    //     }
+    //
+    //     if (value != null)
+    //     {
+    //         foreach (var resolvedKey in resolvedKeys)
+    //         {
+    //             AdditionalFields[resolvedKey] = value;
+    //         }
+    //
+    //         return;
+    //     }
+    //
+    //     foreach (var resolvedKey in resolvedKeys)
+    //     {
+    //         if (AdditionalFields.ContainsKey(resolvedKey))
+    //         {
+    //             AdditionalFields.Remove(resolvedKey);
+    //         }
+    //     }
+    // }
 
-    private DateTime? GetAdditionalFieldDate(MappingKey key)
-    {
-        var stringValue = GetAdditionalField(key);
-        if (stringValue == null)
-        {
-            return null;
-        }
-
-        if (DateTime.TryParse(stringValue, out var result))
-        {
-            return result;
-        }
-
-        return null;
-    }
-
-    private void SetAdditionalField(MappingKey key, string? value)
-    {
-        var resolvedKeys = ResolveKey(AudioFormat, key);
-        if (resolvedKeys.Length == 0)
-        {
-            return;
-        }
-
-        if (value != null)
-        {
-            foreach (var resolvedKey in resolvedKeys)
-            {
-                AdditionalFields[resolvedKey] = value;
-            }
-
-            return;
-        }
-
-        foreach (var resolvedKey in resolvedKeys)
-        {
-            if (AdditionalFields.ContainsKey(resolvedKey))
-            {
-                AdditionalFields.Remove(resolvedKey);
-            }
-        }
-    }
-
-    private void SetAdditionalField(MappingKey key, DateTime? value)
-    {
-        SetAdditionalField(key, value?.ToString("yyyy/MM/dd"));
-    }
+    // private void SetAdditionalField(MappingKey key, DateTime? value)
+    // {
+    //     SetAdditionalField(key, value?.ToString("yyyy/MM/dd"));
+    // }
 
     private static string[] ResolveKey(ATL.Format format, MappingKey key)
     {
