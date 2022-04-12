@@ -42,8 +42,11 @@ app.Configure(config =>
     config.SetApplicationName("tone");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
-        .WithDescription("Dump metadata for files and directories (directories are traversed recursively)")
+        .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
         .WithExample(new[] { "dump", "input.mp3" });
+    config.AddCommand<TagCommand>("tag")
+        .WithDescription("tag files with metadata properties (directories are traversed recursively)")
+        .WithExample(new[] { "tag", "input.mp3", "--meta-title", "a title"});
 });
 try
 {

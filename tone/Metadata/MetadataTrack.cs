@@ -247,7 +247,7 @@ public class MetadataTrack : Track, IMetadata
         // INVOLVEDPEOPLE
         // MUSICBRAINZ_*
         // PODCAST*
-        
+
         // ffmpeg: https://kodi.wiki/view/Video_file_tagging
         // author => ©aut
 

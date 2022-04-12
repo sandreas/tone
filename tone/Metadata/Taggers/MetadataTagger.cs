@@ -20,5 +20,4 @@ public class MetadataTagger : TaggerBase
         TransferMetadataLists(_source, metadata);
         return await Task.FromResult(Ok());
     }
-
 }

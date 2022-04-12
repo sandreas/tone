@@ -17,12 +17,14 @@ enum SectionType
     Stream,
     EndOfStream
 }
+
 public class FfmetadataFormat : IMetadataFormat
 {
     // https://ffmpeg.org/ffmpeg-formats.html#Description
 
     private const string FfmetadataHeader = ";FFMETADATA";
     private static readonly char[] CharsToEscape = { '=', ';', '#', '\\', '\n' };
+
     public async Task<Result<IMetadata, string>> ReadAsync(Stream input)
     {
         var metadata = new MetadataTrack();
@@ -54,7 +56,6 @@ public class FfmetadataFormat : IMetadataFormat
                 default:
                     ParseMetadataProperties(properties, metadata);
                     break;
-                    
             }
         }
 
@@ -69,7 +70,8 @@ public class FfmetadataFormat : IMetadataFormat
     {
     }
 
-    private Dictionary<string, string> ReadSectionProperties(StreamReader sr, SectionType currentSectionType, out SectionType nextSectionType)
+    private Dictionary<string, string> ReadSectionProperties(StreamReader sr, SectionType currentSectionType,
+        out SectionType nextSectionType)
     {
         var properties = new Dictionary<string, string>();
         nextSectionType = SectionType.Default;
@@ -81,6 +83,7 @@ public class FfmetadataFormat : IMetadataFormat
                 nextSectionType = SectionType.EndOfStream;
                 break;
             }
+
             if (line.StartsWith(";") || line.StartsWith("#"))
             {
                 continue;
@@ -97,6 +100,7 @@ public class FfmetadataFormat : IMetadataFormat
                 nextSectionType = SectionType.Chapter;
                 break;
             }
+
             if (trimmedLowerLine == "[stream]")
             {
                 nextSectionType = SectionType.Stream;
@@ -109,7 +113,7 @@ public class FfmetadataFormat : IMetadataFormat
                 properties[name] = value;
             }
         }
-        
+
         return properties;
     }
 
@@ -119,7 +123,7 @@ public class FfmetadataFormat : IMetadataFormat
         var propertyValueBuilder = new StringBuilder();
         var activeBuilder = propertyNameBuilder;
         var escaped = false;
-        
+
         foreach (var c in line)
         {
             if (!escaped && c == '\\')
@@ -135,9 +139,10 @@ public class FfmetadataFormat : IMetadataFormat
                 activeBuilder = propertyValueBuilder;
                 continue;
             }
+
             activeBuilder.Append(c);
         }
-        
+
         return (propertyNameBuilder.ToString(), propertyValueBuilder.ToString());
     }
 
@@ -159,8 +164,8 @@ public class FfmetadataFormat : IMetadataFormat
 
         return builder.ToString();
     }
-    
-    
+
+
     private IEnumerable<ChapterInfo> ReadChapters(StreamReader sr)
     {
         return new List<ChapterInfo>();
@@ -174,6 +179,7 @@ public class FfmetadataFormat : IMetadataFormat
         {
             return Error("Could not find required header " + FfmetadataHeader);
         }
+
         return Ok();
     }
 
@@ -184,7 +190,7 @@ public class FfmetadataFormat : IMetadataFormat
         var outputWriter = new StreamWriter(output);
         await outputWriter.WriteLineAsync(FfmetadataHeader);
         await WriteKeyValueAsync(outputWriter, "title", input.Title);
-        await WriteKeyValueAsync(outputWriter, "artist", input.Artist); 
+        await WriteKeyValueAsync(outputWriter, "artist", input.Artist);
         await WriteKeyValueAsync(outputWriter, "album", input.Album);
         await WriteKeyValueAsync(outputWriter, "composer", input.Composer);
         await WriteKeyValueAsync(outputWriter, "genre", input.Genre);
@@ -195,13 +201,14 @@ public class FfmetadataFormat : IMetadataFormat
         await WriteKeyValueAsync(outputWriter, "synopsis", input.LongDescription);
         await WriteKeyValueAsync(outputWriter, "copyright", input.Copyright);
         await WriteKeyValueAsync(outputWriter, "media_type", input.ItunesMediaType);
-        await WriteKeyValueAsync(outputWriter, "purchase_date", input.PurchaseDate, DateTime.MinValue); // 2022/03/31 15:36:51
+        await WriteKeyValueAsync(outputWriter, "purchase_date", input.PurchaseDate,
+            DateTime.MinValue); // 2022/03/31 15:36:51
         await WriteKeyValueAsync(outputWriter, "encoder", input.EncodingTool);
         await WriteKeyValueAsync(outputWriter, "album_artist", input.AlbumArtist);
         // await WriteKeyValueAsync(outputWriter, "author", input.Author); 
         await WriteKeyValueAsync(outputWriter, "sort_artist", input.SortArtist);
         await WriteKeyValueAsync(outputWriter, "comment", input.Comment);
-        
+
         await WriteKeyValueAsync(outputWriter, "compilation", input.ItunesCompilation);
         // await WriteKeyValueAsync(outputWriter, "creation_time", input.EncodingTime);
         await WriteKeyValueAsync(outputWriter, "encoded_by", input.EncodedBy);
@@ -228,7 +235,6 @@ public class FfmetadataFormat : IMetadataFormat
         // await WriteKeyValueAsync(outputWriter, "podcast", input.?);
         // await WriteKeyValueAsync(outputWriter, "category", input.?);
         // await WriteKeyValueAsync(outputWriter, "episode_uid", input.?);
-        
 
 
         foreach (var chapter in input.Chapters)
@@ -239,12 +245,13 @@ public class FfmetadataFormat : IMetadataFormat
             await WriteKeyValueAsync(outputWriter, "END", chapter.EndTime);
             await WriteKeyValueAsync(outputWriter, "title", chapter.Title);
         }
-        
+
         await outputWriter.FlushAsync();
         return Ok();
     }
 
-    private static async Task WriteKeyValueAsync<T>(TextWriter outputWriter, string key, T? value, T? ignoreValue=default)
+    private static async Task WriteKeyValueAsync<T>(TextWriter outputWriter, string key, T? value,
+        T? ignoreValue = default)
     {
         if (value == null)
         {
@@ -255,7 +262,7 @@ public class FfmetadataFormat : IMetadataFormat
         {
             return;
         }
-        
+
         var stringValue = value switch
         {
             DateTime d => d.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", ""),
@@ -264,24 +271,24 @@ public class FfmetadataFormat : IMetadataFormat
         };
         if (stringValue != "")
         {
-            await outputWriter.WriteLineAsync(Escape(key) + "=" + Escape(stringValue));            
+            await outputWriter.WriteLineAsync(Escape(key) + "=" + Escape(stringValue));
         }
     }
 
     private static string Escape(string str)
     {
         var builder = new StringBuilder();
-        
+
         foreach (var c in str)
         {
             if (CharsToEscape.Contains(c))
             {
                 builder.Append('\\');
             }
+
             builder.Append(c);
         }
 
         return builder.ToString();
     }
-    
 }

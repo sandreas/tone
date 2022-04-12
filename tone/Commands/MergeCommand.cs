@@ -1,11 +1,3 @@
-using System.Threading.Tasks;
-using CliFx;
-using CliFx.Attributes;
-using CliFx.Infrastructure;
-using Sandreas.Files;
-using tone.Services;
-using ILogger = Serilog.ILogger;
-
 namespace tone.Commands;
 
 // [Command("merge")]

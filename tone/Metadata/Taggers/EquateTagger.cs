@@ -10,7 +10,7 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class EquateTagger: TaggerBase
+public class EquateTagger : TaggerBase
 {
     private readonly IEnumerable<string> _equateFieldSets;
 
@@ -18,7 +18,7 @@ public class EquateTagger: TaggerBase
     {
         _equateFieldSets = equateFieldSets;
     }
-    
+
     public override async Task<Status<string>> Update(IMetadata metadata)
     {
         var propertyNames = metadata.GetProperties().ToArray();
@@ -29,7 +29,7 @@ public class EquateTagger: TaggerBase
             {
                 return Error($"equate fieldset does not contain destination: {fieldSet}");
             }
-            
+
             var result = SetFieldByName(metadata, propertyNames, equateFields);
             if (!result)
             {
@@ -45,7 +45,8 @@ public class EquateTagger: TaggerBase
     {
         var sourceFieldName = fields.First();
         var destinationFieldNames = fields.Skip(1).ToArray();
-        var baseProperty = properties.FirstOrDefault(p => string.Equals(sourceFieldName, p.Name, StringComparison.CurrentCultureIgnoreCase));
+        var baseProperty = properties.FirstOrDefault(p =>
+            string.Equals(sourceFieldName, p.Name, StringComparison.CurrentCultureIgnoreCase));
         if (baseProperty == null)
         {
             return Error($"No metadata property found for field {sourceFieldName}");

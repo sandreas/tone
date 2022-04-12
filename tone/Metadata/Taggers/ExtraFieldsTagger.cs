@@ -18,7 +18,8 @@ public class ExtraFieldsTagger : ITagger
     {
         if (_extraFields.Count % 2 != 0)
         {
-            return Error("metadata.AdditionalFields has to contain an even number of values (<fieldname> <fieldvalue> ...)");
+            return Error(
+                "metadata.AdditionalFields has to contain an even number of values (<fieldname> <fieldvalue> ...)");
         }
 
         var index = 0;

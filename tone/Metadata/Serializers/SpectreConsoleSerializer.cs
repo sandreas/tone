@@ -27,10 +27,10 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         DumpAdditionalFields(metadata, color);
         DumpLongText("comment", metadata.Comment, color);
         DumpLyrics(metadata.Lyrics, color);
-        DumpLongText("chapters table description", metadata.ChaptersTableDescription, color);
+        DumpLongText("chapters-table-description", metadata.ChaptersTableDescription, color);
         DumpChapters(metadata, color);
         DumpLongText("description", metadata.Description, color);
-        DumpLongText("long description", metadata.LongDescription, color);
+        DumpLongText("long-description", metadata.LongDescription, color);
         return await Task.FromResult("");
     }
 
@@ -47,7 +47,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
             .BorderColor(color);
 
         properties.Title = new TableTitle("additional metadata fields", new Style(color));
-        
+
         var additionalFields = metadata is MetadataTrack m ? m.UnmappedAdditionalFields : metadata.AdditionalFields;
         var counter = 0;
         foreach (var (key, value) in additionalFields)
@@ -58,7 +58,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
 
         if (counter > 0)
         {
-            _console.Write(properties);            
+            _console.Write(properties);
         }
     }
 

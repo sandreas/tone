@@ -5,7 +5,7 @@ using tone.Metadata.Formats;
 
 namespace tone.Metadata.Serializers;
 
-public class FfmetadataSerializer: IMetadataSerializer
+public class FfmetadataSerializer : IMetadataSerializer
 {
     private readonly FfmetadataFormat _ffmeta;
 
@@ -13,6 +13,7 @@ public class FfmetadataSerializer: IMetadataSerializer
     {
         _ffmeta = ffmeta;
     }
+
     public async Task<string> SerializeAsync(IMetadata metadata)
     {
         var output = new MemoryStream();

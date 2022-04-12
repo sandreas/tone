@@ -14,8 +14,9 @@ public class ChptFmtNativeTagger : TaggerBase
     private readonly IFileSystem? _fs;
     private readonly ChptFmtNativeMetadataFormat _parser;
     private readonly string _forceChapterFilename;
-    
-    public ChptFmtNativeTagger(IFileSystem? fileSystem, ChptFmtNativeMetadataFormat parser, string forceChapterFilename="")
+
+    public ChptFmtNativeTagger(IFileSystem? fileSystem, ChptFmtNativeMetadataFormat parser,
+        string forceChapterFilename = "")
     {
         _fs = fileSystem;
         _parser = parser;
@@ -33,7 +34,6 @@ public class ChptFmtNativeTagger : TaggerBase
         IEnumerable<IFileInfo> chaptersTxtFiles;
         if (_forceChapterFilename == "")
         {
-
             chaptersTxtFiles = _fs?.Directory.EnumerateFiles(audioFile.DirectoryName)
                 .Select(f => _fs.FileInfo.FromFileName(f))
                 .Where(f => f.Name.EndsWith("chapters.txt")).ToArray() ?? Empty<IFileInfo>();
@@ -41,14 +41,14 @@ public class ChptFmtNativeTagger : TaggerBase
         else
         {
             var forcedFile = _fs?.FileInfo.FromFileName(_forceChapterFilename);
-            chaptersTxtFiles = forcedFile == null ? Empty<IFileInfo>() : new[]{forcedFile} ;
+            chaptersTxtFiles = forcedFile == null ? Empty<IFileInfo>() : new[] { forcedFile };
         }
 
         if (!chaptersTxtFiles.Any())
         {
-            return Error($"Could not find any chapter files in {metadata.Path}");
+            return _forceChapterFilename == "" ? Ok() : Error($"Could not find any chapter files in {metadata.Path}");
         }
-        
+
         var preferredFileName = audioFile.Name[..audioFile.Extension.Length] + "chapters.txt";
         var preferredFile = chaptersTxtFiles.FirstOrDefault(f => f.Name == preferredFileName) ??
                             chaptersTxtFiles.First();
@@ -57,12 +57,13 @@ public class ChptFmtNativeTagger : TaggerBase
         {
             return Error($"Could not open file ${preferredFile.FullName}");
         }
-        
+
         var parsedMeta = await _parser.ReadAsync(stream);
         if (!parsedMeta)
         {
             return Error(parsedMeta.Error);
         }
+
         TransferMetadataList(parsedMeta.Value.Chapters, metadata.Chapters);
         return Ok();
     }

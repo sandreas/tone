@@ -12,7 +12,7 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class PathPatternTagger: TaggerBase
+public class PathPatternTagger : TaggerBase
 {
     private readonly IEnumerable<Grok> _grokPatterns;
 
@@ -20,7 +20,7 @@ public class PathPatternTagger: TaggerBase
     {
         _grokPatterns = grokPatterns;
     }
-    
+
     public override async Task<Status<string>> Update(IMetadata metadata)
     {
         if (!_grokPatterns.Any())
@@ -49,7 +49,7 @@ public class PathPatternTagger: TaggerBase
 
         if (!matchesFound)
         {
-            return Error("Did not find any matches for given path patterns.");    
+            return Error("Did not find any matches for given path patterns.");
         }
 
         return Ok();
@@ -57,52 +57,83 @@ public class PathPatternTagger: TaggerBase
 
     private void MapResults(GrokResult results, IMetadata metadata)
     {
-        
         foreach (var grokItem in results)
-        { 
+        {
             metadata.Album = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Album), metadata.Album);
-            metadata.TrackNumber = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.TrackNumber), metadata.TrackNumber);
-            metadata.TrackTotal = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.TrackTotal), metadata.TrackTotal);
-            metadata.DiscNumber = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.DiscNumber), metadata.DiscNumber);
-            metadata.DiscTotal = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.DiscTotal), metadata.DiscTotal);
-            metadata.Popularity = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Popularity), metadata.Popularity);
-            metadata.Title = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Title), metadata.Title);
+            metadata.AlbumArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.AlbumArtist),
+                metadata.AlbumArtist);
             metadata.Artist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Artist), metadata.Artist);
+            metadata.Bpm = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Bpm), metadata.Bpm);
+            metadata.ChaptersTableDescription = MapResult(grokItem.Key, grokItem.Value,
+                nameof(metadata.ChaptersTableDescription), metadata.ChaptersTableDescription);
             metadata.Composer = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Composer), metadata.Composer);
             metadata.Comment = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Comment), metadata.Comment);
+            metadata.Conductor =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Conductor), metadata.Conductor);
+            metadata.Copyright =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Copyright), metadata.Copyright);
+            metadata.Description = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Description),
+                metadata.Description);
+            metadata.DiscNumber =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.DiscNumber), metadata.DiscNumber);
+            metadata.DiscTotal =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.DiscTotal), metadata.DiscTotal);
+
+            metadata.EncodedBy = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.EncodedBy), metadata.EncodedBy);
+            metadata.EncoderSettings = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.EncoderSettings), metadata.EncoderSettings);
+            metadata.EncodingTool = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.EncodingTool),
+                metadata.EncodingTool);
             metadata.Genre = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Genre), metadata.Genre);
-            metadata.Album = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Album), metadata.Album);
-            metadata.OriginalAlbum = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.OriginalAlbum), metadata.OriginalAlbum);
-            metadata.OriginalArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.OriginalArtist), metadata.OriginalArtist);
-            metadata.Copyright = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Copyright), metadata.Copyright);
-            metadata.Description = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Description), metadata.Description);
-            metadata.Publisher = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Publisher), metadata.Publisher);
-            metadata.AlbumArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.AlbumArtist), metadata.AlbumArtist);
-            metadata.Conductor = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Conductor), metadata.Conductor);
             metadata.Group = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Group), metadata.Group);
-            metadata.SortTitle = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortTitle), metadata.SortTitle);
-            metadata.SortAlbum = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortAlbum), metadata.SortAlbum);
-            metadata.SortArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortArtist), metadata.SortArtist);
-            metadata.SortAlbumArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortAlbumArtist), metadata.SortAlbumArtist);
-            metadata.LongDescription = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.LongDescription), metadata.LongDescription);
-            metadata.EncodingTool = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.EncodingTool), metadata.EncodingTool);
-            metadata.ItunesMediaType = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.ItunesMediaType), metadata.ItunesMediaType);
-            metadata.ChaptersTableDescription = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.ChaptersTableDescription), metadata.ChaptersTableDescription);
-            
-            metadata.PublishingDate = MapDateResult(grokItem.Key, grokItem.Value, nameof(metadata.PublishingDate), metadata.PublishingDate);
-            metadata.RecordingDate = MapDateResult(grokItem.Key, grokItem.Value, nameof(metadata.RecordingDate), metadata.RecordingDate);
-            metadata.PurchaseDate = MapDateResult(grokItem.Key, grokItem.Value, nameof(metadata.PurchaseDate), metadata.PurchaseDate);
-            
-            // metadata.Lyrics = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Lyrics), metadata.Lyrics);
-            metadata.Narrator = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Narrator), metadata.Narrator);
-            metadata.MovementName = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.MovementName), metadata.MovementName);
+            metadata.ItunesCompilation = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.ItunesCompilation), metadata.ItunesCompilation);
+            metadata.ItunesMediaType = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.ItunesMediaType),
+                metadata.ItunesMediaType);
+            metadata.ItunesPlayGap = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.ItunesPlayGap),
+                metadata.ItunesPlayGap);
+            metadata.LongDescription = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.LongDescription),
+                metadata.LongDescription);
+            //metadata.Lyrics = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Lyrics), metadata.Lyrics);
+
             metadata.Movement = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Movement), metadata.Movement);
+            metadata.MovementName = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.MovementName),
+                metadata.MovementName);
+            metadata.Narrator = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Narrator), metadata.Narrator);
+
+            metadata.OriginalAlbum = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.OriginalAlbum),
+                metadata.OriginalAlbum);
+            metadata.OriginalArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.OriginalArtist),
+                metadata.OriginalArtist);
+            metadata.Popularity =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Popularity), metadata.Popularity);
+            metadata.Publisher =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Publisher), metadata.Publisher);
+            metadata.PublishingDate = MapDateResult(grokItem.Key, grokItem.Value, nameof(metadata.PublishingDate),
+                metadata.PublishingDate);
+            metadata.PurchaseDate = MapDateResult(grokItem.Key, grokItem.Value, nameof(metadata.PurchaseDate),
+                metadata.PurchaseDate);
+            metadata.RecordingDate = MapDateResult(grokItem.Key, grokItem.Value, nameof(metadata.RecordingDate),
+                metadata.RecordingDate);
+            metadata.SortTitle =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortTitle), metadata.SortTitle);
+            metadata.SortAlbum =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortAlbum), metadata.SortAlbum);
+            metadata.SortArtist =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortArtist), metadata.SortArtist);
+            metadata.SortAlbumArtist = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.SortAlbumArtist),
+                metadata.SortAlbumArtist);
+            metadata.Title = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.Title), metadata.Title);
+            metadata.TrackNumber = MapResult(grokItem.Key, grokItem.Value, nameof(metadata.TrackNumber),
+                metadata.TrackNumber);
+            metadata.TrackTotal =
+                MapResult(grokItem.Key, grokItem.Value, nameof(metadata.TrackTotal), metadata.TrackTotal);
         }
     }
 
-    private static DateTime? MapDateResult(string grokItemKey, object grokItemValue, string propertyName, DateTime? defaultValue)
+    private static DateTime? MapDateResult(string grokItemKey, object grokItemValue, string propertyName,
+        DateTime? defaultValue)
     {
-        if (string.Equals(grokItemKey, propertyName, StringComparison.CurrentCultureIgnoreCase) && TryParseDateTime(grokItemValue?.ToString() ?? "", out var dateTime))
+        if (string.Equals(grokItemKey, propertyName, StringComparison.CurrentCultureIgnoreCase) &&
+            TryParseDateTime(grokItemValue.ToString() ?? "", out var dateTime))
         {
             return dateTime;
         }

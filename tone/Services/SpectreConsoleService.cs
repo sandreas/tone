@@ -6,7 +6,7 @@ namespace tone.Services;
 
 public class SpectreConsoleService : IAnsiConsole
 {
-    public IAnsiConsole Output { get; }
+    private IAnsiConsole Output { get; }
     public IAnsiConsole Error { get; }
 
     public SpectreConsoleService(IAnsiConsole? stdout = null, IAnsiConsole? stderr = null)
