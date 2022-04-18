@@ -5,16 +5,16 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class ExtraFieldsRemoveTagger : ITagger
+public class AdditionalFieldsRemoveTagger : ITagger
 {
     private readonly IReadOnlyList<string> _removeExtraFields;
 
-    public ExtraFieldsRemoveTagger(IReadOnlyList<string> removeExtraFields)
+    public AdditionalFieldsRemoveTagger(IReadOnlyList<string> removeExtraFields)
     {
         _removeExtraFields = removeExtraFields;
     }
 
-    public async Task<Status<string>> Update(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if (metadata.AdditionalFields != null)
         {

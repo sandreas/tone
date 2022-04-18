@@ -11,7 +11,7 @@ public class M4BFillUpTagger : TaggerBase
 {
     private const string RomanLetters = "IVXLCDM";
 
-    public override async Task<Status<string>> Update(IMetadata metadata)
+    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if (!IsM4B(metadata))
         {

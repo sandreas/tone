@@ -1,11 +1,16 @@
+using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using ATL;
+using OperationResult;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Metadata;
 using tone.Metadata.Formats;
 using tone.Metadata.Taggers;
+using static OperationResult.Helpers;
 
 namespace tone.Commands;
 
@@ -26,52 +31,32 @@ public class TagCommand  : AsyncCommand<TagCommandSettings>
         _grok = grok;
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings commandSettingsBase)
+    public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings)
     {
-        var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(commandSettingsBase.IncludeExtensions);
-        var inputFiles = _dirLoader.FindFilesByExtension(commandSettingsBase.Input, audioExtensions);
+        var taggerResult = await BuildCompositeTaggerAsync(_console, settings);
+        if (!taggerResult)
+        {
+            return await Task.FromResult((int)taggerResult.Error);
+        }
+
+        var tagger = taggerResult.Value;
+        var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
+        var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions);
         var inputFilesAsArray = inputFiles.ToArray();
-        
-        if (inputFilesAsArray.Length > 1 && !commandSettingsBase.AssumeYes)
+        switch (inputFilesAsArray.Length)
         {
-            if (!_console.Confirm( $"Tagging {inputFilesAsArray.Length} files, continue?"))
-            {
-                _console.WriteLine("aborted");
+            case 0:
+                _console.Error.WriteLine("no files found to tag");
+                return (int)ReturnCode.GeneralError;
+            case > 1 when !settings.AssumeYes && !_console.Confirm( $"Tagging {inputFilesAsArray.Length} files, continue?"):
+                _console.WriteLine("user aborted");
                 return (int)ReturnCode.UserAbort;
-            }
         }
         
-        var tagger = new TaggerComposite();
-        tagger.Taggers.Add(new MetadataTagger(commandSettingsBase));
-
-        var customPatterns = commandSettingsBase.PathPatternExtension.Concat(new[]
-        {
-            "NOTDIRSEP [^/\\\\]*"
-        });
-
-        var grokDefinitions = await _grok.BuildAsync(commandSettingsBase.PathPattern, customPatterns);
-        if (!grokDefinitions)
-        {
-            _console.Error.WriteLine("Could not parse `--path-pattern`: " + grokDefinitions.Error);
-            return await Task.FromResult(1); // todo: error codes!
-        }
-        
-        tagger.Taggers.Add(new PathPatternTagger(grokDefinitions.Value));
-        //tagger.Taggers.Add(new ExtraFieldsTagger(commandSettingsBase.ExtraFields));
-        tagger.Taggers.Add(new ExtraFieldsRemoveTagger(commandSettingsBase.RemoveAdditionalFields));
-        if (IsTrue(commandSettingsBase.AutoImportChapters) || commandSettingsBase.ImportChaptersFile != "")
-        {
-            tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chapterFormat,
-                commandSettingsBase.ImportChaptersFile));
-        }
-
-        tagger.Taggers.Add(new EquateTagger(commandSettingsBase.Equate));
-        tagger.Taggers.Add(new M4BFillUpTagger());
-
         var tasks = inputFilesAsArray.Select(file => Task.Run(async () =>
             {
                 var track = new MetadataTrack(file);
-                var result = await tagger.Update(track);
+                var result = await tagger.UpdateAsync(track);
                 if (!result)
                 {
                     _console.Error.WriteLine($"Could not update tags for file {file}: {result.Error}");
@@ -89,6 +74,45 @@ public class TagCommand  : AsyncCommand<TagCommandSettings>
         return await Task.FromResult(1);
     }
 
+    
+    
+    private async Task<Result<ITagger, ReturnCode>> BuildCompositeTaggerAsync(SpectreConsoleService console, TagSettingsBase settings)
+    {
+        // Todo: Extract this into tagger
+        // 
+        // FileBasedTagger -> 
+
+        
+        // Todo: var tagger = BuildTaggerComposite(settings)?
+        var tagger = new TaggerComposite();
+        tagger.Taggers.Add(new MetadataTagger(settings));
+        tagger.Taggers.Add(new CoverTagger(_dirLoader.FileSystem ?? new FileSystem(), settings.Covers/*, settings.AutoImportCovers*/));
+        
+        
+        var customPatterns = settings.PathPatternExtension.Concat(new[]
+        {
+            "NOTDIRSEP [^/\\\\]*"
+        });
+        var grokDefinitions = await _grok.BuildAsync(settings.PathPattern, customPatterns);
+        if (!grokDefinitions)
+        {
+            console.Error.WriteLine("Could not parse `--path-pattern`: " + grokDefinitions.Error);
+            return Error(ReturnCode.GeneralError);
+        }
+        
+        tagger.Taggers.Add(new PathPatternTagger(grokDefinitions.Value));
+        tagger.Taggers.Add(new AdditionalFieldsRemoveTagger(settings.RemoveAdditionalFields));
+        if (IsTrue(settings.AutoImportChapters) || settings.ImportChaptersFile != "")
+        {
+            tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chapterFormat,
+                settings.ImportChaptersFile));
+        }
+
+        tagger.Taggers.Add(new EquateTagger(settings.Equate));
+        tagger.Taggers.Add(new M4BFillUpTagger());
+        return Ok((ITagger)tagger);
+    }
+
     private static bool IsTrue(BooleanValue autoImportChapters)
     {
         return autoImportChapters == BooleanValue.True;
@@ -98,8 +122,8 @@ public class TagCommand  : AsyncCommand<TagCommandSettings>
     private static async Task<bool> Confirm(, string message, bool confirmIsDefault = false)
     {
         var confirmString = confirmIsDefault ? "[Y/n]" : "[y/N]";
-        await _console.Output.WriteAsync($"{message} {confirmString}");
-        var answer = await _console.Input.ReadLineAsync();
+        await console.Output.WriteAsync($"{message} {confirmString}");
+        var answer = await console.Input.ReadLineAsync();
         return answer?.Trim().ToLower() != "y";
     }
     */

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using GrokNet;
 using OperationResult;
 using tone.Common.Extensions.String;
+using tone.Services;
 using static OperationResult.Helpers;
 
 
@@ -21,7 +22,8 @@ public class PathPatternTagger : TaggerBase
         _grokPatterns = grokPatterns;
     }
 
-    public override async Task<Status<string>> Update(IMetadata metadata)
+
+    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if (!_grokPatterns.Any())
         {

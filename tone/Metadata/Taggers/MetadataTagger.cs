@@ -14,7 +14,7 @@ public class MetadataTagger : TaggerBase
         _source = source;
     }
 
-    public override async Task<Status<string>> Update(IMetadata metadata)
+    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         TransferMetadataProperties(_source, metadata);
         TransferMetadataLists(_source, metadata);

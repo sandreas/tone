@@ -9,7 +9,7 @@ namespace tone.Metadata.Taggers;
 
 public abstract class TaggerBase : ITagger
 {
-    public abstract Task<Status<string>> Update(IMetadata metadata);
+    public abstract Task<Status<string>> UpdateAsync(IMetadata metadata);
 
     protected static void TransferMetadataProperties(IMetadata source, IMetadata metadata)
     {
@@ -74,6 +74,18 @@ public abstract class TaggerBase : ITagger
     {
         TransferMetadataList(source.Chapters, metadata.Chapters);
         TransferMetadataList(source.EmbeddedPictures, metadata.EmbeddedPictures);
+        TransferMetadataAdditionalProperties(source.AdditionalFields, metadata.AdditionalFields);
+    }
+
+    protected static void TransferMetadataAdditionalProperties(IDictionary<string,string> source, IDictionary<string,string> destination)
+    {
+        foreach (var (key, value) in source)
+        {
+            if (!string.IsNullOrEmpty(source[key]))
+            {
+                destination[key] = value;
+            }
+        }
     }
     
     protected static void TransferMetadataList<T>(IList<T>? source, IList<T>? destination) where T : class

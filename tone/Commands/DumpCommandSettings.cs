@@ -1,6 +1,6 @@
 namespace tone.Commands;
 
-public class DumpCommandSettingsBase : CommandSettingsBase
+public class DumpCommandSettings : CommandSettingsBase
 {
     /*
     public override ValidationResult Validate()

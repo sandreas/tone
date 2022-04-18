@@ -1,19 +1,31 @@
-using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using OperationResult;
+using tone.Metadata;
+using tone.Metadata.Taggers;
+using static OperationResult.Helpers;
 
 namespace tone.Services;
 
-public class TagService: ITagService
+public class TagService: ITagger
 {
-    private readonly ILogger<TagService> _logger;
+    public List<ITagger> Taggers { get; } = new();
 
-    public TagService(ILogger<TagService> logger)
+    public TagService(MetadataTagger metaTagger)
     {
-        _logger = logger;
+        Taggers.Add(metaTagger);
     }
-    public void DoSomething() {
-        _logger.LogError("TagService.DoSomething");
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    {
+        foreach (var tagger in Taggers)
+        {
+            var result = await tagger.UpdateAsync(metadata);
+            if (!result)
+            {
+                return Error(result.Error);
+            }
+        }
+
+        return await Task.FromResult(Ok());
     }
-    
 }

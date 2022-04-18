@@ -23,7 +23,7 @@ public class ChptFmtNativeTagger : TaggerBase
         _forceChapterFilename = forceChapterFilename;
     }
 
-    public override async Task<Status<string>> Update(IMetadata metadata)
+    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         var audioFile = _fs?.FileInfo.FromFileName(metadata.Path);
         if (audioFile == null)

@@ -19,7 +19,7 @@ public class EquateTagger : TaggerBase
         _equateFieldSets = equateFieldSets;
     }
 
-    public override async Task<Status<string>> Update(IMetadata metadata)
+    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         var propertyNames = metadata.GetProperties().ToArray();
         foreach (var fieldSet in _equateFieldSets)

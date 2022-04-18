@@ -23,7 +23,7 @@ public class PathPatternTaggerTest
             new("input/%{NOTDIRSEP:genre}/%{NOTDIRSEP:artist}/%{NOTDIRSEP:title}", customPatternStream),
         };
         var subject = new PathPatternTagger(grokDefinitions);
-        var actual = await subject.Update(metadata);
+        var actual = await subject.UpdateAsync(metadata);
         
         Assert.True(actual);
         Assert.Equal("Fantasy", metadata.Genre);

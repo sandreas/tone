@@ -48,7 +48,7 @@ public class GrokPatternService
         return Ok();
     }
     
-    private Status<string> ValidateCustomPatternLine(string line)
+    private static Status<string> ValidateCustomPatternLine(string line)
     {
         if (string.IsNullOrEmpty(line) || line.TrimStart().StartsWith("#"))
         {

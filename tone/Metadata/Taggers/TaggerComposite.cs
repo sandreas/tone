@@ -8,12 +8,12 @@ namespace tone.Metadata.Taggers;
 public class TaggerComposite : ITagger
 {
     public List<ITagger> Taggers { get; } = new();
-
-    public async Task<Status<string>> Update(IMetadata metadata)
+    
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         foreach (var tagger in Taggers)
         {
-            var result = await tagger.Update(metadata);
+            var result = await tagger.UpdateAsync(metadata);
             if (!result)
             {
                 return Error(result.Error);
