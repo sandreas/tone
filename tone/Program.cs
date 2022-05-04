@@ -4,11 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Sandreas.Files;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using tone;
 using tone.Commands;
 using tone.DependencyInjection;
 using tone.Metadata.Formats;
 using tone.Metadata.Serializers;
-using tone.Metadata.Taggers;
 using tone.Services;
 
 
@@ -76,5 +76,5 @@ try
 catch (Exception e)
 {
     AnsiConsole.WriteException(e);
-    return 1;
+    return (int)ReturnCode.UncaughtException;
 }

@@ -99,8 +99,8 @@ public class GrokPatternService
             {'M', "{NOTDIRSEP:SortAlbum}" }, // sort_album: ,
             {'n', "{NOTDIRSEP:Title}" }, // title / name: 
             {'N', "{NOTDIRSEP:SortTitle}" }, // sort_name: 
-            {'p', "{WORD:SeriesPart}" }, // series_part: ,
-            {'s', "{NOTDIRSEP:SeriesTitle}" }, // series: ,
+            {'p', "{WORD:Movement}" }, // series_part: ,
+            {'s', "{NOTDIRSEP:MovementName}" }, // series: ,
             {'t', "{NOTDIRSEP:AlbumArtist}" }, // album_artist: ,
             {'w', "{NOTDIRSEP:Composer}" }, // writer: ,
             {'y', "{NOTDIRSEP:ReleaseDate}" }, // year: ,

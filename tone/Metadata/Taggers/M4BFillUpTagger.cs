@@ -9,7 +9,7 @@ namespace tone.Metadata.Taggers;
 
 public class M4BFillUpTagger : TaggerBase
 {
-    private const string RomanLetters = "IVXLCDM";
+    // private const string RomanLetters = "IVXLCDM";
 
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
@@ -72,7 +72,7 @@ public class M4BFillUpTagger : TaggerBase
         return string.Join("", concatValues);
     }
 
-
+/*
     private static void ExtractSeriesFromSortProperties(IMetadata metadata)
     {
         if (string.IsNullOrEmpty(metadata.SortTitle))
@@ -134,10 +134,12 @@ public class M4BFillUpTagger : TaggerBase
 
         metadata.SortAlbum ??= metadata.SortTitle;
     }
+    */
 
     private static bool IsM4B(IMetadata metadata)
     {
         return metadata.ItunesMediaType == ItunesMediaType.Audiobook ||
-               (metadata.Path != null && metadata.Path.EndsWith(".m4b"));
+               metadata.Path != null && metadata.Path.EndsWith(".m4b");
     }
+
 }

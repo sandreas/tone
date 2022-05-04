@@ -9,7 +9,7 @@ public interface IMetadata
     // non-metadata properties
     public string? Path { get; }
     public TimeSpan TotalDuration { get; }
-    
+
     // metadata properties
     public string? Album { get; set; }
     public string? AlbumArtist { get; set; }
@@ -52,8 +52,11 @@ public interface IMetadata
     public string? Title { get; set; }
     public int? TrackNumber { get; set; }
     public int? TrackTotal { get; set; }
-    
+
     public IList<ChapterInfo> Chapters { get; }
     public IList<PictureInfo> EmbeddedPictures { get; }
     public IDictionary<string, string> AdditionalFields { get; }
+    public IDictionary<string, string> MappedAdditionalFields { get; }
+
+   
 }

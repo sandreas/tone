@@ -10,10 +10,10 @@ namespace tone.Commands;
 public class TagSettingsBase : CommandSettingsBase, IMetadata
 {
     [CommandOption("--meta-additional-fields-remove")]
-    public IReadOnlyList<string> RemoveAdditionalFields { get; init; } = new List<string>();
+    public string[] RemoveAdditionalFields { get; init; } = Array.Empty<string>();
 
-    [CommandOption("--meta-remove")] public IReadOnlyList<string> Remove { get; init; } = new List<string>();
-    [CommandOption("--meta-equate")] public IReadOnlyList<string> Equate { get; init; } = new List<string>();
+    [CommandOption("--meta-remove")] public string[] Remove { get; init; } = Array.Empty<string>();
+    [CommandOption("--meta-equate")] public string[] Equate { get; init; } = Array.Empty<string>();
 
     [CommandOption("--auto-import-chapters")]
     [DefaultValue(BooleanValue.True)]
@@ -105,14 +105,17 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
     [CommandOption("--meta-additional-fields")]
     public IDictionary<string, string> AdditionalFields { get; set; } = new Dictionary<string, string>();
 
+    public IDictionary<string, string> MappedAdditionalFields { get; } = new Dictionary<string, string>();
+
     [CommandOption("--meta-cover")]
-    public IReadOnlyList<string> Covers { get; set; } = new List<string>();
+    public string[] Covers { get; set; } = Array.Empty<string>();
     
-    [CommandOption("--path-pattern|-p")] public IReadOnlyList<string> PathPattern { get; init; } = new List<string>();
+    [CommandOption("--path-pattern|-p")] public string[] PathPattern { get; set; } = Array.Empty<string>();
 
     [CommandOption("--path-pattern-extension")]
-    public IReadOnlyList<string> PathPatternExtension { get; init; } = new List<string>();
+    public string[] PathPatternExtension { get; set; } = Array.Empty<string>();
 
+    
     // fulfil interface contract
     public string? Path => null;
     public TimeSpan TotalDuration => new();

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting.Internal;
 using OperationResult;
-using tone.Common.Extensions.Object;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
@@ -21,25 +19,40 @@ public class EquateTagger : TaggerBase
 
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
-        var propertyNames = metadata.GetProperties().ToArray();
         foreach (var fieldSet in _equateFieldSets)
         {
             var equateFields = fieldSet.Split(",").Select(f => f.Trim()).Where(f => !string.IsNullOrEmpty(f)).ToArray();
-            if (equateFields.Length < 2)
+            var equateProperties = equateFields.Where(f => Enum.TryParse(f, out MetadataProperty _)).Select(Enum.Parse<MetadataProperty>)
+                .ToArray();
+            if (equateProperties.Length < 2)
             {
                 return Error($"equate fieldset does not contain destination: {fieldSet}");
             }
 
-            var result = SetFieldByName(metadata, propertyNames, equateFields);
-            if (!result)
+            var sourceProperty = equateProperties.First();
+            var destinationProperties = equateProperties.Skip(1).ToArray();
+
+            var sourceValue = metadata.GetMetadataPropertyValue(sourceProperty);
+            var sourceValueType = metadata.GetMetadataPropertyType(sourceProperty);
+            if (sourceValueType == null)
             {
-                return result;
+                return Error($"source value type is not defined: {fieldSet}");
             }
+            foreach (var destinationProperty in destinationProperties)
+            {
+                if (sourceValueType.Name != metadata.GetMetadataPropertyType(destinationProperty)?.Name)
+                {
+                    return Error($"source type is not equal to destination type: {fieldSet} ({sourceProperty.ToString()}≠{destinationProperty.ToString()})");
+                }
+                metadata.SetMetadataPropertyValue(destinationProperty, sourceValue);
+            }
+            
         }
 
         return await Task.FromResult(Ok());
     }
 
+    /*
     private static Status<string> SetFieldByName(IMetadata metadata, PropertyInfo[] properties,
         string[] fields)
     {
@@ -72,4 +85,5 @@ public class EquateTagger : TaggerBase
 
         return Ok();
     }
+    */
 }

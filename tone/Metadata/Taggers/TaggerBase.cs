@@ -1,16 +1,14 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using ATL;
 using OperationResult;
 
 namespace tone.Metadata.Taggers;
 
 public abstract class TaggerBase : ITagger
 {
-    public abstract Task<Status<string>> UpdateAsync(IMetadata metadata);
+    public abstract Task<Status<string>> UpdateAsync(IMetadata metadataProperties);
 
+    /*
     protected static void TransferMetadataProperties(IMetadata source, IMetadata metadata)
     {
         // https://stackoverflow.com/questions/1402803/passing-properties-by-reference-in-c-sharp
@@ -87,7 +85,7 @@ public abstract class TaggerBase : ITagger
             }
         }
     }
-    
+    */
     protected static void TransferMetadataList<T>(IList<T>? source, IList<T>? destination) where T : class
     {
         if (source == null || destination == null)
@@ -106,4 +104,5 @@ public abstract class TaggerBase : ITagger
             destination.Add(s);
         }
     }
+    
 }

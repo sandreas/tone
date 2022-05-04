@@ -28,10 +28,21 @@ public class MetadataTrack : Track, IMetadata
         set => _totalDuration = value;
     }
 
-    public IDictionary<string, string> UnmappedAdditionalFields => AdditionalFields
-        .Where(kvp => !IsAdditionalFieldKeyMapped(AudioFormat, kvp.Key))
+
+
+
+
+
+    
+
+    
+    
+
+    public IDictionary<string, string> MappedAdditionalFields => AdditionalFields
+        .Where(kvp => IsAdditionalFieldKeyMapped(AudioFormat, kvp.Key))
         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
+    /*
     private static readonly List<(string, Action<MetadataTrack>)> RemoveFieldCallbacks = new()
     {
         (nameof(Bpm), track => track.Bpm = null),
@@ -78,7 +89,7 @@ public class MetadataTrack : Track, IMetadata
         (nameof(Chapters), track => track.Chapters.Clear()),
         (nameof(EmbeddedPictures), track => track.EmbeddedPictures.Clear()),
     };
-
+    */
     private static Dictionary<string, (string ID3v23, string ID3v24, string MP4, string Matroska, string
         ASF_WindowsMedia, string RiffInfo)> TagMapping { get; } = new()
     {
@@ -147,19 +158,19 @@ public class MetadataTrack : Track, IMetadata
 
     public ItunesCompilation? ItunesCompilation
     {
-        get => GetAdditionalField(EnumField<ItunesCompilation>);
+        get => HasAdditionalField() ? GetAdditionalField(EnumField<ItunesCompilation>) : null;
         set => SetAdditionalField(value);
     }
 
     public ItunesMediaType? ItunesMediaType
     {
-        get => GetAdditionalField(EnumField<ItunesMediaType>);
+        get => HasAdditionalField() ? GetAdditionalField(EnumField<ItunesMediaType>) : null;
         set => SetAdditionalField(value);
     }
 
     public ItunesPlayGap? ItunesPlayGap
     {
-        get => GetAdditionalField(EnumField<ItunesPlayGap>);
+        get => HasAdditionalField() ? GetAdditionalField(EnumField<ItunesPlayGap>) : null;
         set => SetAdditionalField(value);
     }
 
@@ -233,6 +244,7 @@ public class MetadataTrack : Track, IMetadata
 
     public MetadataTrack()
     {
+        InitMetadataTrack();
         // https://pastebin.com/DQTZFE6H
 
         // json spec for tag field mapping
@@ -281,7 +293,7 @@ public class MetadataTrack : Track, IMetadata
 
     private static T? EnumField<T>(string? value) where T : Enum?
     {
-        if (value == null)
+        if (string.IsNullOrEmpty(value))
         {
             return default;
         }
@@ -299,7 +311,14 @@ public class MetadataTrack : Track, IMetadata
         return default;
     }
 
-    private T? GetAdditionalField<T>(Func<string, T?> converter, [CallerMemberName] string key = "")
+
+    private bool HasAdditionalField([CallerMemberName] string key = "")
+    {
+        var mappedKey = MapAdditionalField(AudioFormat, key);
+        return mappedKey != "" && AdditionalFields.ContainsKey(mappedKey) && AdditionalFields[mappedKey] != null;
+    }
+
+    private T? GetAdditionalField<T>(Func<string?, T?> converter, [CallerMemberName] string key = "")
     {
         var mappedKey = MapAdditionalField(AudioFormat, key);
         if (mappedKey == "" || !AdditionalFields.ContainsKey(mappedKey) || AdditionalFields[mappedKey] == null)
@@ -309,6 +328,7 @@ public class MetadataTrack : Track, IMetadata
 
         return converter(AdditionalFields[mappedKey]);
     }
+
 
     private void SetAdditionalField<T>(T? value, [CallerMemberName] string key = "")
     {
@@ -329,6 +349,7 @@ public class MetadataTrack : Track, IMetadata
         }
 
         /*
+         d.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", "")
 For ID3v2.3 and older, you'd combine the TYER tag (YYYY) with the TDAT tag (MMDD) and TIME tag (HHMM).
 For ID3v2.4, you'd use TDRC or TDRA (or any of the other timestamp frames), with any level of accuracy you want, up to: YYYYMMDDTHHMMSS. Include Year, throw in month, throw in day, add the literal T and throw in hour, minute, second.
 Vorbis: ISO8601 
@@ -339,7 +360,7 @@ Vorbis: ISO8601
         // };
         AdditionalFields[mappedKey] = value switch
         {
-            DateTime d => d.ToString("yyyy-MM-dd"),
+            DateTime d => d.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", ""),
             Enum e => ((int)(object)e).ToString(), // cast enum to int
             _ => value.ToString() ?? ""
         };
@@ -349,7 +370,7 @@ Vorbis: ISO8601
     }
 
 
-    private static string MapAdditionalField(Format format, string key) => format.ID switch
+    private static string MapAdditionalField(Format? format, string key) => format?.ID switch
     {
         // Format is not really appropriate, because it should be the TaggingFormat (id3v2, etc.), not the audio file format
         // TODO: Map others
@@ -378,6 +399,7 @@ Vorbis: ISO8601
         return false;
     }
 
+    /*
     public string[] RemoveFields(params string[] fieldNames)
     {
         var lcFieldNames = fieldNames.Select(f => f.ToLowerInvariant()).ToArray();
@@ -396,4 +418,8 @@ Vorbis: ISO8601
 
         return removedFieldNames.ToArray();
     }
+    */
+
+
+
 }

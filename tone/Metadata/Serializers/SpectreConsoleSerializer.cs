@@ -48,7 +48,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
 
         properties.Title = new TableTitle("additional metadata fields", new Style(color));
 
-        var additionalFields = metadata is MetadataTrack m ? m.UnmappedAdditionalFields : metadata.AdditionalFields;
+        var additionalFields = metadata is MetadataTrack m ? m.AdditionalFields.Where(kvp => !m.MappedAdditionalFields.ContainsKey(kvp.Key)) : metadata.AdditionalFields;
         var counter = 0;
         foreach (var (key, value) in additionalFields)
         {
@@ -227,8 +227,8 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         Stringify(metadata.Title, s => properties.AddRow("title", Markup.Escape(s)));
         Stringify(metadata.Subtitle, s => properties.AddRow("subtitle", Markup.Escape(s)));
         Stringify(metadata.SortTitle, s => properties.AddRow("sort-title", Markup.Escape(s)));
-        Stringify(metadata.MovementName, s => properties.AddRow("series-title", Markup.Escape(s)));
-        Stringify(metadata.Movement, s => properties.AddRow("series-part", Markup.Escape(s)));
+        Stringify(metadata.MovementName, s => properties.AddRow("movement-name", Markup.Escape(s)));
+        Stringify(metadata.Movement, s => properties.AddRow("movement", Markup.Escape(s)));
         Stringify(metadata.DiscNumber, s => properties.AddRow("disc-number", Markup.Escape(s)), 0);
         Stringify(metadata.DiscTotal, s => properties.AddRow("disc-total", Markup.Escape(s)), 0);
         Stringify(metadata.TrackNumber, s => properties.AddRow("track-number", Markup.Escape(s)), 0);

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using OperationResult;
 using static OperationResult.Helpers;
@@ -16,8 +15,7 @@ public class MetadataTagger : TaggerBase
 
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
-        TransferMetadataProperties(_source, metadata);
-        TransferMetadataLists(_source, metadata);
+        metadata.OverwriteProperties(_source);
         return await Task.FromResult(Ok());
     }
 }

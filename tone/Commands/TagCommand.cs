@@ -1,8 +1,6 @@
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
-using ATL;
 using OperationResult;
 using tone.Services;
 using Spectre.Console;
@@ -33,7 +31,7 @@ public class TagCommand  : AsyncCommand<TagCommandSettings>
 
     public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings)
     {
-        var taggerResult = await BuildCompositeTaggerAsync(_console, settings);
+        var taggerResult = await BuildTaggerCompositeAsync(_console, settings);
         if (!taggerResult)
         {
             return await Task.FromResult((int)taggerResult.Error);
@@ -71,23 +69,16 @@ public class TagCommand  : AsyncCommand<TagCommandSettings>
             .ToList();
 
         await Task.WhenAll(tasks);
-        return await Task.FromResult(1);
+        return await Task.FromResult((int)ReturnCode.Success);
     }
 
     
     
-    private async Task<Result<ITagger, ReturnCode>> BuildCompositeTaggerAsync(SpectreConsoleService console, TagSettingsBase settings)
+    private async Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(SpectreConsoleService console, TagSettingsBase settings)
     {
-        // Todo: Extract this into tagger
-        // 
-        // FileBasedTagger -> 
-
-        
-        // Todo: var tagger = BuildTaggerComposite(settings)?
         var tagger = new TaggerComposite();
         tagger.Taggers.Add(new MetadataTagger(settings));
         tagger.Taggers.Add(new CoverTagger(_dirLoader.FileSystem ?? new FileSystem(), settings.Covers/*, settings.AutoImportCovers*/));
-        
         
         var customPatterns = settings.PathPatternExtension.Concat(new[]
         {
@@ -113,9 +104,9 @@ public class TagCommand  : AsyncCommand<TagCommandSettings>
         return Ok((ITagger)tagger);
     }
 
-    private static bool IsTrue(BooleanValue autoImportChapters)
+    private static bool IsTrue(BooleanValue value)
     {
-        return autoImportChapters == BooleanValue.True;
+        return value == BooleanValue.True;
     }
 
     /*
