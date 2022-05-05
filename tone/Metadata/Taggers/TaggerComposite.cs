@@ -11,15 +11,20 @@ public class TaggerComposite : ITagger
     
     public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
+        var error = "";
         foreach (var tagger in Taggers)
         {
             var result = await tagger.UpdateAsync(metadata);
             if (!result)
             {
-                return Error(result.Error);
+                error += result.Error;
             }
         }
 
+        if (error != "")
+        {
+            return Error(error);
+        }
         return await Task.FromResult(Ok());
     }
 }

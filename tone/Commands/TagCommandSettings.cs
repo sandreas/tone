@@ -12,6 +12,7 @@ public class TagCommandSettings : TagSettingsBase
 {
 
     [CommandOption("--assume-yes|-y")] public bool AssumeYes { get; init; } = false;
+    [CommandOption("--dry-run")] public bool DryRun { get; init; } = false;
 
 
     // todo: https://github.com/spectresystems/spectre.cli/issues/92

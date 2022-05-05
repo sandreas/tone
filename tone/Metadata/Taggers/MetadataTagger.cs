@@ -15,7 +15,7 @@ public class MetadataTagger : TaggerBase
 
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
-        metadata.OverwriteProperties(_source);
+        metadata.OverwritePropertiesWhenNotEmpty(_source);
         return await Task.FromResult(Ok());
     }
 }

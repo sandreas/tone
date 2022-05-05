@@ -45,6 +45,7 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
       <PackageReference Include="Sandreas.Files" Version="0.0.4" />
       <PackageReference Include="Serilog" Version="2.10.0" />
       <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Abstractions;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Sandreas.Files;
 using Spectre.Console;
@@ -51,7 +52,6 @@ var app = new CommandApp(new TypeRegistrar(services));
 
 app.Configure(config =>
 {
-
     // config.Settings;
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
@@ -61,7 +61,7 @@ app.Configure(config =>
         .WithExample(new[] { "dump", "input.mp3" });
     config.AddCommand<TagCommand>("tag")
         .WithDescription("tag files with metadata properties (directories are traversed recursively)")
-        .WithExample(new[] { "tag", "input.mp3", "--meta-title", "a title"});
+        .WithExample(new[] { "tag", "input.mp3", "--meta-title", "\"a title\"" });
 
 #if DEBUG
     config.PropagateExceptions();
@@ -70,11 +70,15 @@ app.Configure(config =>
 });
 try
 {
-
     return await app.RunAsync(args).ConfigureAwait(false);
 }
 catch (Exception e)
 {
     AnsiConsole.WriteException(e);
+
+    if (e.StackTrace != null && args.Contains("--debug"))
+    {
+        AnsiConsole.WriteLine(e.StackTrace);
+    }
     return (int)ReturnCode.UncaughtException;
 }

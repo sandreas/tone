@@ -52,7 +52,8 @@ public class PathPatternTagger : TaggerBase
 
         if (!matchesFound)
         {
-            return Error("Did not find any matches for given path patterns.");
+            return Error(
+                $"Did not find any matches for given path patterns (path: {normalizedMetadataPath}, patterns: {string.Join(", ", _grokPatterns)}.");
         }
 
         return Ok();

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using ATL;
+using Newtonsoft.Json;
 
 namespace tone.Metadata;
 
@@ -112,6 +114,7 @@ public static class MetadataExtensions
         var valueToSet = value == null ? null : ConvertStringToType(value, type);
         metadata.SetMetadataPropertyValue(property, valueToSet);
     }
+
     private static object? ConvertStringToType(string grokItemValue, Type type) => type switch
     {
         var t when t == typeof(string) => grokItemValue,
@@ -120,13 +123,15 @@ public static class MetadataExtensions
         var t when t == typeof(ItunesCompilation) => Enum.TryParse(grokItemValue, out ItunesCompilation i) ? i : null,
         var t when t == typeof(ItunesMediaType) => Enum.TryParse(grokItemValue, out ItunesMediaType i) ? i : null,
         var t when t == typeof(ItunesPlayGap) => Enum.TryParse(grokItemValue, out ItunesPlayGap i) ? i : null,
-        var t when t == typeof(LyricsInfo) => string.IsNullOrWhiteSpace(grokItemValue) ? null : new LyricsInfo {ContentType = LyricsInfo.LyricsType.LYRICS, UnsynchronizedLyrics = grokItemValue},
+        var t when t == typeof(LyricsInfo) => string.IsNullOrWhiteSpace(grokItemValue)
+            ? null
+            : new LyricsInfo { ContentType = LyricsInfo.LyricsType.LYRICS, UnsynchronizedLyrics = grokItemValue },
         var t when t == typeof(IList<ChapterInfo>) => null,
         var t when t == typeof(IList<PictureInfo>) => null, // todo: maybe check, if this is a cover file?
         var t when t == typeof(IDictionary<string, string>) => null, // todo: maybe parse json?
         _ => null
     };
-    
+
     /*
     public static object ConvertStringToType<T>() where T:struct => default(T) switch {
         byte => "byte",
@@ -143,6 +148,7 @@ public static class MetadataExtensions
 
         return DateTime.TryParse(dateTimeAsString, out dateTime);
     }
+
     public static void SetMetadataPropertyValue(this IMetadata metadata, MetadataProperty property, object? value)
     {
         switch (property)
@@ -295,11 +301,13 @@ public static class MetadataExtensions
                 {
                     additionalFields[kvp.Key] = kvp.Value;
                 }
+
                 metadata.AdditionalFields.Clear();
                 foreach (var kvp in additionalFields)
                 {
-                        metadata.AdditionalFields.Add(kvp);                        
+                    metadata.AdditionalFields.Add(kvp);
                 }
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(property), property, null);
@@ -329,7 +337,7 @@ public static class MetadataExtensions
         }
     }
 
-    public static void OverwriteProperties(this IMetadata metadata, IMetadata source)
+    public static void OverwritePropertiesWhenNotEmpty(this IMetadata metadata, IMetadata source)
     {
         var properties = Enum.GetValues<MetadataProperty>();
         foreach (var property in properties)
@@ -339,7 +347,17 @@ public static class MetadataExtensions
             {
                 continue;
             }
+
             metadata.SetMetadataPropertyValue(property, newValue);
+        }
+    }
+
+    public static void OverwriteProperties(this IMetadata metadata, IMetadata source)
+    {
+        var properties = Enum.GetValues<MetadataProperty>();
+        foreach (var property in properties)
+        {
+            metadata.SetMetadataPropertyValue(property, source.GetMetadataPropertyValue(property));
         }
     }
 
@@ -348,7 +366,8 @@ public static class MetadataExtensions
         null => true,
         string s when string.IsNullOrEmpty(s) => true,
         DateTime d when d == DateTime.MinValue => true,
-        IList<ChapterInfo> { Count: 0 } 
+        LyricsInfo l => string.IsNullOrEmpty(l.UnsynchronizedLyrics) && l.SynchronizedLyrics.Count == 0,
+        IList<ChapterInfo> { Count: 0 }
             or IList<PictureInfo> { Count: 0 }
             or IDictionary<string, string> { Count: 0 } => true,
         _ => false
@@ -366,4 +385,40 @@ public static class MetadataExtensions
             }
         }
     }
+
+    public static List<(MetadataProperty Property, object? CurrentValue, object? NewValue)> Diff(
+        this IMetadata currentTrack, IMetadata newTrack)
+    {
+        var diff = new List<(MetadataProperty Property, object? CurrentValue, object? NewValue)>();
+        var properties = Enum.GetValues<MetadataProperty>();
+        var serializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+        foreach (var property in properties)
+        {
+            var oldPropertyValue = NormalizePropertyValue(currentTrack.GetMetadataPropertyValue(property));
+            var newPropertyValue = NormalizePropertyValue(newTrack.GetMetadataPropertyValue(property));
+
+            if (oldPropertyValue == null && newPropertyValue == null ||
+                EqualityComparer<object?>.Default.Equals(oldPropertyValue, newPropertyValue))
+            {
+                continue;
+            }
+
+
+            diff.Add((property, oldPropertyValue, newPropertyValue));
+        }
+
+        return diff;
+    }
+
+    private static object? NormalizePropertyValue(object? getMetadataPropertyValue) => getMetadataPropertyValue switch
+    {
+        LyricsInfo l => JsonConvert.SerializeObject(l, Formatting.Indented),
+        IList<ChapterInfo> c => JsonConvert.SerializeObject(c, Formatting.Indented),
+        IList<PictureInfo> p => JsonConvert.SerializeObject(p, Formatting.Indented),
+        IDictionary<string, string> a => JsonConvert.SerializeObject(a, Formatting.Indented),
+        _ => getMetadataPropertyValue
+    };
 }

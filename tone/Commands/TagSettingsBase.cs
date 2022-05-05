@@ -16,15 +16,13 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
     [CommandOption("--meta-equate")] public string[] Equate { get; init; } = Array.Empty<string>();
 
     [CommandOption("--auto-import-chapters")]
-    [DefaultValue(BooleanValue.True)]
-    public BooleanValue AutoImportChapters { get; init; } = BooleanValue.True;
+    public bool AutoImportChapters { get; init; } = false;
 
     [CommandOption("--import-chapters-file")]
     public string ImportChaptersFile { get; init; } = "";
     
     [CommandOption("--auto-import-cover")]
-    [DefaultValue(BooleanValue.True)]
-    public BooleanValue AutoImportCover { get; init; } = BooleanValue.True;
+    public bool AutoImportCover { get; init; } = false;
 
     [CommandOption("--import-cover-file")]
     public string ImportCoverFile { get; init; } = "";    
