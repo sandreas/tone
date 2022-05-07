@@ -15,14 +15,14 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux', 'windows', 'macOS']
+        kind: ['linux', 'windows', 'macOS', 'linux-arm']
         include:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
-          - kind: linux
-              os: ubuntu-latest
-              target: linux-arm            
+          - kind: linux-arm
+            os: ubuntu-latest
+            target: linux-arm            
           - kind: windows
             os: windows-latest
             target: win-x64
