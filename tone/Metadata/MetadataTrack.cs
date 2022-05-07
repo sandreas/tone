@@ -28,13 +28,6 @@ public class MetadataTrack : Track, IMetadata
         set => _totalDuration = value;
     }
 
-
-
-
-
-
-    
-
     
     
 
@@ -103,6 +96,7 @@ public class MetadataTrack : Track, IMetadata
         { nameof(ItunesMediaType), ("", "", "stik", "", "", "") },
         { nameof(ItunesPlayGap), ("", "", "pgap", "", "", "") },
         { nameof(LongDescription), ("TDES", "TDES", "ldes", "T=30", "", "") },
+        { nameof(Part), ("TXXX:PART", "TXXX:PART", "----:com.pilabor.tone:PART", "T=20 PART_NUMBER", "", "") },
         { nameof(Movement), ("MVIN", "MVIN", "©mvi", "T=20 PART_NUMBER", "", "") },
         { nameof(MovementName), ("MVNM", "MVNM", "©mvn", "T=20 TITLE", "", "") },
         // {nameof(MovementTotal), ("MVIN","MVIN","©mvc","T=30","","")}, // special case: MVIN has to be appended, not replaced
@@ -184,6 +178,16 @@ public class MetadataTrack : Track, IMetadata
     {
         get => GetAdditionalField(StringField);
         set => SetAdditionalField(value);
+    }
+    
+    public string? Part
+    {
+        get => GetAdditionalField(StringField) ?? Movement;
+        set
+        {
+            SetAdditionalField(value);
+            Movement = value;
+        }
     }
 
     public string? MovementName
@@ -338,6 +342,12 @@ public class MetadataTrack : Track, IMetadata
             return;
         }
 
+        // ©mvi MUST contain an integer value, which leads to an exception, if a string like 1.5 is stored
+        if (mappedKey == "©mvi" && value is string v && !int.TryParse(v, out _))
+        {
+            return;
+        }
+        
         if (value == null)
         {
             if (AdditionalFields.ContainsKey(mappedKey))

@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using GrokNet;
 using OperationResult;
 using tone.Common.Extensions.String;
-using tone.Services;
 using static OperationResult.Helpers;
 
 
@@ -52,8 +48,9 @@ public class PathPatternTagger : TaggerBase
 
         if (!matchesFound)
         {
+            // var privateInt = test.GetType().GetProperty("PrivateInt", BindingFlags.Instance | BindingFlags.NonPublic);
             return Error(
-                $"Did not find any matches for given path patterns (path: {normalizedMetadataPath}, patterns: {string.Join(", ", _grokPatterns)}.");
+                $"Did not find any matches for given path patterns (path: {normalizedMetadataPath}");
         }
 
         return Ok();

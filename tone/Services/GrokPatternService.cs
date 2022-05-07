@@ -78,7 +78,22 @@ public class GrokPatternService
     {
         var patternsString = string.Join("\n", customPatterns ?? Array.Empty<string>());
         var patternsStream = patternsString.StringToStream();
-        return grokDefinitions?.Select(pattern => new Grok(PreparePattern(pattern), patternsStream));
+        var grokDefArray = grokDefinitions?.ToArray() ?? new string[] { };
+        var groks = new List<Grok>();
+        foreach (var pattern in grokDefArray)
+        {
+            try
+            {
+                groks.Add(new Grok(PreparePattern(pattern), patternsStream));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        return groks;
+        // return grokDefinitions?.Select(pattern => new Grok(PreparePattern(pattern), patternsStream));
     }
     
     private static string PreparePattern(string pattern)
@@ -99,7 +114,7 @@ public class GrokPatternService
             {'M', "{NOTDIRSEP:SortAlbum}" }, // sort_album: ,
             {'n', "{NOTDIRSEP:Title}" }, // title / name: 
             {'N', "{NOTDIRSEP:SortTitle}" }, // sort_name: 
-            {'p', "{WORD:Movement}" }, // series_part: ,
+            {'p', "{PARTNUMBER:Part}" }, // series_part: ,
             {'s', "{NOTDIRSEP:MovementName}" }, // series: ,
             {'t', "{NOTDIRSEP:AlbumArtist}" }, // album_artist: ,
             {'w', "{NOTDIRSEP:Composer}" }, // writer: ,

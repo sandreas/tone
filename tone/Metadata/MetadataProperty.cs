@@ -24,6 +24,7 @@ public enum MetadataProperty
     ItunesPlayGap,
     LongDescription,
     Lyrics,
+    Part,
     Movement,
     MovementName,
     Narrator,

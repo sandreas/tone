@@ -228,6 +228,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         Stringify(metadata.Subtitle, s => properties.AddRow("subtitle", Markup.Escape(s)));
         Stringify(metadata.SortTitle, s => properties.AddRow("sort-title", Markup.Escape(s)));
         Stringify(metadata.MovementName, s => properties.AddRow("movement-name", Markup.Escape(s)));
+        Stringify(metadata.Part, s => properties.AddRow("part", Markup.Escape(s)));
         Stringify(metadata.Movement, s => properties.AddRow("movement", Markup.Escape(s)));
         Stringify(metadata.DiscNumber, s => properties.AddRow("disc-number", Markup.Escape(s)), 0);
         Stringify(metadata.DiscTotal, s => properties.AddRow("disc-total", Markup.Escape(s)), 0);

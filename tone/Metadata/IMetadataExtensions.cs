@@ -1,11 +1,74 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using ATL;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace tone.Metadata;
+public class PropertyRenameAndIgnoreSerializerContractResolver : DefaultContractResolver
+{
+    private readonly Dictionary<Type, HashSet<string>> _ignores;
+    private readonly Dictionary<Type, Dictionary<string, string>> _renames;
+
+    public PropertyRenameAndIgnoreSerializerContractResolver()
+    {
+        _ignores = new Dictionary<Type, HashSet<string>>();
+        _renames = new Dictionary<Type, Dictionary<string, string>>();
+    }
+
+    public void IgnoreProperty(Type type, params string[] jsonPropertyNames)
+    {
+        if (!_ignores.ContainsKey(type))
+            _ignores[type] = new HashSet<string>();
+
+        foreach (var prop in jsonPropertyNames)
+            _ignores[type].Add(prop);
+    }
+
+    public void RenameProperty(Type type, string propertyName, string newJsonPropertyName)
+    {
+        if (!_renames.ContainsKey(type))
+            _renames[type] = new Dictionary<string, string>();
+
+        _renames[type][propertyName] = newJsonPropertyName;
+    }
+
+    protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    {
+        var property = base.CreateProperty(member, memberSerialization);
+
+        if (IsIgnored(property.DeclaringType, property.PropertyName))
+        {
+            property.ShouldSerialize = i => false;
+            property.Ignored = true;
+        }
+
+        if (IsRenamed(property.DeclaringType, property.PropertyName, out var newJsonPropertyName))
+            property.PropertyName = newJsonPropertyName;
+
+        return property;
+    }
+
+    private bool IsIgnored(Type type, string jsonPropertyName)
+    {
+        return _ignores.ContainsKey(type) && _ignores[type].Contains(jsonPropertyName);
+    }
+
+    private bool IsRenamed(Type type, string jsonPropertyName, out string? newJsonPropertyName)
+    {
+        if (_renames.TryGetValue(type, out var renames) &&
+            renames.TryGetValue(jsonPropertyName, out newJsonPropertyName))
+        {
+            return true;
+        }
+        newJsonPropertyName = null;
+        return false;
+
+    }
+}
 
 public static class MetadataExtensions
 {
@@ -33,6 +96,7 @@ public static class MetadataExtensions
         MetadataProperty.ItunesPlayGap => typeof(ItunesPlayGap),
         MetadataProperty.LongDescription => typeof(string),
         MetadataProperty.Lyrics => typeof(LyricsInfo),
+        MetadataProperty.Part => typeof(string),
         MetadataProperty.Movement => typeof(string),
         MetadataProperty.MovementName => typeof(string),
         MetadataProperty.Narrator => typeof(string),
@@ -83,6 +147,7 @@ public static class MetadataExtensions
             MetadataProperty.ItunesPlayGap => metadata.ItunesPlayGap,
             MetadataProperty.LongDescription => metadata.LongDescription,
             MetadataProperty.Lyrics => metadata.Lyrics,
+            MetadataProperty.Part => metadata.Part,
             MetadataProperty.Movement => metadata.Movement,
             MetadataProperty.MovementName => metadata.MovementName,
             MetadataProperty.Narrator => metadata.Narrator,
@@ -218,6 +283,9 @@ public static class MetadataExtensions
                 break;
             case MetadataProperty.Lyrics:
                 metadata.Lyrics = ObjectAsType<LyricsInfo>(value);
+                break;
+            case MetadataProperty.Part:
+                metadata.Part = ObjectAsType<string?>(value);
                 break;
             case MetadataProperty.Movement:
                 metadata.Movement = ObjectAsType<string?>(value);
@@ -397,8 +465,17 @@ public static class MetadataExtensions
         };
         foreach (var property in properties)
         {
-            var oldPropertyValue = NormalizePropertyValue(currentTrack.GetMetadataPropertyValue(property));
-            var newPropertyValue = NormalizePropertyValue(newTrack.GetMetadataPropertyValue(property));
+            var jsonResolver = new PropertyRenameAndIgnoreSerializerContractResolver();
+            jsonResolver.IgnoreProperty(typeof(PictureInfo), nameof(PictureInfo.PictureData));
+            var serializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = jsonResolver,
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            
+            var oldPropertyValue = NormalizePropertyValue(currentTrack.GetMetadataPropertyValue(property), serializerSettings, currentTrack.MappedAdditionalFields);
+            var newPropertyValue = NormalizePropertyValue(newTrack.GetMetadataPropertyValue(property), serializerSettings, currentTrack.MappedAdditionalFields);
 
             if (oldPropertyValue == null && newPropertyValue == null ||
                 EqualityComparer<object?>.Default.Equals(oldPropertyValue, newPropertyValue))
@@ -413,12 +490,20 @@ public static class MetadataExtensions
         return diff;
     }
 
-    private static object? NormalizePropertyValue(object? getMetadataPropertyValue) => getMetadataPropertyValue switch
+    private static object? NormalizePropertyValue(object? getMetadataPropertyValue,
+        JsonSerializerSettings jsonSerializerSettings, IDictionary<string, string> currentTrackMappedAdditionalFields) => getMetadataPropertyValue switch
     {
-        LyricsInfo l => JsonConvert.SerializeObject(l, Formatting.Indented),
-        IList<ChapterInfo> c => JsonConvert.SerializeObject(c, Formatting.Indented),
-        IList<PictureInfo> p => JsonConvert.SerializeObject(p, Formatting.Indented),
-        IDictionary<string, string> a => JsonConvert.SerializeObject(a, Formatting.Indented),
+        LyricsInfo l => JsonConvert.SerializeObject(l, jsonSerializerSettings),
+        IList<ChapterInfo> c => JsonConvert.SerializeObject(c, jsonSerializerSettings),
+        IList<PictureInfo> p => JsonConvert.SerializeObject(p, jsonSerializerSettings),
+        IDictionary<string, string> a => NormalizeAdditionalProperties(a, jsonSerializerSettings, currentTrackMappedAdditionalFields),
         _ => getMetadataPropertyValue
     };
+
+    private static string NormalizeAdditionalProperties(IDictionary<string, string> additionalFields, JsonSerializerSettings jsonSerializerSettings, IDictionary<string, string> mappedFields)
+    {
+        var result = additionalFields.Where(kvp => !mappedFields.ContainsKey(kvp.Key))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        return JsonConvert.SerializeObject(result, jsonSerializerSettings);
+    }
 }

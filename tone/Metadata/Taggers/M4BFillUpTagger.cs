@@ -29,7 +29,7 @@ public class M4BFillUpTagger : TaggerBase
             // If ALBUM only, then %Title%
             //     If ALBUM and SUBTITLE, then %Title% - %Subtitle%
             //     If Series, then %Series% %Series-part% - %Title%
-            metadata.SortTitle = MultiConcat(metadata.MovementName, " ", metadata.Movement, " - " + metadata.Title);
+            metadata.SortTitle = MultiConcat(metadata.MovementName, " ", metadata.Part, " - " + metadata.Title);
             metadata.SortAlbum ??= metadata.SortTitle;
             metadata.AdditionalFields["shwm"] = "1"; // show movement
         }
@@ -39,13 +39,13 @@ public class M4BFillUpTagger : TaggerBase
 
     private static bool ShouldUpdateSortTitle(IMetadata metadata)
     {
-        return HasMovement(metadata) &&
+        return HasPart(metadata) &&
                (string.IsNullOrEmpty(metadata.SortTitle) || metadata.SortTitle == metadata.Title);
     }
 
-    private static bool HasMovement(IMetadata metadata)
+    private static bool HasPart(IMetadata metadata)
     {
-        return !string.IsNullOrEmpty(metadata.MovementName) || !string.IsNullOrEmpty(metadata.Movement);
+        return !string.IsNullOrEmpty(metadata.MovementName) || !string.IsNullOrEmpty(metadata.Part);
     }
 
     private static string MultiConcat(params string?[] concatStrings)

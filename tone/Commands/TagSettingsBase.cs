@@ -69,6 +69,7 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
     [CommandOption("--meta-long-description")]
     public string? LongDescription { get; set; }
 
+    [CommandOption("--meta-part")] public string? Part { get; set; }
     [CommandOption("--meta-movement")] public string? Movement { get; set; }
     [CommandOption("--meta-movement-name")] public string? MovementName { get; set; }
     [CommandOption("--meta-narrator")] public string? Narrator { get; set; }

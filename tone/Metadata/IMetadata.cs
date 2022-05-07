@@ -33,6 +33,7 @@ public interface IMetadata
     public ItunesPlayGap? ItunesPlayGap { get; set; }
     public string? LongDescription { get; set; }
     public LyricsInfo? Lyrics { get; set; }
+    public string? Part { get; set; }
     public string? Movement { get; set; }
     public string? MovementName { get; set; }
     public string? Narrator { get; set; }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +5,7 @@ using OperationResult;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using Spectre.Console.Rendering;
 using tone.Metadata;
 using tone.Metadata.Formats;
 using tone.Metadata.Taggers;
@@ -60,34 +59,25 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
         var tasks = inputFilesAsArray.Select(file => Task.Run(async () =>
             {
                 var track = new MetadataTrack(file);
-                var currentMetadata = new MetadataTrack();
-                currentMetadata.OverwriteProperties(track);
-                
                 var result = await tagger.UpdateAsync(track);
                 if (!result)
                 {
-                    _console.Error.WriteLine($"Could not update tags for file {file}: {result.Error}");
+                    // todo: _console.Error.WriteLine($"Could not update tags for file {file}: {result.Error}");
                     return;
                 }
 
                 if (settings.DryRun)
                 {
-                    _console.Write(new Rule($"[red]{Markup.Escape(track.Path ?? "")}[/]")
-                    {
-                        Alignment = Justify.Left,
-                        Style = new Style(Color.Aquamarine1)
-                    });
-                    _console.WriteLine();
+                    var currentMetadata = new MetadataTrack(file);
                     var diffListing = track.Diff(currentMetadata);
-                    var diffTable = new Table();
                     if (diffListing.Count == 0)
                     {
-                        diffTable.HideHeaders();
-                        diffTable.AddColumn("message");
-                        diffTable.AddRow("no differences for this track");
+                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
                     }
                     else
                     {
+                        var diffTable = new Table().Expand();
+                        diffTable.Title = new TableTitle($"[red]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
                         diffTable.AddColumn("property")
                             .AddColumn("current")
                             .AddColumn("new");
@@ -99,15 +89,18 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                                 Markup.Escape(currentValue?.ToString() ?? "<null>")
                             );
                         }
+                        _console.Write(diffTable);
                     }
 
-                    _console.Write(diffTable);
+
+                    
                     return;
                 }
-
                 if (!track.Save())
                 {
-                    _console.Error.WriteLine($"Could not save tags for {file}");
+                    _console.Error.Write(new Rule($"[red]FAIL: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
+                } else  {
+                    _console.Write(new Rule($"[green]OK: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
                 }
             }))
             .ToList();
@@ -117,7 +110,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
         if (settings.DryRun)
         {
             _console.WriteLine();
-            _console.Write(new Markup("[red]!!! This was a dry-run, no changes where actually saved !!![/]"));
+            _console.Write(new Markup("[blue]!!! This was a dry-run, no changes where actually saved !!![/]"));
         }
 
         return await Task.FromResult((int)ReturnCode.Success);
@@ -134,7 +127,8 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
         var customPatterns = settings.PathPatternExtension.Concat(new[]
         {
-            "NOTDIRSEP [^/\\\\]*"
+            "NOTDIRSEP [^/\\\\]*",
+            "PARTNUMBER \\b[0-9-.IVXLCDM]+\\b"
         });
         var grokDefinitions = await _grok.BuildAsync(settings.PathPattern, customPatterns);
         if (!grokDefinitions)
