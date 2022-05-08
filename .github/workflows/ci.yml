@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          source-url: "https://nuget.pkg.github.com/${{ env.GITHUB_REPOSITORY_OWNER }}/index.json"
+          source-url: "https://nuget.pkg.github.com/sandreas/index.json"
         env:
             NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       
