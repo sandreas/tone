@@ -2,21 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using ATL;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace tone.Metadata;
+
 public class PropertyRenameAndIgnoreSerializerContractResolver : DefaultContractResolver
 {
     private readonly Dictionary<Type, HashSet<string>> _ignores;
-    private readonly Dictionary<Type, Dictionary<string, string>> _renames;
 
     public PropertyRenameAndIgnoreSerializerContractResolver()
     {
         _ignores = new Dictionary<Type, HashSet<string>>();
-        _renames = new Dictionary<Type, Dictionary<string, string>>();
     }
 
     public void IgnoreProperty(Type type, params string[] jsonPropertyNames)
@@ -28,26 +26,15 @@ public class PropertyRenameAndIgnoreSerializerContractResolver : DefaultContract
             _ignores[type].Add(prop);
     }
 
-    public void RenameProperty(Type type, string propertyName, string newJsonPropertyName)
-    {
-        if (!_renames.ContainsKey(type))
-            _renames[type] = new Dictionary<string, string>();
 
-        _renames[type][propertyName] = newJsonPropertyName;
-    }
-
-    protected override Newtonsoft.Json.Serialization.JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
     {
         var property = base.CreateProperty(member, memberSerialization);
-
         if (IsIgnored(property.DeclaringType, property.PropertyName))
         {
-            property.ShouldSerialize = i => false;
+            property.ShouldSerialize = _ => false;
             property.Ignored = true;
         }
-
-        if (IsRenamed(property.DeclaringType, property.PropertyName, out var newJsonPropertyName))
-            property.PropertyName = newJsonPropertyName;
 
         return property;
     }
@@ -56,22 +43,14 @@ public class PropertyRenameAndIgnoreSerializerContractResolver : DefaultContract
     {
         return _ignores.ContainsKey(type) && _ignores[type].Contains(jsonPropertyName);
     }
-
-    private bool IsRenamed(Type type, string jsonPropertyName, out string? newJsonPropertyName)
-    {
-        if (_renames.TryGetValue(type, out var renames) &&
-            renames.TryGetValue(jsonPropertyName, out newJsonPropertyName))
-        {
-            return true;
-        }
-        newJsonPropertyName = null;
-        return false;
-
-    }
 }
 
 public static class MetadataExtensions
 {
+    // skip movement in favor of virtual property `Part`
+    public static MetadataProperty[] MetadataProperties => Enum.GetValues<MetadataProperty>()
+        .ToArray();
+
     public static Type? GetMetadataPropertyType(this IMetadata metadata, MetadataProperty property) => property switch
     {
         MetadataProperty.Album => typeof(string),
@@ -394,8 +373,7 @@ public static class MetadataExtensions
 
     public static void MergeProperties(this IMetadata metadata, IMetadata source)
     {
-        var properties = Enum.GetValues<MetadataProperty>();
-        foreach (var property in properties)
+        foreach (var property in MetadataProperties)
         {
             var destinationPropertyValue = metadata.GetMetadataPropertyValue(property);
             if (IsConsideredEmpty(destinationPropertyValue))
@@ -405,10 +383,10 @@ public static class MetadataExtensions
         }
     }
 
+
     public static void OverwritePropertiesWhenNotEmpty(this IMetadata metadata, IMetadata source)
     {
-        var properties = Enum.GetValues<MetadataProperty>();
-        foreach (var property in properties)
+        foreach (var property in MetadataProperties)
         {
             var newValue = source.GetMetadataPropertyValue(property);
             if (IsConsideredEmpty(newValue))
@@ -422,8 +400,7 @@ public static class MetadataExtensions
 
     public static void OverwriteProperties(this IMetadata metadata, IMetadata source)
     {
-        var properties = Enum.GetValues<MetadataProperty>();
-        foreach (var property in properties)
+        foreach (var property in MetadataProperties)
         {
             metadata.SetMetadataPropertyValue(property, source.GetMetadataPropertyValue(property));
         }
@@ -443,15 +420,25 @@ public static class MetadataExtensions
 
     public static void ClearProperties(this IMetadata metadata, IEnumerable<MetadataProperty>? propertiesToKeep = null)
     {
-        var properties = Enum.GetValues<MetadataProperty>();
         var propertiesToKeepArray = propertiesToKeep?.ToArray() ?? Array.Empty<MetadataProperty>();
-        foreach (var property in properties)
+        
+        // part is a virtual property that wraps movement in case of non int values
+        // so this has to be handled separately
+        var keepPart = propertiesToKeepArray.Contains(MetadataProperty.Part) ||
+                       propertiesToKeepArray.Contains(MetadataProperty.Movement);
+        var part = keepPart
+            ? metadata.GetMetadataPropertyValue(MetadataProperty.Part)
+            : null;
+
+        foreach (var property in MetadataProperties)
         {
             if (propertiesToKeepArray.Length == 0 || !propertiesToKeepArray.Contains(property))
             {
                 metadata.SetMetadataPropertyValue(property, null);
             }
         }
+        
+        metadata.SetMetadataPropertyValue(MetadataProperty.Part, part);
     }
 
     public static List<(MetadataProperty Property, object? CurrentValue, object? NewValue)> Diff(
@@ -459,10 +446,6 @@ public static class MetadataExtensions
     {
         var diff = new List<(MetadataProperty Property, object? CurrentValue, object? NewValue)>();
         var properties = Enum.GetValues<MetadataProperty>();
-        var serializerOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
         foreach (var property in properties)
         {
             var jsonResolver = new PropertyRenameAndIgnoreSerializerContractResolver();
@@ -473,9 +456,11 @@ public static class MetadataExtensions
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Ignore
             };
-            
-            var oldPropertyValue = NormalizePropertyValue(currentTrack.GetMetadataPropertyValue(property), serializerSettings, currentTrack.MappedAdditionalFields);
-            var newPropertyValue = NormalizePropertyValue(newTrack.GetMetadataPropertyValue(property), serializerSettings, currentTrack.MappedAdditionalFields);
+
+            var oldPropertyValue = NormalizePropertyValue(currentTrack.GetMetadataPropertyValue(property),
+                serializerSettings, currentTrack.MappedAdditionalFields);
+            var newPropertyValue = NormalizePropertyValue(newTrack.GetMetadataPropertyValue(property),
+                serializerSettings, currentTrack.MappedAdditionalFields);
 
             if (oldPropertyValue == null && newPropertyValue == null ||
                 EqualityComparer<object?>.Default.Equals(oldPropertyValue, newPropertyValue))
@@ -491,16 +476,19 @@ public static class MetadataExtensions
     }
 
     private static object? NormalizePropertyValue(object? getMetadataPropertyValue,
-        JsonSerializerSettings jsonSerializerSettings, IDictionary<string, string> currentTrackMappedAdditionalFields) => getMetadataPropertyValue switch
+        JsonSerializerSettings jsonSerializerSettings,
+        IDictionary<string, string> currentTrackMappedAdditionalFields) => getMetadataPropertyValue switch
     {
         LyricsInfo l => JsonConvert.SerializeObject(l, jsonSerializerSettings),
         IList<ChapterInfo> c => JsonConvert.SerializeObject(c, jsonSerializerSettings),
         IList<PictureInfo> p => JsonConvert.SerializeObject(p, jsonSerializerSettings),
-        IDictionary<string, string> a => NormalizeAdditionalProperties(a, jsonSerializerSettings, currentTrackMappedAdditionalFields),
+        IDictionary<string, string> a => NormalizeAdditionalProperties(a, jsonSerializerSettings,
+            currentTrackMappedAdditionalFields),
         _ => getMetadataPropertyValue
     };
 
-    private static string NormalizeAdditionalProperties(IDictionary<string, string> additionalFields, JsonSerializerSettings jsonSerializerSettings, IDictionary<string, string> mappedFields)
+    private static string NormalizeAdditionalProperties(IDictionary<string, string> additionalFields,
+        JsonSerializerSettings jsonSerializerSettings, IDictionary<string, string> mappedFields)
     {
         var result = additionalFields.Where(kvp => !mappedFields.ContainsKey(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);

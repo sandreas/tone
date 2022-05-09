@@ -62,7 +62,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                 var result = await tagger.UpdateAsync(track);
                 if (!result)
                 {
-                    // todo: _console.Error.WriteLine($"Could not update tags for file {file}: {result.Error}");
+                    _console.Error.WriteLine($"Could not update tags for file {file}: {result.Error}");
                     return;
                 }
 

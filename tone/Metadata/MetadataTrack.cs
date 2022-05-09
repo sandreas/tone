@@ -4,7 +4,6 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ATL;
-using ATL.AudioData;
 
 namespace tone.Metadata;
 
@@ -13,6 +12,12 @@ public class MetadataTrack : Track, IMetadata
     // meet IMetadata interface requirements
     public new string? Path => base.Path;
 
+    private readonly MetadataSpecification _manualMetadataSpecification = MetadataSpecification.Undefined;
+    public MetadataSpecification[] MetadataSpecifications => MetadataFormats
+        .Select(AtlFileFormatToMetadataFormat)
+        .Concat(new []{_manualMetadataSpecification})
+    .Where(tagType => tagType != MetadataSpecification.Undefined)
+    .ToArray();
     public DateTime? RecordingDate
     {
         get => Date;
@@ -28,87 +33,49 @@ public class MetadataTrack : Track, IMetadata
         set => _totalDuration = value;
     }
 
-    
-    
-
     public IDictionary<string, string> MappedAdditionalFields => AdditionalFields
-        .Where(kvp => IsAdditionalFieldKeyMapped(AudioFormat, kvp.Key))
+        .Where(kvp =>
+        {
+            var (key, _) = kvp;
+            return MetadataSpecifications.Any(spec => spec switch
+            {
+                MetadataSpecification.Id3v23 => TagMapping.Any(t => t.Value.ID3v23 == key),
+                MetadataSpecification.Id3v24 => TagMapping.Any(t => t.Value.ID3v24 == key),
+                MetadataSpecification.Mp4 => TagMapping.Any(t => t.Value.Mp4 == key),
+                MetadataSpecification.Matroska => TagMapping.Any(t => t.Value.Matroska == key),
+                MetadataSpecification.WindowsMediaAsf => TagMapping.Any(t => t.Value.WindowsMediaAsf == key),
+                MetadataSpecification.Ape => TagMapping.Any(t => t.Value.Ape == key),
+                MetadataSpecification.Vorbis => TagMapping.Any(t => t.Value.Vorbis == key),
+                _ => false
+            });
+        })
         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-    /*
-    private static readonly List<(string, Action<MetadataTrack>)> RemoveFieldCallbacks = new()
+    private static Dictionary<string, (string ID3v23, string ID3v24, string Mp4, string Matroska, string WindowsMediaAsf, string Ape, string Vorbis, string RiffInfo)> TagMapping { get; } = new()
     {
-        (nameof(Bpm), track => track.Bpm = null),
-        (nameof(EncodedBy), track => track.EncodedBy = null),
-        (nameof(EncoderSettings), track => track.EncoderSettings = null),
-        (nameof(Subtitle), track => track.Subtitle = null),
-        (nameof(ItunesCompilation), track => track.ItunesCompilation = null),
-        (nameof(ItunesMediaType), track => track.ItunesMediaType = null),
-        (nameof(ItunesPlayGap), track => track.ItunesPlayGap = null),
-        (nameof(DiscNumber), track => track.DiscNumber = null),
-        (nameof(DiscTotal), track => track.DiscTotal = null),
-        (nameof(TrackNumber), track => track.TrackNumber = null),
-        (nameof(TrackTotal), track => track.TrackTotal = null),
-        (nameof(Popularity), track => track.Popularity = null),
-        (nameof(Title), track => track.Title = null),
-        (nameof(Artist), track => track.Artist = null),
-        (nameof(Composer), track => track.Composer = null),
-        (nameof(Comment), track => track.Comment = null),
-        (nameof(Genre), track => track.Genre = null),
-        (nameof(Album), track => track.Album = null),
-        (nameof(OriginalAlbum), track => track.OriginalAlbum = null),
-        (nameof(OriginalArtist), track => track.OriginalArtist = null),
-        (nameof(Copyright), track => track.Copyright = null),
-        (nameof(Description), track => track.Description = null),
-        (nameof(Publisher), track => track.Publisher = null),
-        (nameof(AlbumArtist), track => track.AlbumArtist = null),
-        (nameof(Conductor), track => track.Conductor = null),
-        (nameof(Group), track => track.Group = null),
-        (nameof(SortTitle), track => track.SortTitle = null),
-        (nameof(SortAlbum), track => track.SortAlbum = null),
-        (nameof(SortArtist), track => track.SortArtist = null),
-        (nameof(SortAlbumArtist), track => track.SortAlbumArtist = null),
-        (nameof(SortComposer), track => track.SortComposer = null),
-        (nameof(LongDescription), track => track.LongDescription = null),
-        (nameof(EncodingTool), track => track.EncodingTool = null),
-        (nameof(ChaptersTableDescription), track => track.ChaptersTableDescription = null),
-        (nameof(Narrator), track => track.Narrator = null),
-        (nameof(MovementName), track => track.MovementName = null),
-        (nameof(Movement), track => track.Movement = null),
-        (nameof(PublishingDate), track => track.PublishingDate = null),
-        (nameof(RecordingDate), track => track.RecordingDate = null),
-        (nameof(PurchaseDate), track => track.PurchaseDate = null),
-        (nameof(Lyrics), track => track.Lyrics = null),
-        (nameof(Chapters), track => track.Chapters.Clear()),
-        (nameof(EmbeddedPictures), track => track.EmbeddedPictures.Clear()),
-    };
-    */
-    private static Dictionary<string, (string ID3v23, string ID3v24, string MP4, string Matroska, string
-        ASF_WindowsMedia, string RiffInfo)> TagMapping { get; } = new()
-    {
-        // ("ID3v2.3","ID3v2.4","MP4","Matroska","ASF/Windows Media","RIFF INFO")
-        { nameof(Bpm), ("TBPM", "TBPM", "tmpo", "T=30", "WM/BeatsPerMinute", "") },
-        { nameof(EncodedBy), ("TENC", "TENC", "", "T=30 ENCODED_BY", "WM/EncodedBy", "") },
-        { nameof(EncoderSettings), ("TSSE", "TSSE", "©enc", "T=30", "WM/EncodingSettings", "") },
-        { nameof(EncodingTool), ("", "", "©too", "", "WM/ToolName", "") },
-        { nameof(Group), ("TIT1", "TIT1", "©grp", "T=30", "WM/ArtistSortOrder", "") },
-        { nameof(ItunesCompilation), ("TCMP", "TCMP", "cpil", "T=30", "", "") },
-        { nameof(ItunesMediaType), ("", "", "stik", "", "", "") },
-        { nameof(ItunesPlayGap), ("", "", "pgap", "", "", "") },
-        { nameof(LongDescription), ("TDES", "TDES", "ldes", "T=30", "", "") },
-        { nameof(Part), ("TXXX:PART", "TXXX:PART", "----:com.pilabor.tone:PART", "T=20 PART_NUMBER", "", "") },
-        { nameof(Movement), ("MVIN", "MVIN", "©mvi", "T=20 PART_NUMBER", "", "") },
-        { nameof(MovementName), ("MVNM", "MVNM", "©mvn", "T=20 TITLE", "", "") },
+        // ("ID3v2.3","ID3v2.4","MP4","Matroska","ASF/Windows Media", "APE" "RIFF INFO")
+        { nameof(Bpm), ("TBPM", "TBPM", "tmpo", "T=30", "WM/BeatsPerMinute", "BPM", "BPM", "") },
+        { nameof(EncodedBy), ("TENC", "TENC", "", "T=30 ENCODED_BY", "WM/EncodedBy", "EncodedBy", "ENCODED-BY", "") },
+        { nameof(EncoderSettings), ("TSSE", "TSSE", "©enc", "T=30", "WM/EncodingSettings", "", "ENCODER SETTINGS", "") },
+        { nameof(EncodingTool), ("", "", "©too", "", "WM/ToolName", "", "ENCODER", "") },
+        { nameof(Group), ("TIT1", "TIT1", "©grp", "T=30", "WM/ArtistSortOrder", "Grouping", "GROUPING", "") },
+        { nameof(ItunesCompilation), ("TCMP", "TCMP", "cpil", "T=30", "", "Compilation", "COMPILATION", "") },
+        { nameof(ItunesMediaType), ("", "", "stik", "", "", "", "", "") },
+        { nameof(ItunesPlayGap), ("", "", "pgap", "", "", "", "", "") },
+        { nameof(LongDescription), ("TDES", "TDES", "ldes", "T=30", "", "", "", "") },
+        { nameof(Part), ("TXXX:PART", "TXXX:PART", "----:com.pilabor.tone:PART", "T=20 PART_NUMBER", "", "", "PARTNUMBER", "") },
+        { nameof(Movement), ("MVIN", "MVIN", "©mvi", "T=20 PART_NUMBER", "", "MOVEMENT", "MOVEMENT", "") },
+        { nameof(MovementName), ("MVNM", "MVNM", "©mvn", "T=20 TITLE", "", "MOVEMENTNAME", "MOVEMENTNAME", "") },
         // {nameof(MovementTotal), ("MVIN","MVIN","©mvc","T=30","","")}, // special case: MVIN has to be appended, not replaced
-        { nameof(Narrator), ("", "", "©nrt", "T=30", "", "") },
-        { nameof(PurchaseDate), ("", "", "purd", "", "", "") },
-        { nameof(SortAlbum), ("TSOA", "TSOA", "soal", "T=50 SORT_WITH", "WM/AlbumSortOrder", "") },
-        { nameof(SortAlbumArtist), ("TSO2", "TSO2", "soaa", "T=30", "", "") },
-        { nameof(SortArtist), ("TSOP", "TSOP", "soar", "T=30", "WM/ArtistSortOrder", "") },
-        { nameof(SortComposer), ("TSOC", "TSOC", "soco", "T=30", "", "") },
-        { nameof(SortTitle), ("TSOT", "TSOT", "sonm", "T=30 SORT_WITH", "WM/TitleSortOrder", "") },
+        { nameof(Narrator), ("", "", "©nrt", "T=30", "", "", "", "") },
+        { nameof(PurchaseDate), ("", "", "purd", "", "", "", "", "") },
+        { nameof(SortAlbum), ("TSOA", "TSOA", "soal", "T=50 SORT_WITH", "WM/AlbumSortOrder", "ALBUMSORT", "ALBUMSORT", "") },
+        { nameof(SortAlbumArtist), ("TSO2", "TSO2", "soaa", "T=30", "", "ALBUMARTISTSORT", "ALBUMARTISTSORT", "") },
+        { nameof(SortArtist), ("TSOP", "TSOP", "soar", "T=30", "WM/ArtistSortOrder", "ARTISTSORT", "ARTISTSORT", "") },
+        { nameof(SortComposer), ("TSOC", "TSOC", "soco", "T=30", "", "", "", "") },
+        { nameof(SortTitle), ("TSOT", "TSOT", "sonm", "T=30 SORT_WITH", "WM/TitleSortOrder", "TITLESORT", "TITLESORT", "") },
+        { nameof(Subtitle), ("TIT3", "TIT3", "----:com.apple.iTunes:SUBTITLE", "T=30", "WM/SubTitle", "Subtitle", "SUBTITLE", "") },
         /*mp4 => ©st3 ? */
-        { nameof(Subtitle), ("TIT3", "TIT3", "----:com.apple.iTunes:SUBTITLE", "T=30", "WM/SubTitle", "") },
     };
 
     // todo: for fields that are combined multiple values
@@ -179,7 +146,7 @@ public class MetadataTrack : Track, IMetadata
         get => GetAdditionalField(StringField);
         set => SetAdditionalField(value);
     }
-    
+
     public string? Part
     {
         get => GetAdditionalField(StringField) ?? Movement;
@@ -246,8 +213,9 @@ public class MetadataTrack : Track, IMetadata
     }
 
 
-    public MetadataTrack()
+    public MetadataTrack(MetadataSpecification type = MetadataSpecification.Undefined)
     {
+        _manualMetadataSpecification = type;
         InitMetadataTrack();
         // https://pastebin.com/DQTZFE6H
 
@@ -314,122 +282,103 @@ public class MetadataTrack : Track, IMetadata
 
         return default;
     }
-
-
+    
     private bool HasAdditionalField([CallerMemberName] string key = "")
     {
-        var mappedKey = MapAdditionalField(AudioFormat, key);
-        return mappedKey != "" && AdditionalFields.ContainsKey(mappedKey) && AdditionalFields[mappedKey] != null;
+        return GetFirstValuedKey(key) != "";
     }
 
+    private string GetFirstValuedKey(string key = "")
+    {
+        foreach (var spec in MetadataSpecifications)
+        {
+            var mappedKey = MapAdditionalFieldKey(spec, key);
+            if (mappedKey != "" && AdditionalFields.ContainsKey(mappedKey) && AdditionalFields[mappedKey] != null)
+            {
+                return mappedKey;
+            }
+        }
+        return "";
+    }
+    
     private T? GetAdditionalField<T>(Func<string?, T?> converter, [CallerMemberName] string key = "")
     {
-        var mappedKey = MapAdditionalField(AudioFormat, key);
-        if (mappedKey == "" || !AdditionalFields.ContainsKey(mappedKey) || AdditionalFields[mappedKey] == null)
-        {
-            return default;
-        }
-
-        return converter(AdditionalFields[mappedKey]);
+        var mappedKey = GetFirstValuedKey(key);
+        return mappedKey == "" ? default : converter(AdditionalFields[mappedKey]);
     }
-
 
     private void SetAdditionalField<T>(T? value, [CallerMemberName] string key = "")
     {
-        var mappedKey = MapAdditionalField(AudioFormat, key);
-        if (mappedKey == "")
-        {
-            return;
-        }
-
-        // ©mvi MUST contain an integer value, which leads to an exception, if a string like 1.5 is stored
-        if (mappedKey == "©mvi" && value is string v && !int.TryParse(v, out _))
+        // movement MUST contain an integer value, which leads to an exception, if a string like 1.5 is stored
+        // to store a non-integer value, use Part instead
+        if (key == nameof(Movement) && value is string v && !int.TryParse(v, out _))
         {
             return;
         }
         
-        if (value == null)
+        foreach (var spec in MetadataSpecifications)
         {
-            if (AdditionalFields.ContainsKey(mappedKey))
-            {
-                AdditionalFields.Remove(mappedKey);
-            }
-
-            return;
-        }
-
-        /*
-         d.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", "")
-For ID3v2.3 and older, you'd combine the TYER tag (YYYY) with the TDAT tag (MMDD) and TIME tag (HHMM).
-For ID3v2.4, you'd use TDRC or TDRA (or any of the other timestamp frames), with any level of accuracy you want, up to: YYYYMMDDTHHMMSS. Include Year, throw in month, throw in day, add the literal T and throw in hour, minute, second.
-Vorbis: ISO8601 
-         */
-        // var formatString = AudioFormat.ID switch
-        // {
-        //     AudioDataIOFactory.CID_MP3
-        // };
-        AdditionalFields[mappedKey] = value switch
-        {
-            DateTime d => d.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", ""),
-            Enum e => ((int)(object)e).ToString(), // cast enum to int
-            _ => value.ToString() ?? ""
-        };
-
-        // todo store / remove original value unmapped for 
-        // TagMappingValues[key] = AdditionalFields[mappedKey];
-    }
-
-
-    private static string MapAdditionalField(Format? format, string key) => format?.ID switch
-    {
-        // Format is not really appropriate, because it should be the TaggingFormat (id3v2, etc.), not the audio file format
-        // TODO: Map others
-        AudioDataIOFactory.CID_MP3 => TagMapping.ContainsKey(key) ? TagMapping[key].ID3v23 : "",
-        AudioDataIOFactory.CID_MP4 => TagMapping.ContainsKey(key) ? TagMapping[key].MP4 : "",
-        _ => ""
-    };
-
-    private static bool IsAdditionalFieldKeyMapped(Format format, string fieldName)
-    {
-        foreach (var (_, tuple) in TagMapping)
-        {
-            var fieldNameToCheck = format.ID switch
-            {
-                AudioDataIOFactory.CID_MP3 => tuple.ID3v23,
-                AudioDataIOFactory.CID_MP4 => tuple.MP4,
-                _ => ""
-            };
-
-            if (fieldNameToCheck == fieldName)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /*
-    public string[] RemoveFields(params string[] fieldNames)
-    {
-        var lcFieldNames = fieldNames.Select(f => f.ToLowerInvariant()).ToArray();
-        var removedFieldNames = new Stack<string>();
-
-        foreach (var (fieldName, callback) in RemoveFieldCallbacks)
-        {
-            if (!lcFieldNames.Contains(fieldName.ToLowerInvariant()))
+            var mappedKey = MapAdditionalFieldKey(spec, key);
+            if (mappedKey == "")
             {
                 continue;
             }
 
-            callback(this);
-            removedFieldNames.Push(fieldName);
+            if (value == null)
+            {
+                if (AdditionalFields.ContainsKey(mappedKey))
+                {
+                    AdditionalFields.Remove(mappedKey);
+                }
+                continue;
+            }
+            
+
+            AdditionalFields[mappedKey] = value switch
+            {
+                DateTime d => FormatDate(spec, d),
+                Enum e => ((int)(object)e).ToString(), // cast enum to int
+                _ => value.ToString() ?? ""
+            };
         }
-
-        return removedFieldNames.ToArray();
     }
-    */
 
+    private static string FormatDate(MetadataSpecification spec, DateTime date) => spec switch
+    {
+        /*
+d.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", "")
+For ID3v2.3 and older, you'd combine the TYER tag (YYYY) with the TDAT tag (MMDD) and TIME tag (HHMM).
+For ID3v2.4, you'd use TDRC or TDRA (or any of the other timestamp frames), with any level of accuracy you want, up to: YYYYMMDDTHHMMSS. Include Year, throw in month, throw in day, add the literal T and throw in hour, minute, second.
+Vorbis: ISO8601 
+*/
+        MetadataSpecification.Vorbis => date.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+        _ => date.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", "")
+    };
+    
+    private static MetadataSpecification AtlFileFormatToMetadataFormat(Format format) => format.ShortName.ToLower() switch
+    {
+        "native" => AtlNativeFileFormatToMetadataFormat(format),
+        "id3v1" => MetadataSpecification.Id3v1,
+        "id3v2" => MetadataSpecification.Id3v23, // todo: find out about id3v24
+        "ape" => MetadataSpecification.Ape,
+        _ => MetadataSpecification.Undefined
+    };
 
+    private static MetadataSpecification AtlNativeFileFormatToMetadataFormat(Format format)
+    {
+        // todo: Add more
+        return format.Name.Contains("MPEG-4") ? MetadataSpecification.Mp4 : MetadataSpecification.Undefined;
+    }
 
+    private static string MapAdditionalFieldKey(MetadataSpecification format, string key) => format switch
+    {
+        // ignored atm: MetadataSpecification.Id3v1 => TagMapping.ContainsKey(key) ? TagMapping[key].Id3v1 : "",
+        MetadataSpecification.Id3v23 => TagMapping.ContainsKey(key) ? TagMapping[key].ID3v23 : "",
+        MetadataSpecification.Id3v24 => TagMapping.ContainsKey(key) ? TagMapping[key].ID3v24 : "",
+        MetadataSpecification.Mp4 => TagMapping.ContainsKey(key) ? TagMapping[key].Mp4 : "",
+        MetadataSpecification.WindowsMediaAsf => TagMapping.ContainsKey(key) ? TagMapping[key].WindowsMediaAsf : "",
+        MetadataSpecification.Matroska => TagMapping.ContainsKey(key) ? TagMapping[key].Matroska : "",
+        MetadataSpecification.Ape => TagMapping.ContainsKey(key) ? TagMapping[key].Ape : "",
+        _ => ""
+    };
 }
