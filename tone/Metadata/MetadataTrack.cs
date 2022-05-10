@@ -39,8 +39,8 @@ public class MetadataTrack : Track, IMetadata
             var (key, _) = kvp;
             return MetadataSpecifications.Any(spec => spec switch
             {
-                MetadataSpecification.Id3v23 => TagMapping.Any(t => t.Value.ID3v23 == key),
-                MetadataSpecification.Id3v24 => TagMapping.Any(t => t.Value.ID3v24 == key),
+                MetadataSpecification.Id3V23 => TagMapping.Any(t => t.Value.ID3v23 == key),
+                MetadataSpecification.Id3V24 => TagMapping.Any(t => t.Value.ID3v24 == key),
                 MetadataSpecification.Mp4 => TagMapping.Any(t => t.Value.Mp4 == key),
                 MetadataSpecification.Matroska => TagMapping.Any(t => t.Value.Matroska == key),
                 MetadataSpecification.WindowsMediaAsf => TagMapping.Any(t => t.Value.WindowsMediaAsf == key),
@@ -358,8 +358,8 @@ Vorbis: ISO8601
     private static MetadataSpecification AtlFileFormatToMetadataFormat(Format format) => format.ShortName.ToLower() switch
     {
         "native" => AtlNativeFileFormatToMetadataFormat(format),
-        "id3v1" => MetadataSpecification.Id3v1,
-        "id3v2" => MetadataSpecification.Id3v23, // todo: find out about id3v24
+        "id3v1" => MetadataSpecification.Id3V1,
+        "id3v2" => MetadataSpecification.Id3V23, // todo: find out about id3v24
         "ape" => MetadataSpecification.Ape,
         _ => MetadataSpecification.Undefined
     };
@@ -373,8 +373,8 @@ Vorbis: ISO8601
     private static string MapAdditionalFieldKey(MetadataSpecification format, string key) => format switch
     {
         // ignored atm: MetadataSpecification.Id3v1 => TagMapping.ContainsKey(key) ? TagMapping[key].Id3v1 : "",
-        MetadataSpecification.Id3v23 => TagMapping.ContainsKey(key) ? TagMapping[key].ID3v23 : "",
-        MetadataSpecification.Id3v24 => TagMapping.ContainsKey(key) ? TagMapping[key].ID3v24 : "",
+        MetadataSpecification.Id3V23 => TagMapping.ContainsKey(key) ? TagMapping[key].ID3v23 : "",
+        MetadataSpecification.Id3V24 => TagMapping.ContainsKey(key) ? TagMapping[key].ID3v24 : "",
         MetadataSpecification.Mp4 => TagMapping.ContainsKey(key) ? TagMapping[key].Mp4 : "",
         MetadataSpecification.WindowsMediaAsf => TagMapping.ContainsKey(key) ? TagMapping[key].WindowsMediaAsf : "",
         MetadataSpecification.Matroska => TagMapping.ContainsKey(key) ? TagMapping[key].Matroska : "",
