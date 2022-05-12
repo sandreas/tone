@@ -5,7 +5,6 @@ using OperationResult;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using Spectre.Console.Rendering;
 using tone.Metadata;
 using tone.Metadata.Formats;
 using tone.Metadata.Taggers;
@@ -91,9 +90,6 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                         }
                         _console.Write(diffTable);
                     }
-
-
-                    
                     return;
                 }
                 if (!track.Save())

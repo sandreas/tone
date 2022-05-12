@@ -44,6 +44,7 @@ public class PathPatternTagger : TaggerBase
 
             matchesFound = true;
             MapResults(results, metadata);
+            break;
         }
 
         if (!matchesFound)
@@ -60,6 +61,10 @@ public class PathPatternTagger : TaggerBase
     {
         foreach (var grokItem in results)
         {
+            if (grokItem.Key == "IgnoreDummy")
+            {
+                continue;
+            }
             if (!Enum.TryParse(grokItem.Key, out MetadataProperty property))
             {
                 continue;

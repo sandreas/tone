@@ -63,8 +63,8 @@ app.Configure(config =>
         .WithDescription("tag files with metadata properties (directories are traversed recursively)")
         .WithExample(new[] { "tag", "input.mp3", "--meta-title", "\"a title\"" });
 
-#if DEBUG
     config.PropagateExceptions();
+#if DEBUG
     config.ValidateExamples();
 #endif
 });

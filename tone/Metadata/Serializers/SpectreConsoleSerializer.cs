@@ -155,6 +155,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
 
             // fileTable.NoSafeBorder();
             // fileTable.NoSafeBorder();
+            
             Stringify(track.AudioFormat, s => fileTable.AddRow("format", Markup.Escape(s)));
             Stringify(track.Bitrate, s => fileTable.AddRow("bitrate", Markup.Escape(s)));
             Stringify(track.SampleRate, s => fileTable.AddRow("sample-rate", Markup.Escape(s)));
@@ -162,6 +163,11 @@ public class SpectreConsoleSerializer : IMetadataSerializer
             Stringify(track.IsVBR, s => fileTable.AddRow("vbr", Markup.Escape(s)));
             Stringify(track.ChannelsArrangement, s => fileTable.AddRow("channels", Markup.Escape(s)));
             Stringify(track.EmbeddedPictures.Count, s => fileTable.AddRow("embedded pictures", Markup.Escape(s)));
+
+            var metadataFormats = string.Join(Environment.NewLine, track.MetadataFormats.Select(m => m.Name));
+            var formatString = track.MetadataFormats.Count == 1 ? "format" : "formats";
+            Stringify(track.MetadataFormats.Count, s => fileTable.AddRow($"{track.MetadataFormats.Count} meta {formatString}", Markup.Escape(metadataFormats)));
+
             _console.Write(fileTable);
         }
     }

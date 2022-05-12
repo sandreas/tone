@@ -77,13 +77,15 @@ public class GrokPatternService
     private static IEnumerable<Grok>? ConvertStrings(IEnumerable<string>? grokDefinitions, IEnumerable<string>? customPatterns = null)
     {
         var patternsString = string.Join("\n", customPatterns ?? Array.Empty<string>());
-        var patternsStream = patternsString.StringToStream();
+        
         var grokDefArray = grokDefinitions?.ToArray() ?? new string[] { };
         var groks = new List<Grok>();
         foreach (var pattern in grokDefArray)
         {
             try
             {
+                // this has to be done IN the foreach to prevent reading closed streams
+                using var patternsStream = patternsString.StringToStream();
                 groks.Add(new Grok(PreparePattern(pattern), patternsStream));
             }
             catch (Exception e)
@@ -119,6 +121,8 @@ public class GrokPatternService
             {'t', "{NOTDIRSEP:AlbumArtist}" }, // album_artist: ,
             {'w', "{NOTDIRSEP:Composer}" }, // writer: ,
             {'y', "{NOTDIRSEP:ReleaseDate}" }, // year: ,
+            {'z', "{NOTDIRSEP:IgnoreDummy}" }, // IgnoreDummy
+            {'Z', "{PARTNUMBER:IgnoreDummy}" }, // IgnoreDummy
         };
         foreach (var c in pattern)
         {

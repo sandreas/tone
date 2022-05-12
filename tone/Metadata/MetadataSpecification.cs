@@ -10,5 +10,6 @@ public enum MetadataSpecification
     Matroska,
     WindowsMediaAsf,
     Ape,
-    Vorbis
+    Vorbis,
+    Aiff
 }

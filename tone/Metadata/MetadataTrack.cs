@@ -355,21 +355,18 @@ Vorbis: ISO8601
         _ => date.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'ss").Replace(" 00:00:00", "")
     };
     
-    private static MetadataSpecification AtlFileFormatToMetadataFormat(Format format) => format.ShortName.ToLower() switch
+    private static MetadataSpecification AtlFileFormatToMetadataFormat(Format format) => format.Name switch
     {
-        "native" => AtlNativeFileFormatToMetadataFormat(format),
-        "id3v1" => MetadataSpecification.Id3V1,
-        "id3v2" => MetadataSpecification.Id3V23, // todo: find out about id3v24
-        "ape" => MetadataSpecification.Ape,
+        "Native / MPEG-4" => MetadataSpecification.Mp4,
+        "Native / AIFF" => MetadataSpecification.Aiff,
+        "Native / Vorbis (OGG)" => MetadataSpecification.Vorbis,
+        "ID3v1.1" => MetadataSpecification.Id3V1,
+        "ID3v2.3" => MetadataSpecification.Id3V23,
+        "ID3v2.4" => MetadataSpecification.Id3V24,
+        "APEtag v2" => MetadataSpecification.Ape,
         _ => MetadataSpecification.Undefined
     };
-
-    private static MetadataSpecification AtlNativeFileFormatToMetadataFormat(Format format)
-    {
-        // todo: Add more
-        return format.Name.Contains("MPEG-4") ? MetadataSpecification.Mp4 : MetadataSpecification.Undefined;
-    }
-
+    
     private static string MapAdditionalFieldKey(MetadataSpecification format, string key) => format switch
     {
         // ignored atm: MetadataSpecification.Id3v1 => TagMapping.ContainsKey(key) ? TagMapping[key].Id3v1 : "",

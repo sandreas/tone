@@ -1,6 +1,9 @@
 # tone
 Audio converter and  tagger
 
+to release:
+git tag -a v0.1 -m "tag message"
+git push origin v0.1
 
 # todo
 - grok (https://github.com/Marusyk/grok.net) - debugger: https://grokdebug.herokuapp.com/
