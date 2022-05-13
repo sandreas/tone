@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using ATL;
 using Spectre.Console.Cli;
 using tone.Metadata;
@@ -12,17 +11,14 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
     [CommandOption("--meta-additional-fields-remove")]
     public string[] RemoveAdditionalFields { get; init; } = Array.Empty<string>();
 
-    [CommandOption("--meta-remove")] public string[] Remove { get; init; } = Array.Empty<string>();
+    [CommandOption("--meta-remove")] public MetadataProperty[] Remove { get; init; } = Array.Empty<MetadataProperty>();
     [CommandOption("--meta-equate")] public string[] Equate { get; init; } = Array.Empty<string>();
 
-    [CommandOption("--auto-import-chapters")]
-    public bool AutoImportChapters { get; init; } = false;
+    [CommandOption("--auto-import")]
+    public AutoImportValue[] AutoImport { get; init; } = Array.Empty<AutoImportValue>();
 
     [CommandOption("--import-chapters-file")]
     public string ImportChaptersFile { get; init; } = "";
-    
-    [CommandOption("--auto-import-cover")]
-    public bool AutoImportCover { get; init; } = false;
 
     [CommandOption("--import-cover-file")]
     public string ImportCoverFile { get; init; } = "";    
@@ -122,9 +118,6 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
     public LyricsInfo? Lyrics { get; set; }
     public IList<PictureInfo> EmbeddedPictures => new List<PictureInfo>();
 
-    
-    // todo: https://github.com/spectresystems/spectre.cli/issues/92
-    // todo: meta-cover
     /*
     public override ValidationResult Validate()
     {

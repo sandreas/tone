@@ -135,7 +135,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
         tagger.Taggers.Add(new PathPatternTagger(grokDefinitions.Value));
         tagger.Taggers.Add(new AdditionalFieldsRemoveTagger(settings.RemoveAdditionalFields));
-        if (settings.AutoImportChapters || settings.ImportChaptersFile != "")
+        if (settings.AutoImport.Contains(AutoImportValue.Chapters) || settings.ImportChaptersFile != "")
         {
             tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chapterFormat,
                 settings.ImportChaptersFile));
