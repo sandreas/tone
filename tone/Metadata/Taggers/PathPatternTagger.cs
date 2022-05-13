@@ -18,8 +18,7 @@ public class PathPatternTagger : TaggerBase
     {
         _grokPatterns = grokPatterns;
     }
-
-
+    
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if (!_grokPatterns.Any())

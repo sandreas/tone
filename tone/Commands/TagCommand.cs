@@ -31,12 +31,18 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
     public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings)
     {
+        // todo: InputPackageBuilder / DirectoryLoader
+        // - restructure input input input-packages by path-pattern if present
+        // - otherwise provide 1 input package
+
         var taggerResult = await BuildTaggerCompositeAsync(_console, settings);
         if (!taggerResult)
         {
             return await Task.FromResult((int)taggerResult.Error);
         }
 
+        // _dirLoader.SeekFiles()
+        
         var tagger = taggerResult.Value;
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
         var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions);

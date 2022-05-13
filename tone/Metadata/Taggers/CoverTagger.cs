@@ -19,7 +19,6 @@ public class CoverTagger: TaggerBase
     }
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
-
         foreach (var cover in _covers)
         {
             if (!_fs.File.Exists(cover))

@@ -96,23 +96,10 @@ public class DirectoryLoaderService
         fileWalker ??= _fileWalker;
 
         return optionsInput
-            .Select(input =>
-            {
-                return (
-                    input,
-                    FindFilesByExtension(input, includeExtensions, fileWalker)
-                );
-            });
-        /*
-        foreach (var input in optionsInput)
-        {
-            var files = fileWalker.Walk(input).SelectFileInfo()
-                .Where(f => !fileWalker.IsDir(f) && includeExtensions.Contains(f.Extension));
-            foreach (var file in files)
-            {
-                yield return file;
-            }
-        }
-        */
+            .Select(input => (
+                input,
+                FindFilesByExtension(input, includeExtensions, fileWalker)
+            ));
+
     }
 }
