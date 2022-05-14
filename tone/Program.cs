@@ -52,6 +52,7 @@ var app = new CommandApp(new TypeRegistrar(services));
 
 app.Configure(config =>
 {
+    
     // config.Settings;
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
@@ -70,6 +71,7 @@ app.Configure(config =>
 });
 try
 {
+    
     return await app.RunAsync(args).ConfigureAwait(false);
 }
 catch (Exception e)

@@ -5,6 +5,7 @@ using OperationResult;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using tone.Matchers;
 using tone.Metadata;
 using tone.Metadata.Formats;
 using tone.Metadata.Taggers;
@@ -31,22 +32,37 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
     public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings)
     {
-        // todo: InputPackageBuilder / DirectoryLoader
-        // - restructure input input input-packages by path-pattern if present
-        // - otherwise provide 1 input package
+        var customPatterns = settings.PathPatternExtension.Concat(new[]
+        {
+            "NOTDIRSEP [^/\\\\]*",
+            "PARTNUMBER \\b[0-9-.IVXLCDM]+\\b"
+        });
+        var grokDefinitions = await _grok.BuildAsync(settings.PathPattern, customPatterns);
+        if (!grokDefinitions)
+        {
+            _console.Error.WriteLine("Could not parse `--path-pattern`: " + grokDefinitions.Error);
+            return (int)ReturnCode.GeneralError;
+        }
 
-        var taggerResult = await BuildTaggerCompositeAsync(_console, settings);
+        var pathPatternMatcher = new PathPatternMatcher(grokDefinitions.Value);
+
+        
+        var taggerResult = await BuildTaggerCompositeAsync(settings, pathPatternMatcher);
         if (!taggerResult)
         {
             return await Task.FromResult((int)taggerResult.Error);
         }
 
-        // _dirLoader.SeekFiles()
-        
         var tagger = taggerResult.Value;
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
         var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions);
-        var inputFilesAsArray = inputFiles.ToArray();
+        // todo: var filePackages = _dirLoader.BuildFilePackages(inputFiles, pathPatternMatcher)
+        //_dirLoader.SeekFiles();
+        var inputFilesAsArray = (settings.PathPattern.Length == 0 ? inputFiles : inputFiles.Where(f => pathPatternMatcher.TryMatchSinglePattern(f.Name, out _))).ToArray();
+
+
+        var packages = _dirLoader.BuildPackages(inputFilesAsArray, pathPatternMatcher);
+        
         if (!settings.DryRun)
         {
             switch (inputFilesAsArray.Length)
@@ -119,27 +135,14 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
     }
 
 
-    private async Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(SpectreConsoleService console,
-        TagSettingsBase settings)
+    private Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(TagSettingsBase settings, PathPatternMatcher matcher)
     {
         var tagger = new TaggerComposite();
         tagger.Taggers.Add(new MetadataTagger(settings));
         tagger.Taggers.Add(new CoverTagger(_dirLoader.FileSystem ?? new FileSystem(),
             settings.Covers /*, settings.AutoImportCovers*/));
-
-        var customPatterns = settings.PathPatternExtension.Concat(new[]
-        {
-            "NOTDIRSEP [^/\\\\]*",
-            "PARTNUMBER \\b[0-9-.IVXLCDM]+\\b"
-        });
-        var grokDefinitions = await _grok.BuildAsync(settings.PathPattern, customPatterns);
-        if (!grokDefinitions)
-        {
-            console.Error.WriteLine("Could not parse `--path-pattern`: " + grokDefinitions.Error);
-            return Error(ReturnCode.GeneralError);
-        }
-
-        tagger.Taggers.Add(new PathPatternTagger(grokDefinitions.Value));
+        
+        tagger.Taggers.Add(new PathPatternTagger(matcher));
         tagger.Taggers.Add(new AdditionalFieldsRemoveTagger(settings.RemoveAdditionalFields));
         if (settings.AutoImport.Contains(AutoImportValue.Chapters) || settings.ImportChaptersFile != "")
         {
@@ -149,7 +152,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
         tagger.Taggers.Add(new EquateTagger(settings.Equate));
         tagger.Taggers.Add(new M4BFillUpTagger());
-        return Ok((ITagger)tagger);
+        return Task.FromResult<Result<ITagger, ReturnCode>>(Ok((ITagger)tagger));
     }
 
     /*

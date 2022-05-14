@@ -14,7 +14,7 @@ namespace tone.Services;
 
 public class GrokPatternService
 {
-    public async Task<Result<IEnumerable<Grok>, string>> BuildAsync(IEnumerable<string>? grokDefinitions,
+    public async Task<Result<IEnumerable<(string, Grok)>, string>> BuildAsync(IEnumerable<string>? grokDefinitions,
         IEnumerable<string>? customPatterns = null)
     {
         customPatterns ??= Array.Empty<string>();
@@ -26,7 +26,7 @@ public class GrokPatternService
             {
                 return Error(validationResult.Error);
             }
-            return  await Task.FromResult(Ok(ConvertStrings(grokDefinitions, customPatternsArray) ?? Array.Empty<Grok>()));
+            return  await Task.FromResult(Ok(ConvertStrings(grokDefinitions, customPatternsArray)));
         }
         catch (Exception e)
         {
@@ -74,19 +74,20 @@ public class GrokPatternService
     }
     
 
-    private static IEnumerable<Grok>? ConvertStrings(IEnumerable<string>? grokDefinitions, IEnumerable<string>? customPatterns = null)
+    private static IEnumerable<(string, Grok)> ConvertStrings(IEnumerable<string>? grokDefinitions, IEnumerable<string>? customPatterns = null)
     {
         var patternsString = string.Join("\n", customPatterns ?? Array.Empty<string>());
         
-        var grokDefArray = grokDefinitions?.ToArray() ?? new string[] { };
-        var groks = new List<Grok>();
+        var grokDefArray = grokDefinitions?.ToArray() ?? Array.Empty<string>();
+        var groks = new List<(string, Grok)>();
         foreach (var pattern in grokDefArray)
         {
             try
             {
                 // this has to be done IN the foreach to prevent reading closed streams
                 using var patternsStream = patternsString.StringToStream();
-                groks.Add(new Grok(PreparePattern(pattern), patternsStream));
+                var preparedPattern = PreparePattern(pattern);
+                groks.Add((preparedPattern, new Grok(preparedPattern, patternsStream)));
             }
             catch (Exception e)
             {

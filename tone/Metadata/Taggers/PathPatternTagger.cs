@@ -1,69 +1,46 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using GrokNet;
 using OperationResult;
-using tone.Common.Extensions.String;
+using tone.Matchers;
 using static OperationResult.Helpers;
-
 
 namespace tone.Metadata.Taggers;
 
 public class PathPatternTagger : TaggerBase
 {
-    private readonly IEnumerable<Grok> _grokPatterns;
+    private readonly PathPatternMatcher _pathPatternMatcher;
 
-    public PathPatternTagger(IEnumerable<Grok> grokPatterns)
+    public PathPatternTagger(PathPatternMatcher pathPatternMatcher)
     {
-        _grokPatterns = grokPatterns;
+        _pathPatternMatcher = pathPatternMatcher;
     }
-    
+
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
-        if (!_grokPatterns.Any())
+        if (_pathPatternMatcher.TryMatchSinglePattern(metadata.Path ?? "", out _,
+                (_, _, result) => MapResults(result, metadata)))
         {
             return await Task.FromResult(Ok());
         }
 
-        var normalizedMetadataPath = (metadata.Path ?? "").TrimDirectorySeparatorEnd();
-        if (normalizedMetadataPath == "")
-        {
-            return Error("metadata path cannot be empty");
-        }
-
-        var matchesFound = false;
-        foreach (var pattern in _grokPatterns)
-        {
-            var results = pattern.Parse(normalizedMetadataPath);
-            if (results.Count == 0)
-            {
-                continue;
-            }
-
-            matchesFound = true;
-            MapResults(results, metadata);
-            break;
-        }
-
-        if (!matchesFound)
-        {
-            // var privateInt = test.GetType().GetProperty("PrivateInt", BindingFlags.Instance | BindingFlags.NonPublic);
-            return Error(
-                $"Did not find any matches for given path patterns (path: {normalizedMetadataPath}");
-        }
-
-        return Ok();
+        return Error("Could not match string");
     }
 
-    private void MapResults(GrokResult results, IMetadata metadata)
+    private static void MapResults(GrokResult? results, IMetadata metadata)
     {
+        if (results == null)
+        {
+            return;
+        }
+
         foreach (var grokItem in results)
         {
             if (grokItem.Key == "IgnoreDummy")
             {
                 continue;
             }
+
             if (!Enum.TryParse(grokItem.Key, out MetadataProperty property))
             {
                 continue;

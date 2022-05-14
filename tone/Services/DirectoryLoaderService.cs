@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Sandreas.Files;
 using Serilog;
+using tone.Matchers;
 
 namespace tone.Services;
 
@@ -83,6 +86,55 @@ public class DirectoryLoaderService
             }
         }
     }
+
+    public Dictionary<string, IList<IFileInfo>> BuildPackages(IEnumerable<IFileInfo> files, PathPatternMatcher pathMatcher)
+    {
+        // todo: normalize paths
+        
+        var x = new Dictionary<string, IList<IFileInfo>>();
+        var filesArray = files.ToArray();
+        // group files by matching path pattern
+        foreach (var file in filesArray)
+        {
+            if (pathMatcher.TryMatchSinglePattern(file.Name, out var result))
+            {
+                var (patternAsString, _) = result;
+                if (!x.ContainsKey(patternAsString))
+                {
+                    x[patternAsString] = new List<IFileInfo>();                    
+                }
+                x[patternAsString].Add(file);
+            }
+        }
+        
+        // reorder these groups to use the containing path as key (shortest f.Name)
+        var y = new Dictionary<string, IList<IFileInfo>>();
+        foreach (var (key, value) in x)
+        {
+
+            // find the shortest match for a pattern
+            var shortest = value.Select(f => f.Name).OrderBy(s => s.Length).FirstOrDefault();
+            if (shortest == null)
+            {
+                continue;
+            }
+            y[shortest] = value;
+            // todo: value.Concat(filesArray.Where(f => f.Name.StartsWith(shortest) && !value.Contains(f)).ToArray());
+            // fill in remaining files, that did not match but are in the same path
+            foreach (var f in filesArray)
+            {
+                if (f.Name.StartsWith(shortest) && !y[shortest].Contains(f))
+                {
+                    y[shortest].Add(f);
+                }
+            }
+        }
+
+        // key: containing/shortest path
+        // value: list of all files in it that where found by the iterator
+        return y;
+    }
+    
     private IEnumerable<IFileInfo> FindFilesByExtension(string inputPath,IEnumerable<string> includeExtensions, FileWalker? fileWalker = null)
     {
         fileWalker ??= _fileWalker;
@@ -100,6 +152,16 @@ public class DirectoryLoaderService
                 input,
                 FindFilesByExtension(input, includeExtensions, fileWalker)
             ));
-
+        /*
+        foreach (var input in optionsInput)
+        {
+            var files = fileWalker.Walk(input).SelectFileInfo()
+                .Where(f => !fileWalker.IsDir(f) && includeExtensions.Contains(f.Extension));
+            foreach (var file in files)
+            {
+                yield return file;
+            }
+        }
+        */
     }
 }
