@@ -87,52 +87,82 @@ public class DirectoryLoaderService
         }
     }
 
-    public Dictionary<string, IList<IFileInfo>> BuildPackages(IEnumerable<IFileInfo> files, PathPatternMatcher pathMatcher)
+    public Dictionary<string, Dictionary<string, IList<IFileInfo>>> BuildPackages(IEnumerable<IFileInfo> files, PathPatternMatcher pathMatcher)
     {
-        // todo: normalize paths
+        /*
+         * class AudioBookPackage
+         * - enum type: dir/file
+         * - string baseDir: <containing dir>
+         * - list files: IList<IFileInfo>
+         * - grok pattern: Grok
+         * - GrokResult: matches
+         * - FindCovers?
+         * - FindChapters
+         */
         
-        var x = new Dictionary<string, IList<IFileInfo>>();
+        var fileMatches = new Dictionary<string, IList<IFileInfo>>();
+        var dirMatches = new Dictionary<string, IList<IFileInfo>>();
+
+        
+        
         var filesArray = files.ToArray();
+        
+        
         // group files by matching path pattern
         foreach (var file in filesArray)
         {
-            if (pathMatcher.TryMatchSinglePattern(file.Name, out var result))
-            {
-                var (patternAsString, _) = result;
-                if (!x.ContainsKey(patternAsString))
-                {
-                    x[patternAsString] = new List<IFileInfo>();                    
-                }
-                x[patternAsString].Add(file);
+            if (!pathMatcher.TryMatchSinglePattern(file.FullName, out var result)) continue;
+            var (patternAsString, _) = result;
+  
+            if((file.Attributes & FileAttributes.Directory) != 0){
+                if (!dirMatches.ContainsKey(patternAsString))
+                    dirMatches[patternAsString] = new List<IFileInfo>();                    
+                dirMatches[patternAsString].Add(file);
+                continue;
             }
+            
+            if (!fileMatches.ContainsKey(patternAsString))
+            {
+                fileMatches[patternAsString] = new List<IFileInfo>();                    
+            }
+            fileMatches[patternAsString].Add(file);
         }
         
-        // reorder these groups to use the containing path as key (shortest f.Name)
-        var y = new Dictionary<string, IList<IFileInfo>>();
-        foreach (var (key, value) in x)
-        {
 
+        // reorder these groups to use the containing path as key (shortest f.Name)
+        var patternGroups = new Dictionary<string, Dictionary<string, IList<IFileInfo>>>();
+        foreach (var (key, value) in dirMatches)
+        {
             // find the shortest match for a pattern
-            var shortest = value.Select(f => f.Name).OrderBy(s => s.Length).FirstOrDefault();
+            var shortest = value.MinBy(s => s.FullName.Length);
             if (shortest == null)
             {
                 continue;
             }
-            y[shortest] = value;
-            // todo: value.Concat(filesArray.Where(f => f.Name.StartsWith(shortest) && !value.Contains(f)).ToArray());
-            // fill in remaining files, that did not match but are in the same path
-            foreach (var f in filesArray)
+            if(!patternGroups.ContainsKey(key))
             {
-                if (f.Name.StartsWith(shortest) && !y[shortest].Contains(f))
-                {
-                    y[shortest].Add(f);
-                }
+                patternGroups[key] = new Dictionary<string, IList<IFileInfo>>();
             }
+
+            patternGroups[key][shortest.FullName] = value;
         }
+        
+        foreach(var (key, value) in fileMatches){
+            foreach(var f in value){
+                if(!patternGroups.ContainsKey(key))
+                {
+                    patternGroups[key] = new Dictionary<string, IList<IFileInfo>>();
+                }
+
+                patternGroups[key][f.FullName] = new List<IFileInfo> {f};
+            }  
+        }  
+        
+        
 
         // key: containing/shortest path
         // value: list of all files in it that where found by the iterator
-        return y;
+        return patternGroups;
     }
     
     private IEnumerable<IFileInfo> FindFilesByExtension(string inputPath,IEnumerable<string> includeExtensions, FileWalker? fileWalker = null)

@@ -58,7 +58,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
         var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions);
         // todo: var filePackages = _dirLoader.BuildFilePackages(inputFiles, pathPatternMatcher)
         //_dirLoader.SeekFiles();
-        var inputFilesAsArray = (settings.PathPattern.Length == 0 ? inputFiles : inputFiles.Where(f => pathPatternMatcher.TryMatchSinglePattern(f.Name, out _))).ToArray();
+        var inputFilesAsArray = (settings.PathPattern.Length == 0 ? inputFiles : inputFiles.Where(f => pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _))).ToArray();
 
 
         var packages = _dirLoader.BuildPackages(inputFilesAsArray, pathPatternMatcher);
