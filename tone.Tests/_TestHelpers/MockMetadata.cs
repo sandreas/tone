@@ -44,6 +44,7 @@ public class MockMetadata: IMetadata
     public string? ChaptersTableDescription { get; set; }
     public string? Narrator { get; set; }
     public string? MovementName { get; set; }
+    public string? Part { get; set; }
     public string? Movement { get; set; }
     public string? Path { get; set; }
     public DateTime? PublishingDate { get; set; }
@@ -54,4 +55,5 @@ public class MockMetadata: IMetadata
     public IList<ChapterInfo>? Chapters { get; set; }
     public IList<PictureInfo>? EmbeddedPictures { get; set; }
     public IDictionary<string, string>? AdditionalFields { get; set; }
+    public IDictionary<string, string> MappedAdditionalFields { get; set; }
 }

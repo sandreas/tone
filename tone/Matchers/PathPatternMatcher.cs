@@ -14,7 +14,7 @@ public class PathPatternMatcher
     {
         Patterns = patterns.ToArray();
     }
-    public bool TryMatchSinglePattern(string path, out (string patternAsString, Grok) match, Action<string, Grok, GrokResult?>? resultHandler = null)
+    public bool TryMatchSinglePattern(string path, out (string patternAsString, Grok) match, Action<string, Grok, GrokResult>? resultHandler = null)
     {
         match = ("", new Grok("")); // this is a dummy and should not be used
         if (!Patterns.Any())

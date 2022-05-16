@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using GrokNet;
 using Sandreas.Files;
 using Serilog;
 using tone.Matchers;
@@ -61,11 +62,7 @@ public class DirectoryLoaderService
     {
         fileWalker ??= _fileWalker;
         return fileWalker.WalkRecursive(inputPath)
-            .Catch((path, ex) =>
-            {
-                // _logger.Warning("{Path} could not be loaded: {Message}", path, ex.Message);
-                return FileWalkerBehaviour.Default;
-            });
+            .Catch((_, _) => FileWalkerBehaviour.Default);
     }
     
     public IEnumerable<IFileInfo> FindFilesByExtension(IEnumerable<string> inputPaths,IEnumerable<string> includeExtensions, FileWalker? fileWalker = null)
@@ -87,7 +84,7 @@ public class DirectoryLoaderService
         }
     }
 
-    public Dictionary<string, Dictionary<string, IList<IFileInfo>>> BuildPackages(IEnumerable<IFileInfo> files, PathPatternMatcher pathMatcher)
+    public IList<AudioBookPackage> BuildPackages(IEnumerable<IFileInfo> files, PathPatternMatcher pathMatcher)
     {
         /*
          * class AudioBookPackage
@@ -99,36 +96,109 @@ public class DirectoryLoaderService
          * - FindCovers?
          * - FindChapters
          */
-        
         var fileMatches = new Dictionary<string, IList<IFileInfo>>();
         var dirMatches = new Dictionary<string, IList<IFileInfo>>();
-
+        var packages = new List<AudioBookPackage>();
         
         
         var filesArray = files.ToArray();
         
-        
         // group files by matching path pattern
         foreach (var file in filesArray)
         {
-            if (!pathMatcher.TryMatchSinglePattern(file.FullName, out var result)) continue;
-            var (patternAsString, _) = result;
-  
-            if((file.Attributes & FileAttributes.Directory) != 0){
-                if (!dirMatches.ContainsKey(patternAsString))
-                    dirMatches[patternAsString] = new List<IFileInfo>();                    
-                dirMatches[patternAsString].Add(file);
+            var patternAsString = "";
+            var grokResult = new GrokResult(new List<GrokItem>());
+            if (!pathMatcher.TryMatchSinglePattern(file.FullName, out var result, (pattern, grokPattern, grokPatternResult) =>
+                {
+                    patternAsString = pattern;
+                    grokResult = grokPatternResult;
+                }))
+            {
+                continue;
+            }
+
+            var identifier = string.Join(",",grokResult.Select(r => r.Key+"="+r.Value));
+            var type = (file.Attributes & FileAttributes.Directory) == 0
+                ? AudioBookPackageType.File
+                : AudioBookPackageType.Directory;
+
+            
+            var existingDirectoryPackage = packages.FirstOrDefault(p => p.Id == identifier && p.Type == AudioBookPackageType.Directory);
+            if (existingDirectoryPackage == null)
+            {
+                packages.Add(new AudioBookPackage
+                {
+                    Type = type,
+                    Files = new List<IFileInfo>
+                    {
+                        file
+                    },
+                    Matches = grokResult
+                });
+            }
+            else
+            {
+                existingDirectoryPackage.Files.Add(file);
+            }
+            
+            /*
+            if()
+            {
+
+                var package = packages.FirstOrDefault(p =>
+                    p.PatternString == patternAsString && p.Type == AudioBookPackageType.Directory);
+                
+                if (package == null)
+                {
+                    packages.Add(new AudioBookPackage()
+                    {
+                        Type=AudioBookPackageType.Directory,
+                        PatternString = patternAsString,
+                        BaseDirectory = null,
+                        Files = new List<IFileInfo>()
+                        {
+                            file
+                        }
+                    });
+                }
+                else
+                {
+                    package.Files.Add(file);
+                }
                 continue;
             }
             
-            if (!fileMatches.ContainsKey(patternAsString))
+            var filePackage = packages.FirstOrDefault(p =>
+                p.PatternString == patternAsString && p.Type == AudioBookPackageType.File);
+            
+            if (filePackage)
             {
                 fileMatches[patternAsString] = new List<IFileInfo>();                    
             }
             fileMatches[patternAsString].Add(file);
+            */
         }
-        
 
+
+        foreach (var package in packages)
+        {
+            if (package.Files.Count == 0)
+            {
+                continue;
+            }
+            if (package.Type == AudioBookPackageType.Directory)
+            {
+                package.BaseDirectory = package.Files.MinBy(f => f.FullName.Length)?.Directory;
+            }
+
+            if (package.Type == AudioBookPackageType.File)
+            {
+                package.BaseDirectory = package.Files.MinBy(f => f.FullName.Length)?.Directory;
+            }
+        }
+
+        
+        /*
         // reorder these groups to use the containing path as key (shortest f.Name)
         var patternGroups = new Dictionary<string, Dictionary<string, IList<IFileInfo>>>();
         foreach (var (key, value) in dirMatches)
@@ -163,6 +233,9 @@ public class DirectoryLoaderService
         // key: containing/shortest path
         // value: list of all files in it that where found by the iterator
         return patternGroups;
+        */
+
+        return packages;
     }
     
     private IEnumerable<IFileInfo> FindFilesByExtension(string inputPath,IEnumerable<string> includeExtensions, FileWalker? fileWalker = null)
