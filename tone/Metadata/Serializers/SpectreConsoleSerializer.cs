@@ -275,8 +275,8 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         var chapters = new Table()
             .AddColumn(firstCol)
             .AddColumn("name")
-            .AddColumn("subtitle")
-            .AddColumn("pictures")
+            //.AddColumn("subtitle")
+            //.AddColumn("pictures")
             .HideHeaders()
             .BorderColor(color);
         chapters.Title = new TableTitle("chapters", new Style(color));
@@ -284,7 +284,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         {
             StringifyMulti(chap, values =>
             {
-                if (values.Length == 4)
+                if (values.Length == 2)
                 {
                     chapters.AddRow(values.Select(Markup.Escape).ToArray());
                 }
@@ -304,8 +304,8 @@ public class SpectreConsoleSerializer : IMetadataSerializer
             {
                 Stringify(TimeSpan.FromMilliseconds(c.StartTime), null, TimeSpan.FromMilliseconds(uint.MaxValue)),
                 c.Title, 
-                c.Subtitle,
-                c.Picture == null ? "" : c.Picture.ToString()
+                //c.Subtitle,
+                //c.Picture == null ? "" : c.Picture.ToString()
             },
             LyricsInfo l => new[]
             {
