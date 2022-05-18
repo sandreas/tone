@@ -8,11 +8,12 @@ namespace tone.Matchers;
 
 public class PathPatternMatcher
 {
-    private IEnumerable<(string patternAsString, Grok)> Patterns { get; set; }
+    public bool HasPatterns => Patterns.Count > 0;
+    private IList<(string patternAsString, Grok)> Patterns { get; set; }
 
     public PathPatternMatcher(IEnumerable<(string patternAsString, Grok)> patterns)
     {
-        Patterns = patterns.ToArray();
+        Patterns = patterns.ToList();
     }
     public bool TryMatchSinglePattern(string path, out (string patternAsString, Grok) match, Action<string, Grok, GrokResult>? resultHandler = null)
     {

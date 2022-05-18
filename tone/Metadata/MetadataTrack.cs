@@ -11,6 +11,7 @@ public class MetadataTrack : Track, IMetadata
 {
     // meet IMetadata interface requirements
     public new string? Path => base.Path;
+    public string? BasePath { get; set; }  
 
     private readonly MetadataSpecification _manualMetadataSpecification = MetadataSpecification.Undefined;
     public MetadataSpecification[] MetadataSpecifications => MetadataFormats

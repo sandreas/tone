@@ -1,4 +1,4 @@
-using System.IO.Abstractions;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using OperationResult;
@@ -46,7 +46,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
         var pathPatternMatcher = new PathPatternMatcher(grokDefinitions.Value);
 
-        
+
         var taggerResult = await BuildTaggerCompositeAsync(settings, pathPatternMatcher);
         if (!taggerResult)
         {
@@ -58,14 +58,16 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
         var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions);
         // todo: var filePackages = _dirLoader.BuildFilePackages(inputFiles, pathPatternMatcher)
         //_dirLoader.SeekFiles();
-        var inputFilesAsArray = (settings.PathPattern.Length == 0 ? inputFiles : inputFiles.Where(f => pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _))).ToArray();
+        var inputFilesAsArray = (settings.PathPattern.Length == 0
+            ? inputFiles
+            : inputFiles.Where(f => pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _))).ToArray();
 
-
-        var packages = _dirLoader.BuildPackages(inputFilesAsArray, pathPatternMatcher);
+        var packages = _dirLoader.BuildPackages(inputFilesAsArray, pathPatternMatcher, settings.Input).ToArray();
+        var fileCount = packages.Sum(p => p.Files.Count);
         
         if (!settings.DryRun)
         {
-            switch (inputFilesAsArray.Length)
+            switch (fileCount)
             {
                 case 0:
                     _console.Error.WriteLine("no files found to tag");
@@ -76,50 +78,58 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     return (int)ReturnCode.UserAbort;
             }
         }
-
-        var tasks = inputFilesAsArray.Select(file => Task.Run(async () =>
+        
+        var tasks = packages.Select(p => Task.Run(async () =>
             {
-                var track = new MetadataTrack(file);
-                var result = await tagger.UpdateAsync(track);
-                if (!result)
+                foreach (var file in p.Files)
                 {
-                    _console.Error.WriteLine($"Could not update tags for file {file}: {result.Error}");
-                    return;
-                }
+                    var track = new MetadataTrack(file)
+                    {
+                        BasePath = p.BaseDirectory?.FullName
+                    };
+                    var status = await tagger.UpdateAsync(track);
+                    
+                    if (!status)
+                    {
+                        _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
+                        return;
+                    }
 
-                if (settings.DryRun)
-                {
-                    var currentMetadata = new MetadataTrack(file);
-                    var diffListing = track.Diff(currentMetadata);
-                    if (diffListing.Count == 0)
+                    if (settings.DryRun)
                     {
-                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
-                    }
-                    else
-                    {
-                        var diffTable = new Table().Expand();
-                        diffTable.Title = new TableTitle($"[red]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
-                        diffTable.AddColumn("property")
-                            .AddColumn("current")
-                            .AddColumn("new");
-                        foreach (var (property, currentValue, newValue) in diffListing)
+                        var currentMetadata = new MetadataTrack(file);
+                        var diffListing = track.Diff(currentMetadata);
+                        if (diffListing.Count == 0)
                         {
-                            diffTable.AddRow(
-                                property.ToString(),
-                                Markup.Escape(newValue?.ToString() ?? "<null>"),
-                                Markup.Escape(currentValue?.ToString() ?? "<null>")
-                            );
+                            _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
                         }
-                        _console.Write(diffTable);
+                        else
+                        {
+                            var diffTable = new Table().Expand();
+                            diffTable.Title = new TableTitle($"[red]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
+                            diffTable.AddColumn("property")
+                                .AddColumn("current")
+                                .AddColumn("new");
+                            foreach (var (property, currentValue, newValue) in diffListing)
+                            {
+                                diffTable.AddRow(
+                                    property.ToString(),
+                                    Markup.Escape(newValue?.ToString() ?? "<null>"),
+                                    Markup.Escape(currentValue?.ToString() ?? "<null>")
+                                );
+                            }
+                            _console.Write(diffTable);
+                        }
+                        return;
                     }
-                    return;
+                    if (!track.Save())
+                    {
+                        _console.Error.Write(new Rule($"[red]FAIL: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
+                    } else  {
+                        _console.Write(new Rule($"[green]OK: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
+                    }
                 }
-                if (!track.Save())
-                {
-                    _console.Error.Write(new Rule($"[red]FAIL: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
-                } else  {
-                    _console.Write(new Rule($"[green]OK: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
-                }
+                
             }))
             .ToList();
 
@@ -139,8 +149,8 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
     {
         var tagger = new TaggerComposite();
         tagger.Taggers.Add(new MetadataTagger(settings));
-        tagger.Taggers.Add(new CoverTagger(_dirLoader.FileSystem ?? new FileSystem(),
-            settings.Covers /*, settings.AutoImportCovers*/));
+        tagger.Taggers.Add(new CoverTagger(_dirLoader.FileSystem,
+            settings.Covers, settings.AutoImport.Contains(AutoImportValue.Covers)));
         
         tagger.Taggers.Add(new PathPatternTagger(matcher));
         tagger.Taggers.Add(new AdditionalFieldsRemoveTagger(settings.RemoveAdditionalFields));

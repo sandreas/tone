@@ -15,20 +15,33 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux', 'windows', 'macOS', 'linux-arm']
+        kind: [
+          'linux', 
+          'linux-arm',
+          'linux-arm64',
+          'windows', 
+          'macOS',
+          'macOS-arm'
+        ]
         include:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
           - kind: linux-arm
             os: ubuntu-latest
-            target: linux-arm            
+            target: linux-arm    
+          - kind: linux-arm64
+            os: ubuntu-latest
+            target: linux-arm64
           - kind: windows
             os: windows-latest
             target: win-x64
           - kind: macOS
             os: macos-latest
             target: osx-x64
+          - kind: macOS-arm
+            os: macos-latest
+            target: osx-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout

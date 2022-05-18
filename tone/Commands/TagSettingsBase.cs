@@ -113,6 +113,8 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
     
     // fulfil interface contract
     public string? Path => null;
+    public string? BasePath => null;
+
     public TimeSpan TotalDuration => new();
     public IList<ChapterInfo> Chapters { get; } = new List<ChapterInfo>();
     public LyricsInfo? Lyrics { get; set; }

@@ -47,6 +47,7 @@ public class MockMetadata: IMetadata
     public string? Part { get; set; }
     public string? Movement { get; set; }
     public string? Path { get; set; }
+    public string? BasePath { get; set; }
     public DateTime? PublishingDate { get; set; }
     public DateTime? RecordingDate { get; set; }
     public DateTime? PurchaseDate { get; set; }

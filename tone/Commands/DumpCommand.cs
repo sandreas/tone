@@ -35,9 +35,6 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
 
             if (settings.IncludeProperties.Length > 0)
             {
-                // todo:
-                // - clear properties that are not in includeProperties, don't transfer
-                // - Transfer properties should support two modes: Overwrite and MergeIfEmpty 
                 track.ClearProperties(settings.IncludeProperties);
             }
 

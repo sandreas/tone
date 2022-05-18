@@ -185,16 +185,18 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         }.RightAligned();
         var pictures = new Table()
             .AddColumn(firstCol)
+            .AddColumn("type")
+            .AddColumn("description")
             .AddColumn("mimetype")
             .AddColumn("size")
-            .HideHeaders()
+            // .HideHeaders()
             .BorderColor(color);
         pictures.Title = new TableTitle("embedded pictures", new Style(color));
         foreach (var pic in metadata.EmbeddedPictures)
         {
             StringifyMulti(pic, values =>
             {
-                if (values.Length == 3)
+                if (values.Length == 5)
                 {
                     pictures.AddRow(values.Select(Markup.Escape).ToArray());
                 }
@@ -273,6 +275,8 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         var chapters = new Table()
             .AddColumn(firstCol)
             .AddColumn("name")
+            .AddColumn("subtitle")
+            .AddColumn("pictures")
             .HideHeaders()
             .BorderColor(color);
         chapters.Title = new TableTitle("chapters", new Style(color));
@@ -280,7 +284,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
         {
             StringifyMulti(chap, values =>
             {
-                if (values.Length == 2)
+                if (values.Length == 4)
                 {
                     chapters.AddRow(values.Select(Markup.Escape).ToArray());
                 }
@@ -295,11 +299,13 @@ public class SpectreConsoleSerializer : IMetadataSerializer
     {
         var result = value switch
         {
-            PictureInfo p => new[] { p.Position.ToString(), p.MimeType, p.PictureData.Length + " bytes" },
+            PictureInfo p => new[] { p.Position.ToString(), p.PicType.ToString(), p.Description, p.MimeType, p.PictureData.Length + " bytes" },
             ChapterInfo c => new[]
             {
                 Stringify(TimeSpan.FromMilliseconds(c.StartTime), null, TimeSpan.FromMilliseconds(uint.MaxValue)),
-                c.Title
+                c.Title, 
+                c.Subtitle,
+                c.Picture == null ? "" : c.Picture.ToString()
             },
             LyricsInfo l => new[]
             {

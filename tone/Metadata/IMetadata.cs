@@ -8,6 +8,8 @@ public interface IMetadata
 {
     // non-metadata properties
     public string? Path { get; }
+    public string? BasePath { get; }
+
     public TimeSpan TotalDuration { get; }
 
     // metadata properties

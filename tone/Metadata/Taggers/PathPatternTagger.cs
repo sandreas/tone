@@ -18,10 +18,14 @@ public class PathPatternTagger : TaggerBase
 
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
+        if (!_pathPatternMatcher.HasPatterns)
+        {
+            return await Task.FromResult(Ok());
+        }
         if (_pathPatternMatcher.TryMatchSinglePattern(metadata.Path ?? "", out _,
                 (_, _, result) => MapResults(result, metadata)))
         {
-            return await Task.FromResult(Ok());
+            return Ok();
         }
 
         return Error("Could not match string");
