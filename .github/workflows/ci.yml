@@ -19,9 +19,9 @@ jobs:
           'linux', 
           'linux-arm',
           'linux-arm64',
-          'windows', 
-          'macOS',
-          'macOS-arm'
+          'macos',
+          'macos-x64',
+          'windows'
         ]
         include:
           - kind: linux
@@ -33,15 +33,15 @@ jobs:
           - kind: linux-arm64
             os: ubuntu-latest
             target: linux-arm64
+          - kind: macos
+            os: macos-latest
+            target: osx-arm64
+          - kind: macos-x64
+            os: macos-latest
+            target: osx-x64
           - kind: windows
             os: windows-latest
             target: win-x64
-          - kind: macOS
-            os: macos-latest
-            target: osx-x64
-          - kind: macOS-arm
-            os: macos-latest
-            target: osx-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -66,11 +66,12 @@ jobs:
         shell: bash
         run: |
           release_name="${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version-without-v }}-${{ matrix.target }}"
+          archive_name="${{ env.PROJECT_NAME }}-${{ matrix.kind }}"
           dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           if [ "${{ matrix.target }}" == "win-x64" ]; then
-            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+            7z a -tzip "$archive_name.zip" "./${release_name}/*"
           else
-            tar czvf "${release_name}.tar.gz" "$release_name"
+            tar czvf "$archive_name.tar.gz" "$release_name"
           fi
           rm -r "$release_name"
       - name: Publish
