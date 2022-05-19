@@ -69,9 +69,9 @@ jobs:
           archive_name="${{ env.PROJECT_NAME }}-${{ matrix.kind }}"
           dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           if [ "${{ matrix.target }}" == "win-x64" ]; then
-            7z a -tzip "$archive_name.zip" "./${release_name}/*"
+            7z a -tzip "${archive_name}.zip" "./${release_name}/*"
           else
-            tar czvf "$archive_name.tar.gz" "$release_name"
+            tar czvf "${archive_name}.tar.gz" "$release_name"
           fi
           rm -r "$release_name"
       - name: Publish
