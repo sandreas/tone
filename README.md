@@ -1,7 +1,8 @@
 # tone
 
-`tone` is a utility to dump and modify audio metadata. It is written in `C#` and utilizes the 
-awesome [atldotnet] library. 
+`tone` is a cross platform utility to dump and modify audio metadata for a wide variety of formats. 
+It is written in pure `C#`, deployed as single binary and utilizes the awesome [atldotnet] library
+to provide support for a wide variety of audio and metadata formats. 
 
 > Important note: `tone` is in a pretty early state of development and may contain 
 > bugs or missing features as well as missing documentation, so it might be a good 
@@ -9,6 +10,7 @@ awesome [atldotnet] library.
 > documentation is missing.
 
 ## Features
+The main purpose of `tone` is to tag `m4b` audio books for myself. It is planned as a successor to [m4b-tool].
 
 - `dump` metadata of audio files
   - different metadata formats (e.g. `ffmetadata`)
@@ -17,6 +19,15 @@ awesome [atldotnet] library.
   - different file formats (e.g. `mp3`, `m4b`, and `flac`)
   - extensive list of supported tags (*additional fields*, *covers*, *chapters*, etc.)
   - filename to tags via `--path-pattern` (see below)
+
+### Future plans
+
+- [ ] `split` large audio files into multiple smaller files (e.g. by chapters) using `ffmpeg`, `fdkaac` and [CliFX]
+- [ ] `merge` multiple smaller audio files into large ones auto generating chapters using silence detection with `ffmpeg`, `fdkaac` and [CliFX]
+- [ ] publish an official `docker` image with all dependencies
+
+- [ ] write unit tests and more detailed documentation
+
 
 ## Setup
 
@@ -202,3 +213,4 @@ All short hands are configured to match non-slash (`/`) or part numbers (`[0-9-.
 [atldotnet]: https://github.com/Zeugma440/atldotnet
 [issue with flags]: https://github.com/spectreconsole/spectre.console/issues/825
 [grok.net]: https://github.com/Marusyk/grok.net
+[CliFX]: https://github.com/Tyrrrz/CliFx
