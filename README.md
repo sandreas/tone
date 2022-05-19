@@ -3,9 +3,10 @@
 `tone` is a utility to dump and modify audio metadata. It is written in `C#` and utilizes the 
 awesome [atldotnet] library. 
 
-> Important note: `tone` is in a pretty early development state and may contain 
-bugs or missing features, so it might be a good idea to backup your files before using it.
-
+> Important note: `tone` is in a pretty early state of development and may contain 
+> bugs or missing features as well as missing documentation, so it might be a good 
+> idea to backup your files before using it and prepare for reading code, if 
+> documentation is missing.
 
 ## Features
 
@@ -15,7 +16,7 @@ bugs or missing features, so it might be a good idea to backup your files before
 - `tag` audio files with different kinds of metadata
   - different file formats (e.g. `mp3`, `m4b`, and `flac`)
   - extensive list of supported tags (*additional fields*, *covers*, *chapters*, etc.)
-
+  - filename to tags via `--path-pattern` (see below)
 
 ## Setup
 
@@ -39,14 +40,13 @@ wget https://github.com/sandreas/tone/releases/latest/download/tone-macos.tar.gz
 # macos-x64
 wget https://github.com/sandreas/tone/releases/latest/download/tone-macos-x64.tar.gz
 
-
 # untar 
 tar xzf tone-*.tar.gz
 
-# install
+# install to $PATH
 sudo mv tone /usr/local/bin/
 
-# test
+# test if tone is usable
 tone --help
 ```
 
@@ -54,11 +54,16 @@ tone --help
 ### Windows
 
 ```bash
-# windows (powershell)
+# download for windows (powershell)
 iwr -outf index.html https://github.com/sandreas/tone/releases/latest/download/tone-windows.zip
+
+# extract tone
 Expand-Archive -LiteralPath tone-windows.zip -DestinationPath .
+
+# open directory in windows explorer to put tone in your %PATH%
 start .
 ```
+
 
 ## Commands
 
@@ -159,5 +164,41 @@ OPTIONS:
         --dry-run     
 ```
 
+#### filename to tag via `--path-pattern` / `-p`
+
+It is possible to use the `tag` subcommand with multiple `--path-pattern` arguments to read metadata from path names. Please note:
+
+- If multiple path patterns are present, the first matching one is preferred
+- Path patterns can be applied recursively for a whole directory tree as well as for single files
+- It is recommended use the `--dry-run` flag to see a diff before changing anything
+  - there is an [issue with flags] like `--dry-run`, that they sometimes not work depending on the position - sometimes shifting them around helps
+- Path pattern matching is based on [grok.net], so all metadata properties could be read from a path name and there are a lot of things yet to be documented 
+  - For now it is recommended to use the short hands below
+
+**short hands**
+
+All short hands are configured to match non-slash (`/`) or part numbers (`[0-9-.IVXLCDM]+`).
+
+- `%a` -  `Artist`
+- `%A` -  `SortArtist`
+- `%c` -  `Comment`
+- `%C` -  `Copyright`
+- `%d` -  `Description`
+- `%D` -  `LongDescription`
+- `%g` -  `Genre`
+- `%m` -  `Album`
+- `%M` -  `SortAlbum`
+- `%n` -  `Title`
+- `%N` -  `SortTitle` 
+- `%p` -  `Part` (only matching part numbers)
+- `%s` -  `MovementName`
+- `%t` -  `AlbumArtist`
+- `%w` -  `Composer`
+- `%y` -  `ReleaseDate`
+- `%z` -  `IgnoreDummy`
+- `%Z` -  `IgnoreDummy` (only matching part numbers)
+
 [releases]: https://github.com/sandreas/tone/releases
 [atldotnet]: https://github.com/Zeugma440/atldotnet
+[issue with flags]: https://github.com/spectreconsole/spectre.console/issues/825
+[grok.net]: https://github.com/Marusyk/grok.net
