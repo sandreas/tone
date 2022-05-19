@@ -120,7 +120,7 @@ public class DirectoryLoaderService
                 {
                     noPatternPackages.Add(new AudioBookPackage()
                     {
-                        BaseDirectory = FileSystem.Directory.CreateDirectory(basePath),
+                        BaseDirectory = FileSystem.DirectoryInfo.FromDirectoryName(basePath),
                         Files = new List<IFileInfo>()
                         {
                             file

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using OperationResult;
@@ -64,7 +63,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
         var packages = _dirLoader.BuildPackages(inputFilesAsArray, pathPatternMatcher, settings.Input).ToArray();
         var fileCount = packages.Sum(p => p.Files.Count);
-        
+
         if (!settings.DryRun)
         {
             switch (fileCount)
@@ -78,7 +77,9 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     return (int)ReturnCode.UserAbort;
             }
         }
-        
+
+        var showDryRunMessage = false;
+
         var tasks = packages.Select(p => Task.Run(async () =>
             {
                 foreach (var file in p.Files)
@@ -88,7 +89,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                         BasePath = p.BaseDirectory?.FullName
                     };
                     var status = await tagger.UpdateAsync(track);
-                    
+
                     if (!status)
                     {
                         _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
@@ -101,10 +102,12 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                         var diffListing = track.Diff(currentMetadata);
                         if (diffListing.Count == 0)
                         {
-                            _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
+                            _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
+                                .LeftAligned());
                         }
                         else
                         {
+                            showDryRunMessage = true;
                             var diffTable = new Table().Expand();
                             diffTable.Title = new TableTitle($"[red]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
                             diffTable.AddColumn("property")
@@ -118,24 +121,29 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                                     Markup.Escape(currentValue?.ToString() ?? "<null>")
                                 );
                             }
+
                             _console.Write(diffTable);
                         }
+
                         return;
                     }
+
                     if (!track.Save())
                     {
-                        _console.Error.Write(new Rule($"[red]FAIL: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
-                    } else  {
+                        _console.Error.Write(new Rule($"[red]FAIL: {Markup.Escape(track.Path ?? "")}[/]")
+                            .LeftAligned());
+                    }
+                    else
+                    {
                         _console.Write(new Rule($"[green]OK: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
                     }
                 }
-                
             }))
             .ToList();
 
         await Task.WhenAll(tasks);
 
-        if (settings.DryRun)
+        if (showDryRunMessage)
         {
             _console.WriteLine();
             _console.Write(new Markup("[blue]!!! This was a dry-run, no changes where actually saved !!![/]"));
@@ -145,13 +153,14 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
     }
 
 
-    private Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(TagSettingsBase settings, PathPatternMatcher matcher)
+    private Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(TagSettingsBase settings,
+        PathPatternMatcher matcher)
     {
         var tagger = new TaggerComposite();
         tagger.Taggers.Add(new MetadataTagger(settings));
         tagger.Taggers.Add(new CoverTagger(_dirLoader.FileSystem,
             settings.Covers, settings.AutoImport.Contains(AutoImportValue.Covers)));
-        
+
         tagger.Taggers.Add(new PathPatternTagger(matcher));
         tagger.Taggers.Add(new AdditionalFieldsRemoveTagger(settings.RemoveAdditionalFields));
         if (settings.AutoImport.Contains(AutoImportValue.Chapters) || settings.ImportChaptersFile != "")

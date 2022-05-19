@@ -12,6 +12,7 @@ using tone.Metadata.Formats;
 using tone.Metadata.Serializers;
 using tone.Services;
 
+var propagateExceptions = args.Contains("--debug");
 
 var services = new ServiceCollection();
 
@@ -54,17 +55,31 @@ app.Configure(config =>
 {
     
     // config.Settings;
+    config.UseStrictParsing();
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
         .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
-        .WithExample(new[] { "dump", "input.mp3" });
+        .WithExample(new[] { "dump", "--help" })
+        .WithExample(new[] { "dump", "input.mp3" })
+        .WithExample(new[] { "dump", "audio-directory/", "--include-extension", "m4b", "--format", "ffmetadata", "--include-property", "title", "--include-property", "artist" })
+        ;
     config.AddCommand<TagCommand>("tag")
         .WithDescription("tag files with metadata properties (directories are traversed recursively)")
-        .WithExample(new[] { "tag", "input.mp3", "--meta-title", "\"a title\"" });
-
-    config.PropagateExceptions();
+        .WithExample(new[] { "tag", "--help" })
+        .WithExample(new[] { "tag", "input.mp3", "--meta-title", "\"a title\"" })
+        .WithExample(new[] { "tag", "--debug", "--auto-import=covers","--meta-additional-field", "©st3=testing", "input.m4b", "--dry-run"})
+        .WithExample(new[] { "tag", "--auto-import=covers", "--auto-import=chapters",
+            "--path-pattern=\"audiobooks/%g/%a/%s/%p - %n.m4b\"",
+            "--path-pattern=\"audiobooks/%g/%a/%z/%n.m4b\"", 
+            "audiobooks/", "--dry-run"})
+        ;
+    
+    if (propagateExceptions)
+    {
+        config.PropagateExceptions();
+    }
 #if DEBUG
     config.ValidateExamples();
 #endif
@@ -76,11 +91,10 @@ try
 }
 catch (Exception e)
 {
-    AnsiConsole.WriteException(e);
-
-    if (e.StackTrace != null && args.Contains("--debug"))
+    if (e is CommandParseException { Pretty: { } } ce)
     {
-        AnsiConsole.WriteLine(e.StackTrace);
+        AnsiConsole.Write(ce.Pretty);
     }
+    AnsiConsole.WriteException(e);
     return (int)ReturnCode.UncaughtException;
 }
