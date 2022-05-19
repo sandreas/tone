@@ -9,6 +9,36 @@ to provide support for a wide variety of audio and metadata formats.
 > idea to backup your files before using it and prepare for reading code, if 
 > documentation is missing.
 
+## TL;DR
+
+### dump tags
+```bash
+# show help
+tone dump --help
+
+# show all tags for single file (input.mp3)
+tone dump input.mp3
+
+# show title and artiest tag recursively for all files in directory with extension m4b in FFMETADATA format
+tone dump audio-directory/ --include-extension m4b --format ffmetadata --include-property title --include-property artist
+```
+
+### modify tags
+
+```bash
+# show help
+tone tag --help
+
+# change title tag
+tone tag input.mp3 --meta-title "a title"
+
+# change a custom field, auto-import covers nearby and show debug info on error (--dry-run simulation)
+tone tag --debug --auto-import=covers --meta-additional-field ©st3=testing input.m4b --dry-run
+
+# recursively set tags genre, artist, series, part and title by path pattern (--dry-run simulation)
+tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/%g/%a/%s/%p - %n.m4b" --path-pattern="audiobooks/%g/%a/%z/%n.m4b" audiobooks/ --dry-run
+```
+
 ## Features
 The main purpose of `tone` is to tag `m4b` audio books for myself. It is planned as a successor to [m4b-tool].
 
@@ -25,7 +55,6 @@ The main purpose of `tone` is to tag `m4b` audio books for myself. It is planned
 - [ ] `split` large audio files into multiple smaller files (e.g. by chapters) using `ffmpeg`, `fdkaac` and [CliFX]
 - [ ] `merge` multiple smaller audio files into large ones auto generating chapters using silence detection with `ffmpeg`, `fdkaac` and [CliFX]
 - [ ] publish an official `docker` image with all dependencies
-
 - [ ] write unit tests and more detailed documentation
 
 
