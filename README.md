@@ -85,7 +85,7 @@ wget https://github.com/sandreas/tone/releases/download/v0.0.1/tone-0.0.1-osx-x6
 tar xzf tone-*.tar.gz
 
 # install to your $PATH
-sudo mv tone /usr/local/bin/
+sudo mv tone*/tone /usr/local/bin/
 
 # test if tone is usable
 tone --help
