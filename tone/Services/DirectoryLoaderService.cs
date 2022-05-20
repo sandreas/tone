@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using GrokNet;
@@ -86,7 +85,7 @@ public class DirectoryLoaderService
         }
     }
 
-    public IList<AudioBookPackage> BuildPackages(IEnumerable<IFileInfo> files, PathPatternMatcher pathMatcher,
+    public IEnumerable<AudioBookPackage> BuildPackages(IEnumerable<IFileInfo> files, PathPatternMatcher pathMatcher,
         string[] inputPaths)
     {
         var packages = new List<AudioBookPackage>();

@@ -162,7 +162,7 @@ public class CoverTagger: TaggerBase
         return picInfo;
     }
     
-    private PictureInfo.PIC_TYPE SwitchPicType(IFileSystemInfo cover) => cover.Name.ToLower() switch
+    private static PictureInfo.PIC_TYPE SwitchPicType(IFileSystemInfo cover) => cover.Name.ToLower() switch
     {
         { } name when name.Contains("front.") => PictureInfo.PIC_TYPE.Front,
         { } name when name.Contains("back.") => PictureInfo.PIC_TYPE.Back,
