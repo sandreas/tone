@@ -65,25 +65,26 @@ This means, that downloading a single file from the [releases] page.
 
 ### Linux / macOS
 ```bash
-# linux-x64
-wget https://github.com/sandreas/tone/releases/latest/download/tone-linux.tar.gz
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/latest/download/tone-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.1/tone-0.0.1-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/latest/download/tone-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.1/tone-0.0.1-linux-arm64.tar.gz
 
-# macos (arm)
-wget https://github.com/sandreas/tone/releases/latest/download/tone-macos.tar.gz
+# linux-x64
+wget https://github.com/sandreas/tone/releases/download/v0.0.1/tone-0.0.1-linux-arm64.tar.gz
 
-# macos-x64
-wget https://github.com/sandreas/tone/releases/latest/download/tone-macos-x64.tar.gz
+# macos (m1)
+wget https://github.com/sandreas/tone/releases/download/v0.0.1/tone-0.0.1-osx-arm64.tar.gz
+
+# macos (intel)
+wget https://github.com/sandreas/tone/releases/download/v0.0.1/tone-0.0.1-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
 
-# install to $PATH
+# install to your $PATH
 sudo mv tone /usr/local/bin/
 
 # test if tone is usable
@@ -95,13 +96,16 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf index.html https://github.com/sandreas/tone/releases/latest/download/tone-windows.zip
+iwr -outf index.html https://github.com/sandreas/tone/releases/download/v0.0.1/tone-0.0.1-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-windows.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.0.1-win-x64.zip -DestinationPath .
 
-# open directory in windows explorer to put tone in your %PATH%
+# open directory in windows explorer to put tone in your %PATH%, e.g. C:\Windows
 start .
+
+# test if tone is usable
+tone --help
 ```
 
 
