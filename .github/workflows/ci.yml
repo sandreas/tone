@@ -67,9 +67,12 @@ jobs:
         run: |
           release_name="${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version-without-v }}-${{ matrix.target }}"
           dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
+          
           if [ "${{ matrix.target }}" == "win-x64" ]; then
+            del ".\$release_name\appsettings.json"
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
+            rm -f "$release_name/appsettings.json"
             tar czvf "${release_name}.tar.gz" "$release_name"
           fi
           rm -r "$release_name"

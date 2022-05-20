@@ -11,7 +11,7 @@ public class TagService: ITagger
 {
     public List<ITagger> Taggers { get; } = new();
 
-    public TagService(MetadataTagger metaTagger)
+    public TagService(ITagger metaTagger)
     {
         Taggers.Add(metaTagger);
     }

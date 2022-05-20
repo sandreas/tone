@@ -17,7 +17,7 @@ public class GrokPatternService
     public async Task<Result<IEnumerable<(string, Grok)>, string>> BuildAsync(IEnumerable<string>? grokDefinitions,
         IEnumerable<string>? customPatterns = null)
     {
-        customPatterns ??= Array.Empty<string>();
+        customPatterns ??= new List<string>();
         var customPatternsArray = customPatterns.ToArray();
         try
         {
@@ -34,7 +34,7 @@ public class GrokPatternService
         }
     }
 
-    private Status<string> ValidateCustomPatterns(IEnumerable<string> customPatterns)
+    private static Status<string> ValidateCustomPatterns(IEnumerable<string> customPatterns)
     {
         foreach (var pattern in customPatterns)
         {
@@ -78,7 +78,7 @@ public class GrokPatternService
     {
         var patternsString = string.Join("\n", customPatterns ?? Array.Empty<string>());
         
-        var grokDefArray = grokDefinitions?.ToArray() ?? Array.Empty<string>();
+        var grokDefArray = grokDefinitions?.ToList() ?? new List<string>();
         var groks = new List<(string, Grok)>();
         foreach (var pattern in grokDefArray)
         {
