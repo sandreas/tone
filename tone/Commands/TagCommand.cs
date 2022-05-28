@@ -79,7 +79,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     var diffListing = track.Diff(currentMetadata);
                     if (diffListing.Count == 0)
                     {
-                        if( !settings.Force){
+                        if(settings.DryRun || !settings.Force){
                             _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
                                 .LeftAligned());
                             return;
