@@ -10,7 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CliFx" Version="2.2.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
         <PackageReference Include="Moq.AutoMock" Version="3.1.0" />
         <PackageReference Include="Sandreas.Files" Version="0.0.5" />

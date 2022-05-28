@@ -3,7 +3,7 @@ using Spectre.Console.Cli;
 using tone.Metadata;
 using tone.Services;
 
-namespace tone.Commands;
+namespace tone.Commands.Settings;
 
 public class DumpCommandSettings : CommandSettingsBase
 {

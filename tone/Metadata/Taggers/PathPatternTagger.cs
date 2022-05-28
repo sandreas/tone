@@ -7,7 +7,7 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class PathPatternTagger : TaggerBase
+public class PathPatternTagger : ITagger
 {
     private readonly PathPatternMatcher _pathPatternMatcher;
 
@@ -16,7 +16,7 @@ public class PathPatternTagger : TaggerBase
         _pathPatternMatcher = pathPatternMatcher;
     }
 
-    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if (!_pathPatternMatcher.HasPatterns)
         {

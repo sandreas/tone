@@ -8,6 +8,11 @@ namespace tone.Metadata.Taggers;
 public class TaggerComposite : ITagger
 {
     public List<ITagger> Taggers { get; } = new();
+
+    public TaggerComposite(params ITagger[] taggers)
+    {
+        Taggers.AddRange(taggers);
+    }
     
     public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {

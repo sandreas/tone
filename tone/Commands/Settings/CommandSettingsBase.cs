@@ -1,9 +1,7 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
-using tone.Metadata;
-using tone.Services;
 using static System.Array;
-namespace tone.Commands;
+namespace tone.Commands.Settings;
 
 public abstract class CommandSettingsBase : CommandSettings
 {

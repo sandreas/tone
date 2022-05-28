@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using ATL;
 using Spectre.Console.Cli;
-using tone.Metadata;
 
-namespace tone.Commands;
+namespace tone.Commands.Settings;
 
 public class TagCommandSettings : TagSettingsBase
 {

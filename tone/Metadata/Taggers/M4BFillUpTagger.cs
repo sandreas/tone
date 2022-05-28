@@ -7,11 +7,11 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class M4BFillUpTagger : TaggerBase
+public class M4BFillUpTagger : ITagger
 {
     // private const string RomanLetters = "IVXLCDM";
 
-    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if (!IsM4B(metadata))
         {

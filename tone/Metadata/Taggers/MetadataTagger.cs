@@ -4,7 +4,7 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class MetadataTagger : TaggerBase
+public class MetadataTagger : ITagger
 {
     private readonly IMetadata _source;
 
@@ -13,7 +13,7 @@ public class MetadataTagger : TaggerBase
         _source = source;
     }
 
-    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         metadata.OverwritePropertiesWhenNotEmpty(_source);
         return await Task.FromResult(Ok());

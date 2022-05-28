@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ATL;
 using Spectre.Console.Cli;
+using tone.Commands.Settings.Interfaces;
+using tone.Commands.Settings.SettingValues;
 using tone.Metadata;
 
-namespace tone.Commands;
+namespace tone.Commands.Settings;
 
-public class TagSettingsBase : CommandSettingsBase, IMetadata
+public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings
 {
     [CommandOption("--meta-artist")] public string? Artist { get; set; }
     [CommandOption("--meta-album")] public string? Album { get; set; }
@@ -97,7 +100,7 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
 
     [CommandOption("--auto-import")]
     public AutoImportValue[] AutoImport { get; init; } = Array.Empty<AutoImportValue>();
-
+    
     [CommandOption("--meta-chapters-file")] public string ImportChaptersFile { get; init; } = "";
 
     [CommandOption("--meta-cover-file")] public string[] Covers { get; set; } = Array.Empty<string>();    
@@ -126,6 +129,9 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata
 
     public IDictionary<string, string> MappedAdditionalFields { get; } = new Dictionary<string, string>();
 
+    // tagger specific    
+    public bool AutoImportCovers => AutoImport.Contains(AutoImportValue.Covers);
+    public bool AutoImportChapters => AutoImport.Contains(AutoImportValue.Chapters);
     /*
     public override ValidationResult Validate()
     {

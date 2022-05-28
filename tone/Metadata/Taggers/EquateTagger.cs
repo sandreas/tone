@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using OperationResult;
+using tone.Commands.Settings.Interfaces;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class EquateTagger : TaggerBase
+public class EquateTagger : ITagger
 {
     private readonly IEnumerable<string> _equateFieldSets;
 
@@ -16,7 +17,12 @@ public class EquateTagger : TaggerBase
         _equateFieldSets = equateFieldSets;
     }
 
-    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public EquateTagger(IEquateTaggerSettings settings)
+    {
+        _equateFieldSets = settings.Equate;
+    }
+
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         foreach (var fieldSet in _equateFieldSets)
         {
@@ -51,38 +57,4 @@ public class EquateTagger : TaggerBase
         return await Task.FromResult(Ok());
     }
 
-    /*
-    private static Status<string> SetFieldByName(IMetadata metadata, PropertyInfo[] properties,
-        string[] fields)
-    {
-        var sourceFieldName = fields.First();
-        var destinationFieldNames = fields.Skip(1).ToArray();
-        var baseProperty = properties.FirstOrDefault(p =>
-            string.Equals(sourceFieldName, p.Name, StringComparison.CurrentCultureIgnoreCase));
-        if (baseProperty == null)
-        {
-            return Error($"No metadata property found for field {sourceFieldName}");
-        }
-
-        var sourceValue = baseProperty.GetValue(metadata, null);
-
-        try
-        {
-            foreach (var property in properties)
-            {
-                if (destinationFieldNames.Any(d =>
-                        string.Equals(d, property.Name, StringComparison.CurrentCultureIgnoreCase)))
-                {
-                    property.SetValue(metadata, Convert.ChangeType(sourceValue, property.PropertyType), null);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            return Error($"Could not equate properties for {sourceFieldName}: " + e.Message);
-        }
-
-        return Ok();
-    }
-    */
 }

@@ -1,67 +1,46 @@
 using System.Linq;
 using System.Threading.Tasks;
-using OperationResult;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using tone.Commands.Settings;
 using tone.Matchers;
 using tone.Metadata;
-using tone.Metadata.Formats;
 using tone.Metadata.Taggers;
-using static OperationResult.Helpers;
 
 namespace tone.Commands;
 
 public class TagCommand : AsyncCommand<TagCommandSettings>
 {
     private readonly DirectoryLoaderService _dirLoader;
-    private readonly ChptFmtNativeMetadataFormat _chapterFormat;
-    private readonly GrokPatternService _grok;
     private readonly SpectreConsoleService _console;
+    private readonly StartupErrorService _startup;
+    private readonly PathPatternMatcher _pathPatternMatcher;
+    private readonly TaggerComposite _tagger;
 
-    public TagCommand(SpectreConsoleService console, DirectoryLoaderService dirLoader,
-        ChptFmtNativeMetadataFormat chapterFormat,
-        GrokPatternService grok)
+    public TagCommand(SpectreConsoleService console, StartupErrorService startup, DirectoryLoaderService dirLoader,
+        PathPatternMatcher pathPatternMatcher, TaggerComposite tagger)
     {
         _console = console;
+        _startup = startup;
         _dirLoader = dirLoader;
-        _chapterFormat = chapterFormat;
-        _grok = grok;
+        _pathPatternMatcher = pathPatternMatcher;
+        _tagger = tagger;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings)
     {
-        var customPatterns = settings.PathPatternExtension.Concat(new[]
+        if (_startup.HasErrors)
         {
-            "NOTDIRSEP [^/\\\\]*",
-            "PARTNUMBER \\b[0-9-.IVXLCDM]+\\b"
-        });
-        var grokDefinitions = await _grok.BuildAsync(settings.PathPattern, customPatterns);
-        if (!grokDefinitions)
-        {
-            _console.Error.WriteLine("Could not parse `--path-pattern`: " + grokDefinitions.Error);
-            return (int)ReturnCode.GeneralError;
+            return _startup.ShowErrors(_console.Error.WriteLine);
         }
 
-        var pathPatternMatcher = new PathPatternMatcher(grokDefinitions.Value);
-
-
-        var taggerResult = await BuildTaggerCompositeAsync(settings, pathPatternMatcher);
-        if (!taggerResult)
-        {
-            return await Task.FromResult((int)taggerResult.Error);
-        }
-
-        var tagger = taggerResult.Value;
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
         var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions);
-        // todo: var filePackages = _dirLoader.BuildFilePackages(inputFiles, pathPatternMatcher)
-        //_dirLoader.SeekFiles();
         var inputFilesAsArray = (settings.PathPattern.Length == 0
             ? inputFiles
-            : inputFiles.Where(f => pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _))).ToArray();
-
-        var packages = _dirLoader.BuildPackages(inputFilesAsArray, pathPatternMatcher, settings.Input).ToArray();
+            : inputFiles.Where(f => _pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _))).ToArray();
+        var packages = _dirLoader.BuildPackages(inputFilesAsArray, _pathPatternMatcher, settings.Input).ToArray();
         var fileCount = packages.Sum(p => p.Files.Count);
 
         if (!settings.DryRun)
@@ -88,7 +67,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     {
                         BasePath = p.BaseDirectory?.FullName
                     };
-                    var status = await tagger.UpdateAsync(track);
+                    var status = await _tagger.UpdateAsync(track);
 
                     if (!status)
                     {
@@ -96,47 +75,41 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                         return;
                     }
 
-                    if (settings.DryRun)
+                    var currentMetadata = new MetadataTrack(file);
+                    var diffListing = track.Diff(currentMetadata);
+                    if (diffListing.Count == 0)
                     {
-                        var currentMetadata = new MetadataTrack(file);
-                        var diffListing = track.Diff(currentMetadata);
-                        if (diffListing.Count == 0)
-                        {
-                            _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
-                                .LeftAligned());
-                        }
-                        else
-                        {
-                            showDryRunMessage = true;
-                            var diffTable = new Table().Expand();
-                            diffTable.Title = new TableTitle($"[red]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
-                            diffTable.AddColumn("property")
-                                .AddColumn("current")
-                                .AddColumn("new");
-                            foreach (var (property, currentValue, newValue) in diffListing)
-                            {
-                                diffTable.AddRow(
-                                    property.ToString(),
-                                    Markup.Escape(newValue?.ToString() ?? "<null>"),
-                                    Markup.Escape(currentValue?.ToString() ?? "<null>")
-                                );
-                            }
-
-                            _console.Write(diffTable);
-                        }
-
+                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
+                            .LeftAligned());
                         return;
                     }
 
-                    if (!track.Save())
+
+                    showDryRunMessage = settings.DryRun;
+                    var diffTable = new Table().Expand();
+                    diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
+                    diffTable.AddColumn("property")
+                        .AddColumn("current")
+                        .AddColumn("new");
+                    foreach (var (property, currentValue, newValue) in diffListing)
                     {
-                        _console.Error.Write(new Rule($"[red]FAIL: {Markup.Escape(track.Path ?? "")}[/]")
-                            .LeftAligned());
+                        diffTable.AddRow(
+                            property.ToString(),
+                            Markup.Escape(newValue?.ToString() ?? "<null>"),
+                            Markup.Escape(currentValue?.ToString() ?? "<null>")
+                        );
                     }
-                    else
+                    
+                    if (settings.DryRun)
                     {
-                        _console.Write(new Rule($"[green]OK: {Markup.Escape(track.Path ?? "")}[/]").LeftAligned());
+                        _console.Write(diffTable);
+                        return;
                     }
+
+                    var path = Markup.Escape(track.Path ?? "");
+                    var message = !track.Save() ? $"[red]Update failed: {path}[/]" : $"[green]Updated: {path}[/]";
+                    diffTable.Caption = new TableTitle(message);
+                    _console.Write(diffTable);
                 }
             }))
             .ToList();
@@ -153,7 +126,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
     }
 
 
-    private Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(TagSettingsBase settings,
+    /*private Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(TagSettingsBase settings,
         PathPatternMatcher matcher)
     {
         var tagger = new TaggerComposite();
@@ -172,7 +145,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
         tagger.Taggers.Add(new EquateTagger(settings.Equate));
         tagger.Taggers.Add(new M4BFillUpTagger());
         return Task.FromResult<Result<ITagger, ReturnCode>>(Ok((ITagger)tagger));
-    }
+    }*/
 
     /*
     private static async Task<bool> Confirm(, string message, bool confirmIsDefault = false)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OperationResult;
+using tone.Commands.Settings.Interfaces;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
@@ -14,6 +15,11 @@ public class AdditionalFieldsRemoveTagger : ITagger
         _removeExtraFields = removeExtraFields;
     }
 
+    public AdditionalFieldsRemoveTagger(IRemoveAdditionalFieldsSettings removeSettings)
+    {
+        _removeExtraFields = removeSettings.RemoveAdditionalFields;
+    }
+    
     public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if (metadata.AdditionalFields != null)

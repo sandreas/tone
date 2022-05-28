@@ -1,7 +1,10 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using tone.Commands.Settings;
+using tone.Interceptors;
 using tone.Metadata;
 using tone.Services;
 
@@ -14,9 +17,13 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
     private readonly DirectoryLoaderService _dirLoader;
     private readonly SpectreConsoleService _console;
 
-    public DumpCommand(SpectreConsoleService console, DirectoryLoaderService dirLoader,
+    public DumpCommand(CommandSettingsProvider settingsProvider, SpectreConsoleService console, DirectoryLoaderService dirLoader,
         SerializerService serializerService)
     {
+        if (settingsProvider.Settings is DumpCommandSettings settings)
+        {
+            Console.WriteLine("dumpcommandsettings");
+        }
         _console = console;
         _dirLoader = dirLoader;
         _serializerService = serializerService;

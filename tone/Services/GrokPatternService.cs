@@ -14,7 +14,7 @@ namespace tone.Services;
 
 public class GrokPatternService
 {
-    public async Task<Result<IEnumerable<(string, Grok)>, string>> BuildAsync(IEnumerable<string>? grokDefinitions,
+    public Result<IEnumerable<(string, Grok)>, string> Build(IEnumerable<string>? grokDefinitions,
         IEnumerable<string>? customPatterns = null)
     {
         customPatterns ??= new List<string>();
@@ -26,11 +26,11 @@ public class GrokPatternService
             {
                 return Error(validationResult.Error);
             }
-            return  await Task.FromResult(Ok(ConvertStrings(grokDefinitions, customPatternsArray)));
+            return  Ok(ConvertStrings(grokDefinitions, customPatternsArray));
         }
         catch (Exception e)
         {
-            return await Task.FromResult(Error(e.Message));
+            return Error(e.Message);
         }
     }
 

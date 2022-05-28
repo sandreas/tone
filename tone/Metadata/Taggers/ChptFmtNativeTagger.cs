@@ -9,22 +9,28 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class ChptFmtNativeTagger : TaggerBase
+public class ChptFmtNativeTagger : ITagger
 {
     private readonly IFileSystem? _fs;
     private readonly ChptFmtNativeMetadataFormat _parser;
     private readonly string _forceChapterFilename;
+    private readonly bool _autoImport;
 
     public ChptFmtNativeTagger(IFileSystem? fileSystem, ChptFmtNativeMetadataFormat parser,
-        string forceChapterFilename = "")
+        string forceChapterFilename = "", bool autoImport=false)
     {
         _fs = fileSystem;
         _parser = parser;
         _forceChapterFilename = forceChapterFilename;
+        _autoImport = autoImport;
     }
 
-    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
+        if (!_autoImport && _forceChapterFilename == "")
+        {
+            return Ok();
+        }
         var audioFile = _fs?.FileInfo.FromFileName(metadata.Path);
         if (audioFile == null)
         {
@@ -66,5 +72,24 @@ public class ChptFmtNativeTagger : TaggerBase
 
         TransferMetadataList(parsedMeta.Value.Chapters, metadata.Chapters);
         return Ok();
+    }
+
+    private static void TransferMetadataList<T>(IList<T>? source, IList<T>? destination) where T : class
+    {
+        if (source == null || destination == null)
+        {
+            return;
+        }
+
+        if (source.Count == 0)
+        {
+            return;
+        }
+
+        destination.Clear();
+        foreach (var s in source)
+        {
+            destination.Add(s);
+        }
     }
 }

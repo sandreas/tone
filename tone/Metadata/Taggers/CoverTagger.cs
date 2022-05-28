@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ATL;
 using OperationResult;
+using tone.Commands.Settings.Interfaces;
 using tone.Common.Extensions.String;
 
 namespace tone.Metadata.Taggers;
@@ -18,7 +19,7 @@ public enum AutoLoadSetting
     ImportAll
 }
 
-public class CoverTagger: TaggerBase
+public class CoverTagger: ITagger
 {
     private readonly List<IFileInfo> _covers;
     private readonly bool _autoload;
@@ -32,7 +33,13 @@ public class CoverTagger: TaggerBase
         _covers = covers.Select(f => fs.FileInfo.FromFileName(f)).ToList();
         _autoload = autoload;
     }
-    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    
+    public CoverTagger(IFileSystem fs, ICoverTaggerSettings settings)    {
+        _fs = fs;
+        _covers = settings.Covers.Select(f => fs.FileInfo.FromFileName(f)).ToList();
+        _autoload = settings.AutoImportCovers;
+    }
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         if(_autoload && _covers.Count == 0 && metadata.BasePath!=null && _fs.Directory.Exists(metadata.BasePath))
         {
@@ -103,13 +110,6 @@ public class CoverTagger: TaggerBase
                 continue;
             }
 
-            // todo: currently there is a bug in atldotnet with multiple covers
-            // so only one cover import is supported
-            if (metadata.EmbeddedPictures.Count > 0)
-            {
-                continue;
-            }
-            
             var picInfo = await LoadPictureInfoAsync(cover);
             if (embeddedCoverTypes.Contains(picInfo.PicType) || metadata.EmbeddedPictures.Any(p => p.PicType == picInfo.PicType))
             {
