@@ -79,37 +79,42 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     var diffListing = track.Diff(currentMetadata);
                     if (diffListing.Count == 0)
                     {
-                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
+                        if( !settings.Force){
+                            _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
+                                .LeftAligned());
+                            return;
+                        }
+                        var path = Markup.Escape(track.Path ?? "");
+                        var message = !track.Save() ? $"[red]Force update failed: {path}[/]" : $"[green]Forced update: {path}[/]";
+                        _console.Write(new Rule(message)
                             .LeftAligned());
-                        return;
-                    }
+                    } else {
+                        showDryRunMessage = settings.DryRun;
+                        var diffTable = new Table().Expand();
+                        diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
+                        diffTable.AddColumn("property")
+                            .AddColumn("current")
+                            .AddColumn("new");
+                        foreach (var (property, currentValue, newValue) in diffListing)
+                        {
+                            diffTable.AddRow(
+                                property.ToString(),
+                                Markup.Escape(newValue?.ToString() ?? "<null>"),
+                                Markup.Escape(currentValue?.ToString() ?? "<null>")
+                            );
+                        }
+                        
+                        if (settings.DryRun)
+                        {
+                            _console.Write(diffTable);
+                            return;
+                        }
 
-
-                    showDryRunMessage = settings.DryRun;
-                    var diffTable = new Table().Expand();
-                    diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
-                    diffTable.AddColumn("property")
-                        .AddColumn("current")
-                        .AddColumn("new");
-                    foreach (var (property, currentValue, newValue) in diffListing)
-                    {
-                        diffTable.AddRow(
-                            property.ToString(),
-                            Markup.Escape(newValue?.ToString() ?? "<null>"),
-                            Markup.Escape(currentValue?.ToString() ?? "<null>")
-                        );
-                    }
-                    
-                    if (settings.DryRun)
-                    {
+                        var path = Markup.Escape(track.Path ?? "");
+                        var message = !track.Save() ? $"[red]Update failed: {path}[/]" : $"[green]Updated: {path}[/]";
+                        diffTable.Caption = new TableTitle(message);
                         _console.Write(diffTable);
-                        return;
                     }
-
-                    var path = Markup.Escape(track.Path ?? "");
-                    var message = !track.Save() ? $"[red]Update failed: {path}[/]" : $"[green]Updated: {path}[/]";
-                    diffTable.Caption = new TableTitle(message);
-                    _console.Write(diffTable);
                 }
             }))
             .ToList();
