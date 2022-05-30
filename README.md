@@ -1,6 +1,6 @@
 # tone
 
-`tone` is a cross platform utility to dump and modify audio metadata for a wide variety of formats. 
+`tone` is a cross platform audio utility to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more. 
 It is written in pure `C#`, deployed as single binary and utilizes the awesome [atldotnet] library
 to provide support for a wide variety of audio and metadata formats. 
 
@@ -96,16 +96,16 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf index.html https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-win-x64.zip
+iwr -outf tone-0.0.2-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-win-x64.zip
 
 # extract tone
 Expand-Archive -LiteralPath tone-0.0.2-win-x64.zip -DestinationPath .
 
-# open directory in windows explorer to put tone in your %PATH%, e.g. C:\Windows
-start .
-
 # test if tone is usable
-tone --help
+.\tone --help
+
+# open directory in windows explorer to manually put tone in your %PATH%, e.g. C:\Windows
+start .
 ```
 
 
