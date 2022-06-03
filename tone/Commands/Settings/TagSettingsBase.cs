@@ -9,7 +9,7 @@ using tone.Metadata;
 
 namespace tone.Commands.Settings;
 
-public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings
+public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings, IRemoveTaggerSettings, ITaggerOrderSettings
 {
     [CommandOption("--meta-artist")] public string? Artist { get; set; }
     [CommandOption("--meta-album")] public string? Album { get; set; }
@@ -118,6 +118,9 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSetti
     [CommandOption("--meta-remove-property")]
     public MetadataProperty[] Remove { get; init; } = Array.Empty<MetadataProperty>();
 
+    [CommandOption("--taggers")]
+    public string[] Taggers { get; set; } = Array.Empty<string>();
+    
     // fulfil interface contract
     public string? Path => null;
     public string? BasePath => null;

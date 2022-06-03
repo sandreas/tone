@@ -7,8 +7,10 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class PathPatternTagger : ITagger
+public class PathPatternTagger : INamedTagger
 {
+    public string Name => nameof(PathPatternTagger);
+
     private readonly PathPatternMatcher _pathPatternMatcher;
 
     public PathPatternTagger(PathPatternMatcher pathPatternMatcher)

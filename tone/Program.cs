@@ -77,16 +77,16 @@ services.AddSingleton(sp =>
     var chapterFormat = sp.GetRequiredService<ChptFmtNativeMetadataFormat>();
     var taggers = new[]
     {
-        settingsProvider.Build<IMetadata, ITagger>(s => new MetadataTagger(s)),
-        settingsProvider.Build<ICoverTaggerSettings, ITagger>(s => new CoverTagger(fs, s)),
-        settingsProvider.Build<IPathPatternSettings, ITagger>(_ => new PathPatternTagger(pathMatcher)),
-        settingsProvider.Build<IRemoveAdditionalFieldsSettings, ITagger>(s => new AdditionalFieldsRemoveTagger(s)),
-        settingsProvider.Build<IChptFmtNativeTaggerSettings, ITagger>(s => new ChptFmtNativeTagger(fs, chapterFormat, s.ImportChaptersFile, s.AutoImportChapters)),
-        settingsProvider.Build<IEquateTaggerSettings, ITagger>(s => new EquateTagger(s)),
-        new M4BFillUpTagger()
+        settingsProvider.Build<IMetadata, INamedTagger>(s => new MetadataTagger(s)),
+        settingsProvider.Build<ICoverTaggerSettings, INamedTagger>(s => new CoverTagger(fs, s)),
+        settingsProvider.Build<IPathPatternSettings, INamedTagger>(_ => new PathPatternTagger(pathMatcher)),
+        settingsProvider.Build<IChptFmtNativeTaggerSettings, INamedTagger>(s => new ChptFmtNativeTagger(fs, chapterFormat, s.ImportChaptersFile, s.AutoImportChapters)),
+        settingsProvider.Build<IEquateTaggerSettings, INamedTagger>(s => new EquateTagger(s)),
+        new M4BFillUpTagger(),
+        settingsProvider.Build<IRemoveTaggerSettings, INamedTagger>(s => new RemoveTagger(s))
     }.Where(t => t!= null).Select(e => e!).ToArray();
-
-    return new TaggerComposite(taggers);
+    var taggerOrderSettings = settingsProvider.Get<ITaggerOrderSettings>();
+    return taggerOrderSettings == null ? new TaggerComposite(taggers) : new TaggerComposite(taggerOrderSettings.Taggers, taggers);
 });
 
 // services.AddSingleton(_ => AnsiConsole.Console);
@@ -102,7 +102,7 @@ app.Configure(config =>
     config.UseStrictParsing();
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
-    config.SetApplicationVersion("0.0.2");
+    config.SetApplicationVersion("0.0.3");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
         .WithDescription("dump metadata for files and directories (directories are traversed recursively)")

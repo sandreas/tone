@@ -8,8 +8,10 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class EquateTagger : ITagger
+public class EquateTagger : INamedTagger
 {
+    public string Name => nameof(EquateTagger);
+
     private readonly IEnumerable<string> _equateFieldSets;
 
     public EquateTagger(IEnumerable<string> equateFieldSets)

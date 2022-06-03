@@ -4,8 +4,10 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class MetadataTagger : ITagger
+public class MetadataTagger : INamedTagger
 {
+    public string Name => nameof(MetadataTagger);
+
     private readonly IMetadata _source;
 
     public MetadataTagger(IMetadata source)

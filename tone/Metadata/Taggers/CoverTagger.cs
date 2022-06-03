@@ -12,15 +12,10 @@ using tone.Common.Extensions.String;
 namespace tone.Metadata.Taggers;
 using static Helpers;
 
-public enum AutoLoadSetting
+public class CoverTagger: INamedTagger
 {
-    NoImport,
-    ImportOne,
-    ImportAll
-}
+    public string Name => nameof(CoverTagger);
 
-public class CoverTagger: ITagger
-{
     private readonly List<IFileInfo> _covers;
     private readonly bool _autoload;
     private readonly IFileSystem _fs;

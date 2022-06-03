@@ -7,9 +7,11 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class M4BFillUpTagger : ITagger
+public class M4BFillUpTagger : INamedTagger
 {
     // private const string RomanLetters = "IVXLCDM";
+
+    public string Name => nameof(M4BFillUpTagger);
 
     public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
@@ -29,7 +31,7 @@ public class M4BFillUpTagger : ITagger
             // If ALBUM only, then %Title%
             //     If ALBUM and SUBTITLE, then %Title% - %Subtitle%
             //     If Series, then %Series% %Series-part% - %Title%
-            metadata.SortTitle = MultiConcat(metadata.MovementName, " ", metadata.Part, " - " + metadata.Title);
+            metadata.SortTitle = MultiConcat(metadata.MovementName, " ", metadata.Part, " - ", metadata.Title);
             metadata.SortAlbum ??= metadata.SortTitle;
             metadata.AdditionalFields["shwm"] = "1"; // show movement
         }

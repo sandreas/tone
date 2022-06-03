@@ -9,8 +9,10 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class ChptFmtNativeTagger : ITagger
+public class ChptFmtNativeTagger : INamedTagger
 {
+    public string Name => nameof(ChptFmtNativeTagger);
+
     private readonly IFileSystem? _fs;
     private readonly ChptFmtNativeMetadataFormat _parser;
     private readonly string _forceChapterFilename;
