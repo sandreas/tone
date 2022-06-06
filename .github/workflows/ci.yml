@@ -78,6 +78,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version-without-v }}-${{ matrix.target }}*"
-          body: "${{ steps.build.outputs.release_notes }}"
+          body: |
+            "${{ steps.build.outputs.release_notes }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
