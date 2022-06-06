@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           release_name="${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version-without-v }}-${{ matrix.target }}"
-          echo ::set-output name=release_notes::$(cat "${{ env.PROJECT_OUTPUT_PATH }}../doc/release/release-notes-${{ steps.version.outputs.version }}.md")
+          echo ::set-output name=release_notes::$(echo "test release notes")
           
           dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           
