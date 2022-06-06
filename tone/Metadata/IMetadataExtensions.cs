@@ -101,6 +101,26 @@ public static class MetadataExtensions
         _ => null
     };
 
+    public static IEnumerable<ChapterInfo> NormalizeChapters(this IMetadata metadata)
+    {
+        var chapters = new LinkedList<ChapterInfo>(metadata.Chapters);
+        foreach (var chapter in chapters)
+        {
+            var endMs = chapter.EndTime;
+            if (endMs <= chapter.StartTime)
+            {
+                var linkedChapter = chapters.Find(chapter);
+                var nextChapterStart = linkedChapter?.Next?.Value.StartTime ?? 0;
+                endMs = nextChapterStart;
+            }
+            yield return new ChapterInfo(chapter)
+            {
+                EndTime = endMs
+            };
+        }
+    }
+
+
     public static object? GetMetadataPropertyValue(this IMetadata metadata, MetadataProperty property) =>
         property switch
         {
