@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using Spectre.Console.Cli;
 using static System.Array;
@@ -7,6 +8,8 @@ public abstract class CommandSettingsBase : CommandSettings
 {
     [CommandOption("--debug")] public bool Debug { get; set; } = false;
     [CommandOption("--force")] public bool Force { get; set; } = false;
+    
+    [CommandOption("--order-by")] public string[] OrderBy { get; set; } = Empty<string>();
 
     [Description("Input files or folders")]
     [CommandArgument(0, "[input]")]
