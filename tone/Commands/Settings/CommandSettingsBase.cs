@@ -11,14 +11,13 @@ public abstract class CommandSettingsBase : CommandSettings
     [Description("Input files or folders")]
     [CommandArgument(0, "[input]")]
     public string[] Input { get; set; } = Empty<string>();
-
-//    [Description("Use taggers in given order")]
-//    [CommandOption("--tagger")]
-//    public string[] Taggers { get; set; } = Empty<string>();
-
-
+    
     [CommandOption("--include-extension")]
     public string[] IncludeExtensions { get; set; } = Empty<string>();
+
+    [CommandOption("--order-by")] public string OrderBy { get; set; } = "";
+
+    [CommandOption("--limit")] public string Limit { get; set; } = "";
 
     
 }

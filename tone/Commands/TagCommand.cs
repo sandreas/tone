@@ -4,6 +4,7 @@ using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
+using tone.Directives;
 using tone.Matchers;
 using tone.Metadata;
 using tone.Metadata.Taggers;
@@ -37,9 +38,15 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
 
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
         var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions);
-        var inputFilesAsArray = (settings.PathPattern.Length == 0
-            ? inputFiles
-            : inputFiles.Where(f => _pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _))).ToArray();
+        if (settings.PathPattern.Length > 0)
+        {
+            inputFiles = inputFiles.Where(f => _pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _));
+        }
+        var inputFilesAsArray = inputFiles
+            .Apply(new OrderByDirective(settings.OrderBy))
+            .Apply(new LimitDirective(settings.Limit))
+            .ToArray();
+        
         var packages = _dirLoader.BuildPackages(inputFilesAsArray, _pathPatternMatcher, settings.Input).ToArray();
         var fileCount = packages.Sum(p => p.Files.Count);
 
@@ -118,7 +125,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                 }
             }))
             .ToList();
-
+        
         await Task.WhenAll(tasks);
 
         if (showDryRunMessage)

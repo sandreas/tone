@@ -1,10 +1,9 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
-using tone.Interceptors;
+using tone.Directives;
 using tone.Metadata;
 using tone.Services;
 
@@ -17,13 +16,9 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
     private readonly DirectoryLoaderService _dirLoader;
     private readonly SpectreConsoleService _console;
 
-    public DumpCommand(CommandSettingsProvider settingsProvider, SpectreConsoleService console, DirectoryLoaderService dirLoader,
+    public DumpCommand(SpectreConsoleService console, DirectoryLoaderService dirLoader,
         SerializerService serializerService)
     {
-        if (settingsProvider.Settings is DumpCommandSettings settings)
-        {
-            Console.WriteLine("dumpcommandsettings");
-        }
         _console = console;
         _dirLoader = dirLoader;
         _serializerService = serializerService;
@@ -32,7 +27,11 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
     public override async Task<int> ExecuteAsync(CommandContext context, DumpCommandSettings settings)
     {
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
-        var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions).ToArray();
+        var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions)
+            .Apply(new OrderByDirective(settings.OrderBy))
+            .Apply(new LimitDirective(settings.Limit))
+            .ToArray();
+        
         foreach (var file in inputFiles)
         {
             // ideas:
@@ -52,8 +51,5 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
         return await Task.FromResult((int)ReturnCode.Success);
     }
 
-    private void PerformDump(MetadataTrack track)
-    {
-        
-    }
+
 }

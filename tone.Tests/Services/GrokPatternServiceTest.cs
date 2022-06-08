@@ -6,7 +6,7 @@ using tone.Services;
 using Xunit;
 
 namespace tone.Tests.Services;
-
+/*
 public class GrokPatternServiceTest
 {
     [Fact]
@@ -76,3 +76,4 @@ public class GrokPatternServiceTest
         Assert.Equal(actual.Error, $"Invalid regex pattern [^/\\]*");
     }
 }
+*/
