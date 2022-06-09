@@ -67,19 +67,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -96,10 +96,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.0.2-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.2/tone-0.0.2-win-x64.zip
+iwr -outf tone-0.0.3-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.0.2-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.0.3-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
