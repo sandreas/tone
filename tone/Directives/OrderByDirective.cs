@@ -8,6 +8,8 @@ namespace tone.Directives;
 public class OrderByDirective: IDirective<IEnumerable<IFileInfo>>
 {
     private readonly (Func<IFileInfo,IComparable> comparator, bool ascending)[] _orderBy;
+    private const char FieldSeparator = ',';
+    private const char MarkerDesc = '!';
 
     public OrderByDirective(string orderBy):this(orderBy, _buildCb)
     {
@@ -16,11 +18,11 @@ public class OrderByDirective: IDirective<IEnumerable<IFileInfo>>
 
     public OrderByDirective(string orderBy, Func<string, Func<IFileInfo, IComparable>> keySelector)
     {
-        _orderBy = orderBy.Split(",").Distinct().Select(s =>
+        _orderBy = orderBy.Split(FieldSeparator).Distinct().Select(s =>
         {
-            var lower = s.Trim().ToLowerInvariant();
-            var ascending = !lower.StartsWith("-");
-            var name = lower.TrimStart('-', '+').Trim();
+            var trimmed = s.Trim();
+            var ascending = !trimmed.StartsWith(MarkerDesc);
+            var name = trimmed.TrimStart(MarkerDesc).Trim();
             return (keySelector(name), ascending);
         }).ToArray();
     }
@@ -43,7 +45,7 @@ public class OrderByDirective: IDirective<IEnumerable<IFileInfo>>
         return tmp;
     }
     
-    private static Func<IFileInfo, IComparable> _buildCb(string field) =>  field switch 
+    private static Func<IFileInfo, IComparable> _buildCb(string field) =>  field.ToLowerInvariant() switch 
     {
         "size" => f => f.Length,
         "filename" => f => f.Name,
