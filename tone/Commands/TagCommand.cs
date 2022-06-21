@@ -18,15 +18,17 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
     private readonly StartupErrorService _startup;
     private readonly PathPatternMatcher _pathPatternMatcher;
     private readonly TaggerComposite _tagger;
+    private readonly JavaScriptApi _api;
 
     public TagCommand(SpectreConsoleService console, StartupErrorService startup, DirectoryLoaderService dirLoader,
-        PathPatternMatcher pathPatternMatcher, TaggerComposite tagger)
+        PathPatternMatcher pathPatternMatcher, TaggerComposite tagger, JavaScriptApi api)
     {
         _console = console;
         _startup = startup;
         _dirLoader = dirLoader;
         _pathPatternMatcher = pathPatternMatcher;
         _tagger = tagger;
+        _api = api; // unused but necessary (Dependency Injection Initialisation)
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings)
@@ -63,7 +65,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     return (int)ReturnCode.UserAbort;
             }
         }
-
+        
         var showDryRunMessage = false;
 
         var tasks = packages.Select(p => Task.Run(async () =>
@@ -76,6 +78,8 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     };
                     var status = await _tagger.UpdateAsync(track);
 
+
+                    
                     if (!status)
                     {
                         _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");

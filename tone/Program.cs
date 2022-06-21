@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using GrokNet;
+using Jint;
 using Microsoft.Extensions.DependencyInjection;
 using Sandreas.Files;
 using Spectre.Console;
@@ -69,6 +71,19 @@ services.AddSingleton(s =>
     
     return new PathPatternMatcher(pathPatterns);
 });
+services.AddSingleton<CancellationTokenSource>();
+services.AddSingleton(sp =>
+{
+    return new Engine(options =>
+    {
+        var cts = sp.GetRequiredService<CancellationTokenSource>();
+        options.LimitMemory(4_000_000);
+        options.TimeoutInterval(TimeSpan.FromSeconds(5));
+        options.MaxStatements(1000);
+        options.CancellationToken(cts.Token);
+    });
+});
+
 
 services.AddSingleton(sp =>
 {
@@ -87,6 +102,24 @@ services.AddSingleton(sp =>
     }.Where(t => t!= null).Select(e => e!).ToArray();
     var taggerOrderSettings = settingsProvider.Get<ITaggerOrderSettings>();
     return taggerOrderSettings == null ? new TaggerComposite(taggers) : new TaggerComposite(taggerOrderSettings.Taggers, taggers);
+});
+services.AddSingleton<JavaScriptApi>(sp =>
+{
+    var fs = sp.GetRequiredService<FileSystem>();
+    var jint = sp.GetRequiredService<Engine>();
+    var taggerComposite = sp.GetRequiredService<TaggerComposite>();
+    var script = "";
+    var javaScriptApi = settingsProvider.Build<IScriptSettings, JavaScriptApi>(s =>
+    {
+        script = s.Scripts.Aggregate(script, (current, scr) => current + fs.File.ReadAllText(scr));
+        return new JavaScriptApi(jint, taggerComposite, s.ScriptTaggerParameters);
+    }) ?? new JavaScriptApi();
+
+    // todo: implement possibility to debug something (console?)
+    // https://blog.codeinside.eu/2019/06/30/jint-invoke-javascript-from-dotnet/
+    jint.SetValue("tone", javaScriptApi);
+    jint.Execute(script);
+    return javaScriptApi;
 });
 
 // services.AddSingleton(_ => AnsiConsole.Console);

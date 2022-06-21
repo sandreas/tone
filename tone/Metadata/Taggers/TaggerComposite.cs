@@ -10,7 +10,7 @@ namespace tone.Metadata.Taggers;
 public class TaggerComposite : ITagger
 {
     private const string PlaceHolderStar = "*";
-    private List<ITagger> Taggers { get; } = new();
+    public List<ITagger> Taggers { get; } = new();
     
 
     public TaggerComposite(params INamedTagger[] taggers)
