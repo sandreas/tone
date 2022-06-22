@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using GrokNet;
 using Jint;
@@ -29,7 +30,7 @@ var services = new ServiceCollection();
 
 services.AddSingleton(_ => settingsProvider);
 services.AddSingleton<StartupErrorService>();
-
+services.AddSingleton<HttpClient>();
 // services.AddTransient<StringWriter>();
 services.AddSingleton<FileSystem>();
 services.AddSingleton<FileWalker>();
@@ -105,6 +106,7 @@ services.AddSingleton(sp =>
 });
 services.AddSingleton<JavaScriptApi>(sp =>
 {
+    var http = sp.GetRequiredService<HttpClient>();
     var fs = sp.GetRequiredService<FileSystem>();
     var jint = sp.GetRequiredService<Engine>();
     var taggerComposite = sp.GetRequiredService<TaggerComposite>();
@@ -112,12 +114,13 @@ services.AddSingleton<JavaScriptApi>(sp =>
     var javaScriptApi = settingsProvider.Build<IScriptSettings, JavaScriptApi>(s =>
     {
         script = s.Scripts.Aggregate(script, (current, scr) => current + fs.File.ReadAllText(scr));
-        return new JavaScriptApi(jint, taggerComposite, s.ScriptTaggerParameters);
+        return new JavaScriptApi(jint, fs, http, taggerComposite, s.ScriptTaggerParameters);
     }) ?? new JavaScriptApi();
 
     // todo: implement possibility to debug something (console?)
     // https://blog.codeinside.eu/2019/06/30/jint-invoke-javascript-from-dotnet/
     jint.SetValue("tone", javaScriptApi);
+    
     jint.Execute(script);
     return javaScriptApi;
 });
