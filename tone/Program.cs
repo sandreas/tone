@@ -11,6 +11,7 @@ using Sandreas.Files;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone;
+using tone.Api.JavaScript;
 using tone.Commands;
 using tone.Commands.Settings.Interfaces;
 using tone.DependencyInjection;
@@ -44,7 +45,9 @@ services.AddSingleton<FfmetadataSerializer>();
 services.AddSingleton<SpectreConsoleSerializer>();
 services.AddSingleton<SerializerService>();
 
-services.AddSingleton(_ => new SpectreConsoleService());
+services.AddSingleton<SpectreConsoleService>();
+services.AddSingleton<ScriptConsole>();
+
 services.AddSingleton(s =>
 {
     var patternService = s.GetRequiredService<GrokPatternService>();
@@ -109,6 +112,7 @@ services.AddSingleton<JavaScriptApi>(sp =>
     var http = sp.GetRequiredService<HttpClient>();
     var fs = sp.GetRequiredService<FileSystem>();
     var jint = sp.GetRequiredService<Engine>();
+    var scriptConsole = sp.GetRequiredService<ScriptConsole>();
     var taggerComposite = sp.GetRequiredService<TaggerComposite>();
     var script = "";
     var javaScriptApi = settingsProvider.Build<IScriptSettings, JavaScriptApi>(s =>
@@ -116,11 +120,9 @@ services.AddSingleton<JavaScriptApi>(sp =>
         script = s.Scripts.Aggregate(script, (current, scr) => current + fs.File.ReadAllText(scr));
         return new JavaScriptApi(jint, fs, http, taggerComposite, s.ScriptTaggerParameters);
     }) ?? new JavaScriptApi();
-
-    // todo: implement possibility to debug something (console?)
-    // https://blog.codeinside.eu/2019/06/30/jint-invoke-javascript-from-dotnet/
-    jint.SetValue("tone", javaScriptApi);
     
+    jint.SetValue("tone", javaScriptApi);
+    jint.SetValue("console", scriptConsole);
     jint.Execute(script);
     return javaScriptApi;
 });
