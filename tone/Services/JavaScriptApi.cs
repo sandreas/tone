@@ -43,24 +43,77 @@ public class JavaScriptApi
         _tagger.Taggers.Add(new ScriptTagger(_jint, name, _customTaggerParameters));
     }
     
-    public string Fetch(string url, object? data=null)
+    public bool Download(string url, string destination, object? data=null){
+        var fetchData = NormalizeFetchData(data);
+        fetchData.DownloadPath = destination;
+        var result = _fetch(url, fetchData, data);
+        return result == destination;
+    }
+    public string Fetch(string url, object? data=null){
+        var fetchData = NormalizeFetchData(data);
+        return _fetch(url, fetchData, data);
+    }
+    
+    private string _fetch(string url, FetchData fetchData, object? data=null)
     {
-        var httpRequestMessage = new HttpRequestMessage()        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri(url)
-        };
+        var httpRequestMessage = BuildRequestMessage(url, data, fetchData);
         
+        // this is a really bad async2sync hack 
+        // jint does not provide async/await, so async2sync is the only option here
+        var task = Task.Run(async () =>
+        {
+            var response = await _http.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            if(fetchData.DownloadPath == "") {
+                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            }
+
+            var destinationFile = _fs.FileInfo.FromFileName(fetchData.DownloadPath);
+            if(destinationFile.Exists && !fetchData.Overwrite)
+            {
+                return "";
+            }  
+            
+            if(!_fs.Directory.Exists(destinationFile.DirectoryName))
+            {
+                _fs.Directory.CreateDirectory(destinationFile.DirectoryName);
+            }
+            
+            await _fs.File.WriteAllBytesAsync(destinationFile.FullName, await response.Content.ReadAsByteArrayAsync());
+            
+            return await Task.FromResult(fetchData.DownloadPath);
+        });
+        return task.Result;
+    }
+
+    
+    private static FetchData NormalizeFetchData(object? data=null){
+        if(data == null)
+        {
+            return new FetchData();
+        }
+        var dataSerialized = JsonConvert.SerializeObject(data);
+        return JsonConvert.DeserializeObject<FetchData>(dataSerialized);
+    }
+    
+    private HttpRequestMessage BuildRequestMessage(string url, object? data, FetchData fetchData){
+        var httpRequestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(url),
+            
+        };
+
         if(data != null){
-            var dataSerialized = JsonConvert.SerializeObject(data);
-            var fetchData = JsonConvert.DeserializeObject<FetchData>(dataSerialized);
             httpRequestMessage = new HttpRequestMessage()        {
                 Method = ConvertStringToHttpMethod(fetchData.Method),
                 RequestUri = new Uri(url),
                 Content = new StringContent(fetchData.Body)
             };
         
-            foreach(var (key, value) in fetchData.Headers){
-                if(key.ToLower() == "content-type")
+            foreach(var (key, value) in fetchData.Headers)
+            {
+                var lowerKey = key.ToLower();
+                if(lowerKey == "content-type")
                 {
                     httpRequestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue(value);
                     httpRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(value));
@@ -70,17 +123,9 @@ public class JavaScriptApi
                 httpRequestMessage.Headers.Add(key, value);
             }
         }
-        
-        // this is a really bad async2sync hack 
-        // jint does not provide async/await, so async2sync is the only option here
-        var task = Task.Run(async () =>
-        {
-            var response = await _http.SendAsync(httpRequestMessage).ConfigureAwait(false);
-            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        });
-        return task.Result;
+        // httpRequestMessage.Headers.UserAgent.Add( new ProductInfoHeaderValue("Mozilla", "5.0"));
+        return httpRequestMessage;
     }
-
     private static HttpMethod ConvertStringToHttpMethod(string fetchDataMethod) => fetchDataMethod.ToLower() switch
     {
         "delete" => HttpMethod.Delete,
@@ -98,6 +143,15 @@ public class JavaScriptApi
         return _fs.File.Exists(path) ? _fs.File.ReadAllText(path) : "";
     }
     
+    public DateTime? CreateDateTime(string dateString)
+    {
+        return DateTime.TryParse(dateString, out var dateTime) ? dateTime : null;
+    }
+    
+    public TimeSpan CreateDateTime(int milliseconds)
+    {
+        return TimeSpan.FromMilliseconds(milliseconds);
+    }
     public ChapterInfo CreateChapter(string title, uint start, uint length, PictureInfo? picture=null, string subtitle="",string uniqueId="")    {
         return new ChapterInfo()
         {

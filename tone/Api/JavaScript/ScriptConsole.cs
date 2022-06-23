@@ -12,9 +12,17 @@ public class ScriptConsole
         _console = console;
     }
     
-    public void log(params object[] parameters)    {
-        foreach(var param in parameters){
-            _console.WriteLine(param?.ToString() ?? "null");
+    public void log(params object?[] parameters)
+    {
+        for (var index = 0; index < parameters.Length; index++)
+        {
+            var param = parameters[index];
+            _console.Write(param?.ToString() ?? "null");
+            if(index < parameters.Length -1) {
+                _console.Write(" ");
+            }
         }
+
+        _console.WriteLine();
     }
 }
