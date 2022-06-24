@@ -129,8 +129,13 @@ tone dump "my-audio-file.mp3"
 
 There are some global options, that can be used to change the behaviour of the file iterator. These options apply for all commands:
 
-- `--order-by`: Sort files by attribute (created)
+- `--order-by`: Sort files by attribute (defaults to `path`, available options are `path`, `size`, `filename`, `extension`, `created`, `modified`, `accessed`, combine via `,`, descending via `!`), examples:
+  - `--order-by="!created"` - sort by create date descending
+  - `--order-by="extension,created"` - sort by extension, then by created
+  - `--order-by="size,!extension,modified"` - sort by size, then extension descending, then by modification date
 - `--limit`: Limit results
+  - one value (e.g. `--limit=10`) - top `10` results
+  - two values with comma (e.g. `--limit=10,20`) - offset `10` fetch `20` results
 - `--include-extensions`: Filter for these extensions
 - `--debug`: Enable debug mode (for development or issue reporting)
 - `--force`: Try to force action (e.g. overwrite existing files, etc.)
@@ -153,9 +158,12 @@ ARGUMENTS:
 OPTIONS:
     -h, --help                 Prints help information
         --debug                                       
-        --format                                      
+        --force                                       
         --include-extension                           
-        --include-property 
+        --order-by                                    
+        --limit                                       
+        --include-property                            
+        --format
 ```
 
 ### `tag` - modify audio metadata
@@ -168,7 +176,7 @@ USAGE:
 EXAMPLES:
     tone tag --help
     tone tag input.mp3 --meta-title "a title"
-    tone tag --debug --auto-import=covers --meta-additional-field �st3=testing input.m4b --dry-run
+    tone tag --debug --auto-import=covers --meta-additional-field ©st3=testing input.m4b --dry-run
     tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/%g/%a/%s/%p - %n.m4b" --path-pattern="audiobooks/%g/%a/%z/%n.m4b" audiobooks/ --dry-run
 
 ARGUMENTS:
@@ -177,7 +185,10 @@ ARGUMENTS:
 OPTIONS:
     -h, --help                               Prints help information
         --debug                                                     
+        --force                                                     
         --include-extension                                         
+        --order-by                                                  
+        --limit                                                     
         --meta-artist                                               
         --meta-album                                                
         --meta-album-artist                                         
@@ -228,8 +239,11 @@ OPTIONS:
         --meta-equate                                               
         --meta-remove-additional-field                              
         --meta-remove-property                                      
+        --taggers                                                   
+        --script                                                    
+        --script-tagger-parameter                                   
     -y, --assume-yes                                                
-        --dry-run     
+        --dry-run  
 ```
 
 #### filename to tag via `--path-pattern` / `-p`
