@@ -1,12 +1,12 @@
 # tone
 
-`tone` is a cross platform audio utility to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more. 
+`tone` is a cross platform audio utility to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more.
 It is written in pure `C#`, deployed as single binary and utilizes the awesome [atldotnet] library
-to provide support for a wide variety of audio and metadata formats. 
+to provide support for a wide variety of audio and metadata formats.
 
-> Important note: `tone` is in a pretty early state of development and may contain 
-> bugs or missing features as well as missing documentation, so it might be a good 
-> idea to backup your files before using it and prepare for reading code, if 
+> Important note: `tone` is in a pretty early state of development and may contain
+> bugs or missing features as well as missing documentation, so it might be a good
+> idea to backup your files before using it and prepare for reading code, if
 > documentation is missing.
 
 ## TL;DR
@@ -33,7 +33,7 @@ tone tag --help
 tone tag input.mp3 --meta-title "a title"
 
 # change a custom field, auto-import covers nearby and show debug info on error (--dry-run simulation)
-tone tag --debug --auto-import=covers --meta-additional-field ©st3=testing input.m4b --dry-run
+tone tag --debug --auto-import=covers --meta-additional-field �st3=testing input.m4b --dry-run
 
 # recursively set tags genre, artist, series, part and title by path pattern (--dry-run simulation)
 tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/%g/%a/%s/%p - %n.m4b" --path-pattern="audiobooks/%g/%a/%z/%n.m4b" audiobooks/ --dry-run
@@ -49,37 +49,38 @@ The main purpose of `tone` is to tag `m4b` audio books for myself. It is planned
   - different file formats (e.g. `mp3`, `m4b`, and `flac`)
   - extensive list of supported tags (*additional fields*, *covers*, *chapters*, etc.)
   - filename to tags via `--path-pattern` (see below)
+  - custom javascript taggers via `--script` and `--script-tagger-parameter`
 
 ### Future plans
 
-- [ ] `split` large audio files into multiple smaller files (e.g. by chapters) using `ffmpeg`, `fdkaac` and [CliFX]
-- [ ] `merge` multiple smaller audio files into large ones auto generating chapters using silence detection with `ffmpeg`, `fdkaac` and [CliFX]
+- [ ] `split` large audio files into multiple smaller files (e.g. by chapters) using `ffmpeg`, `fdkaac` and [CliWrap]
+- [ ] `merge` multiple smaller audio files into large ones auto generating chapters using silence detection with `ffmpeg`, `fdkaac` and [CliWrap]
 - [ ] publish an official `docker` image with all dependencies
 - [ ] write unit tests and more detailed documentation
 
 
 ## Setup
 
-`tone` is a terminal application and deployed as monolithic binary with no dependencies. 
+`tone` is a terminal application and deployed as monolithic binary with no dependencies.
 This means, that downloading a single file from the [releases] page.
 
 ### Linux / macOS
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -96,10 +97,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.0.3-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.3/tone-0.0.3-win-x64.zip
+iwr -outf tone-0.0.4-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.0.3-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.0.4-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -110,6 +111,29 @@ start .
 
 
 ## Commands
+
+The features of `tone` are divided by commands. You can `dump` information or `tag` a file and so on. To do so, run
+
+```bash
+tone <command> <parameters>
+```
+
+Example:
+```
+tone dump "my-audio-file.mp3"
+```
+
+
+
+**global options**
+
+There are some global options, that can be used to change the behaviour of the file iterator. These options apply for all commands:
+
+- `--order-by`: Sort files by attribute (created)
+- `--limit`: Limit results
+- `--include-extensions`: Filter for these extensions
+- `--debug`: Enable debug mode (for development or issue reporting)
+- `--force`: Try to force action (e.g. overwrite existing files, etc.)
 
 ### `dump` - show audio metadata
 
@@ -144,7 +168,7 @@ USAGE:
 EXAMPLES:
     tone tag --help
     tone tag input.mp3 --meta-title "a title"
-    tone tag --debug --auto-import=covers --meta-additional-field ©st3=testing input.m4b --dry-run
+    tone tag --debug --auto-import=covers --meta-additional-field �st3=testing input.m4b --dry-run
     tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/%g/%a/%s/%p - %n.m4b" --path-pattern="audiobooks/%g/%a/%z/%n.m4b" audiobooks/ --dry-run
 
 ARGUMENTS:
@@ -216,7 +240,7 @@ It is possible to use the `tag` subcommand with multiple `--path-pattern` argume
 - Path patterns can be applied recursively for a whole directory tree as well as for single files
 - It is recommended use the `--dry-run` flag to see a diff before changing anything
   - there is an [issue with flags] like `--dry-run`, that they sometimes not work depending on the position - sometimes shifting them around helps
-- Path pattern matching is based on [grok.net], so all metadata properties could be read from a path name and there are a lot of things yet to be documented 
+- Path pattern matching is based on [grok.net], so all metadata properties could be read from a path name and there are a lot of things yet to be documented
   - For now it is recommended to use the short hands below
 
 **short hands**
@@ -233,7 +257,7 @@ All short hands are configured to match non-slash (`/`) or part numbers (`[0-9-.
 - `%m` -  `Album`
 - `%M` -  `SortAlbum`
 - `%n` -  `Title`
-- `%N` -  `SortTitle` 
+- `%N` -  `SortTitle`
 - `%p` -  `Part` (only matching part numbers)
 - `%s` -  `MovementName`
 - `%t` -  `AlbumArtist`
@@ -242,8 +266,83 @@ All short hands are configured to match non-slash (`/`) or part numbers (`[0-9-.
 - `%z` -  `IgnoreDummy`
 - `%Z` -  `IgnoreDummy` (only matching part numbers)
 
+
+#### Custom scripted taggers (experimental)
+
+With `tone v0.0.4` it is possible to use *scripted taggers*. Long story short: You can now use JavaScript
+to hook into the tagging mechanism and write your own *extensions* for `tone`.
+
+> Note: script support is limited to a specific subset of JavaScript and does not support every feature that is supported in modern browsers. If you would like to know more, take a look at [jint]
+
+##### create a javascript file
+
+Lets say you would like to consume an external API to set some tags, in our example we use http://musicbrainz.org to tag the audiobook *Harry Potter and the Philosophers Stone* :
+
+```js
+// musicbrainz.js
+function musicbrainz(metadata, parameters) {
+  // e2310769-2e68-462f-b54f-25ac8e3f1a21
+  var id = parameters.length > 0 ? parameters[0] : null;
+  if(id === null) {
+    console.log("Please provide a valid musicbrainz release id to use this tagger");
+    return;
+  }
+  var url = "http://musicbrainz.org/ws/2/release/" + id + "?inc=recordings&fmt=json";
+  console.log("fetching url:", url);
+  
+  // User-Agent header is required for musicbrainz to provide a response
+  var json = tone.Fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4'
+      }
+  });
+  // you could also read a text file in the base path of the audio file
+  // json = tone.ReadTextFile(metadata.BasePath + "/musicbrainz.json");
+  
+  var result = JSON.parse(json);
+  metadata.Title = result.title;
+  console.log("new title:", result.title);
+
+  if('barcode' in result) {
+    metadata.AdditionalFields["ISBN"] = result.barcode;
+    console.log("new barcode:", result.barcode);
+  }
+}
+
+// register your function name as tagger
+tone.RegisterTagger("musicbrainz");
+```
+
+##### run your tagger
+
+Now you can use the `--script` parameter to load your custom `JavaScript` and furthermore
+the `--script-tagger-parameter` to provide the `parameters` array used in the tagger function.
+If you would like to prevent the default `tone` taggers to be applied, you can also limit the
+them to your scripted one via `--taggers=musicbrainz`.
+
+```bash
+tone tag "harry-potter-1.m4b" --taggers="musicbrainz" --script="musicbrainz.js" --script-tagger-parameter="e2310769-2e68-462f-b54f-25ac8e3f1a21"
+```
+
+##### Tagger API
+
+To get an overview of fields, that can be accessed or modified via the `metadata` object, you should take a look at the [`IMetadata` interface](https://github.com/sandreas/tone/blob/main/tone/Metadata/IMetadata.cs). Not all of them are primitive types, but there are API at least some helper methods to overcome this problem (more are planned):
+
+| Method    | Description                                                                                                                                                            | Notes                                                                                                                     |
+|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `tone.RegisterTagger(string functionName):void`    | Registers a custom tagger function with `functionName` | - |
+| `tone.Fetch(string url [, object? options]):string`    | Fetches remote `url` contents using `options` inspired by [original fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)                 | Only a small subset of options is implemented (mainly `method`, `body` and `headers`)                                     |
+| `tone.Download(string url, string destinationPath [, object options]):bool`    | Downloads a remote `<url>` to `<destinationFile>` using `options` inspired by [original fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) | Returns `true` on success, `false` on error<br/>Directories will be created recursively<br/>Files are not overwritten by default |
+| `tone.ReadTextFile(string path):string`    | Reads a text file completely as string                                                                                                                                 | - |
+| `tone.CreateDateTime(string dateString):DateTime`    | Creates a `DateTime` value from string                                                                                                                                 | e.g. for `metadata.PublishingDate`|
+| `tone.CreateTimeSpan(number milliseconds):TimeSpan`    | Creates a `TimeSpan` value from string                                                                                                                                 | e.g. for `metadata.TotalDuration`|  
+| `tone.CreatePicture(string path):PictureInfo`    | Creates a `PictureInfo` value from a path (refer to `Download`)                                                                                                        | for `metadata.EmbeddedPictures`|   
+| `tone.CreateChapter(string title, number startMs, number lengthMs [, PictureInfo picture, string subtitle, string uniqueID]):ChapterInfo`    | Creates a `ChapterInfo`                                                                                                                                                | for `metadata.Chapters`|  
+
+
 [releases]: https://github.com/sandreas/tone/releases
 [atldotnet]: https://github.com/Zeugma440/atldotnet
 [issue with flags]: https://github.com/spectreconsole/spectre.console/issues/825
 [grok.net]: https://github.com/Marusyk/grok.net
-[CliFX]: https://github.com/Tyrrrz/CliFx
+[CliWrap]: https://github.com/Tyrrrz/CliWrap
+[jint]: https://github.com/sebastienros/jint
