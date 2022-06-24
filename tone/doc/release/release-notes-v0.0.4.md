@@ -3,7 +3,7 @@
 ## changes
 - add: `--order-by` and `--limit` parameters
 - add: `--taggers` option to specify the order in which taggers are applied (e.g. `--taggers="remove,*"` first applies the remove tagger, then all others)
-- add: `--script` and `--script-tagger-parameter` to create custom scriptable javascript taggers
+- add: `--script` and `--script-tagger-parameter` to create custom scriptable javascript taggers (see README.md)
 - fix: various `mp4` tag format fixes
 
 ## known issues
