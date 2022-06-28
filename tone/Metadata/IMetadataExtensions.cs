@@ -39,9 +39,9 @@ public class PropertyRenameAndIgnoreSerializerContractResolver : DefaultContract
         return property;
     }
 
-    private bool IsIgnored(Type type, string jsonPropertyName)
+    private bool IsIgnored(Type? type, string? jsonPropertyName)
     {
-        return _ignores.ContainsKey(type) && _ignores[type].Contains(jsonPropertyName);
+        return type == null || jsonPropertyName == null || _ignores.ContainsKey(type) && _ignores[type].Contains(jsonPropertyName);
     }
 }
 

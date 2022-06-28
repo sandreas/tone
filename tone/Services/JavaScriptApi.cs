@@ -92,7 +92,7 @@ public class JavaScriptApi
             return new FetchData();
         }
         var dataSerialized = JsonConvert.SerializeObject(data);
-        return JsonConvert.DeserializeObject<FetchData>(dataSerialized);
+        return JsonConvert.DeserializeObject<FetchData>(dataSerialized) ?? new FetchData();
     }
     
     private HttpRequestMessage BuildRequestMessage(string url, object? data, FetchData fetchData){

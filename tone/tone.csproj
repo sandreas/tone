@@ -37,7 +37,6 @@
 
     <ItemGroup>
       <PackageReference Include="CliWrap" Version="3.4.4" />
-      <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
       <PackageReference Include="grok.net" Version="1.1.0" />
       <PackageReference Include="Jint" Version="3.0.0-beta-2038" />
@@ -45,20 +44,10 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-      <PackageReference Include="Sandreas.Files" Version="0.0.5" />
-      <PackageReference Include="Serilog" Version="2.10.0" />
-      <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
-      <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
-      <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-      <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
-      <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
-      <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-      <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-      <PackageReference Include="Spectre.Console" Version="0.43.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+      <PackageReference Include="Sandreas.Files" Version="1.1.0" />
+      <PackageReference Include="Spectre.Console" Version="0.44.0" />
       <PackageReference Include="System.IO.Abstractions" Version="16.1.5" />
       <PackageReference Include="z440.atl.core" Version="4.8.0" />
     </ItemGroup>
