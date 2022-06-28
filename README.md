@@ -33,7 +33,7 @@ tone tag --help
 tone tag input.mp3 --meta-title "a title"
 
 # change a custom field, auto-import covers nearby and show debug info on error (--dry-run simulation)
-tone tag --debug --auto-import=covers --meta-additional-field �st3=testing input.m4b --dry-run
+tone tag --debug --auto-import=covers --meta-additional-field "©st3=testing" input.m4b --dry-run
 
 # recursively set tags genre, artist, series, part and title by path pattern (--dry-run simulation)
 tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/%g/%a/%s/%p - %n.m4b" --path-pattern="audiobooks/%g/%a/%z/%n.m4b" audiobooks/ --dry-run
