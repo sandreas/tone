@@ -101,9 +101,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       -
-        name: Set build args
+        name: Build and push
+        uses: docker/build-push-action@v3
         run: |
+          echo "targetplatform: $TARGETPLATFORM"
+          
           case "$TARGETPLATFORM" in
             linux/arm/v6) 
               FFMPEG_IMAGE=collelog/ffmpeg:4.4-alpine-arm32v6
@@ -132,11 +136,7 @@ jobs:
           
           echo "TONE_DOWNLOAD_URL=$TONE_DOWNLOAD_URL" >> $GITHUB_ENV
           echo "FFMPEG_IMAGE=$FFMPEG_IMAGE" >> $GITHUB_ENV
-          echo "FFMPEG_PATH=FFMPEG_PATH" >> $GITHUB_ENV
-
-      -
-        name: Build and push
-        uses: docker/build-push-action@v3
+          echo "FFMPEG_PATH=$FFMPEG_PATH" >> $GITHUB_ENV        
         with:
           context: tone/
           file: tone/Dockerfile.release
