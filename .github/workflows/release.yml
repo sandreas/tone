@@ -83,6 +83,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   docker:
+    if: ${{ false }} # disable job
     needs: release
     runs-on: ubuntu-latest
     steps:
@@ -108,6 +109,8 @@ jobs:
         run: |
           echo "targetplatform: $TARGETPLATFORM"
           
+# /usr/bin/docker buildx build --build-arg TONE_DOWNLOAD_URL=https://github.com/***/tone/releases/download/v0.0.5/tone-0.0.5-linux- --build-arg FFMPEG_IMAGE= --build-arg FFMPEG_PATH= --file tone/Dockerfile.release --iidfile /tmp/docker-build-push-PDjzwu/iidfile --platform linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7 --tag ***/tone:v0.0.5 --metadata-file /tmp/docker-build-push-PDjzwu/metadata-file --push tone/
+          ##1 [internal] load build definition from Dockerfile.release          
           case "$TARGETPLATFORM" in
             linux/arm/v6) 
               FFMPEG_IMAGE=collelog/ffmpeg:4.4-alpine-arm32v6
@@ -141,7 +144,6 @@ jobs:
           echo "::set-output name=TONE_DOWNLOAD_URL::$TONE_DOWNLOAD_URL"
           echo "::set-output name=FFMPEG_IMAGE::$FFMPEG_IMAGE"
           echo "::set-output name=FFMPEG_PATH::$FFMPEG_PATH"
-
       -
         name: Build and push
         uses: docker/build-push-action@v3
