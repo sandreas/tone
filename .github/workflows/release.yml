@@ -104,6 +104,7 @@ jobs:
 
       -
         name: Build and push
+        id: build_and_push
         uses: docker/build-push-action@v3
         run: |
           echo "targetplatform: $TARGETPLATFORM"
@@ -136,7 +137,12 @@ jobs:
           
           echo "TONE_DOWNLOAD_URL=$TONE_DOWNLOAD_URL" >> $GITHUB_ENV
           echo "FFMPEG_IMAGE=$FFMPEG_IMAGE" >> $GITHUB_ENV
-          echo "FFMPEG_PATH=$FFMPEG_PATH" >> $GITHUB_ENV        
+          echo "FFMPEG_PATH=$FFMPEG_PATH" >> $GITHUB_ENV      
+          
+          echo "::set-output name=TONE_DOWNLOAD_URL::$TONE_DOWNLOAD_URL"
+          echo "::set-output name=FFMPEG_IMAGE::$FFMPEG_IMAGE"
+          echo "::set-output name=FFMPEG_PATH::$FFMPEG_PATH"
+
         with:
           context: tone/
           file: tone/Dockerfile.release
@@ -144,7 +150,7 @@ jobs:
           push: true
           tags: sandreas/tone:${{ github.ref_name }}
           build-args: |
-            TONE_DOWNLOAD_URL=${{ env.TONE_DOWNLOAD_URL }}
-            FFMPEG_IMAGE=${{ env.FFMPEG_IMAGE }}
-            FFMPEG_PATH=${{ env.FFMPEG_PATH }}
+            TONE_DOWNLOAD_URL=${{ steps.build_and_push.outputs.TONE_DOWNLOAD_URL }}
+            FFMPEG_IMAGE=${{ steps.build_and_push.outputs.FFMPEG_IMAGE }}
+            FFMPEG_PATH=${{ steps.build_and_push.outputs.FFMPEG_PATH }}
             
