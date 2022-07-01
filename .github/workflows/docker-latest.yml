@@ -1,11 +1,9 @@
-name: ci
+name: docker-latest
 
 on:
   push:
     branches:
       - 'main'
-    tags:
-      - 'v*'
 
 jobs:
   docker:
@@ -34,4 +32,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           #platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
           push: true
-          tags: sandreas/tone:${{ github.ref_name }}
+          tags: sandreas/tone:latest
