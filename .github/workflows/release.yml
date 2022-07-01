@@ -83,6 +83,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   docker:
+    needs: release
     runs-on: ubuntu-latest
     steps:
       -
