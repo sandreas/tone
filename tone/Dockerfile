@@ -16,9 +16,9 @@ RUN dotnet restore
     
 # Build and publish a release
 RUN case "$(uname -i)" in \
-      armv7l) RUNTIME_IDENTIFIER=linux-arm \
+      *armv*) RUNTIME_IDENTIFIER=linux-arm \
         ;; \
-      aarch64) RUNTIME_IDENTIFIER=linux-arm64 \
+      aarch64|*arm*64*) RUNTIME_IDENTIFIER=linux-arm64 \
         ;; \
       *) \
         RUNTIME_IDENTIFIER=linux-musl-x64 \
