@@ -16,14 +16,12 @@ RUN dotnet restore
     
 # Build and publish a release
 RUN case "$(uname -i)" in \
-      *armv*) RUNTIME_IDENTIFIER=linux-arm \
-        ;; \
       aarch64|*arm*64*) RUNTIME_IDENTIFIER=linux-arm64 \
         ;; \
       *) \
         RUNTIME_IDENTIFIER=linux-musl-x64 \
         ;; \
-    esac && dotnet publish -r linux-musl-x64 --self-contained -c Release -o /app/publish tone.csproj
+    esac && dotnet publish -r $RUNTIME_IDENTIFIER --self-contained -c Release -o /app/publish tone.csproj
 
 
 FROM alpine:3.16.0
