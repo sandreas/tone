@@ -139,7 +139,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: tone/
-          file: Dockerfile.release
+          file: tone/Dockerfile.release
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
           push: true
           tags: sandreas/tone:${{ github.ref_name }}
