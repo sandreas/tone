@@ -101,11 +101,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       -
-        name: Build and push
-        id: build_and_push
-        uses: docker/build-push-action@v3
+        name: Prepare docker args
+        id: prepare_docker_args
+        shell: bash        
         run: |
           echo "targetplatform: $TARGETPLATFORM"
           
@@ -135,14 +134,17 @@ jobs:
           TONE_VERSION=$(sed 's/^v//g' <<< "${{ github.ref_name }}")
           TONE_DOWNLOAD_URL="https://github.com/sandreas/tone/releases/download/v$TONE_VERSION/tone-$TONE_VERSION-linux-$SUFFIX"
           
-          echo "TONE_DOWNLOAD_URL=$TONE_DOWNLOAD_URL" >> $GITHUB_ENV
-          echo "FFMPEG_IMAGE=$FFMPEG_IMAGE" >> $GITHUB_ENV
-          echo "FFMPEG_PATH=$FFMPEG_PATH" >> $GITHUB_ENV      
+          # echo "TONE_DOWNLOAD_URL=$TONE_DOWNLOAD_URL" >> $GITHUB_ENV
+          # echo "FFMPEG_IMAGE=$FFMPEG_IMAGE" >> $GITHUB_ENV
+          # echo "FFMPEG_PATH=$FFMPEG_PATH" >> $GITHUB_ENV      
           
           echo "::set-output name=TONE_DOWNLOAD_URL::$TONE_DOWNLOAD_URL"
           echo "::set-output name=FFMPEG_IMAGE::$FFMPEG_IMAGE"
           echo "::set-output name=FFMPEG_PATH::$FFMPEG_PATH"
 
+      -
+        name: Build and push
+        uses: docker/build-push-action@v3
         with:
           context: tone/
           file: tone/Dockerfile.release
@@ -150,7 +152,7 @@ jobs:
           push: true
           tags: sandreas/tone:${{ github.ref_name }}
           build-args: |
-            TONE_DOWNLOAD_URL=${{ steps.build_and_push.outputs.TONE_DOWNLOAD_URL }}
-            FFMPEG_IMAGE=${{ steps.build_and_push.outputs.FFMPEG_IMAGE }}
-            FFMPEG_PATH=${{ steps.build_and_push.outputs.FFMPEG_PATH }}
+            TONE_DOWNLOAD_URL=${{ steps.prepare_docker_args.outputs.TONE_DOWNLOAD_URL }}
+            FFMPEG_IMAGE=${{ steps.prepare_docker_args.outputs.FFMPEG_IMAGE }}
+            FFMPEG_PATH=${{ steps.prepare_docker_args.outputs.FFMPEG_PATH }}
             
