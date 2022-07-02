@@ -35,4 +35,4 @@ RUN echo "---- INSTALL RUNTIME PACKAGES ----" && \
 
 WORKDIR ${WORKDIR}
 CMD ["--version"]
-ENTRYPOINT ["/bin/tone"]
+ENTRYPOINT ["/usr/local/bin/tone"]
