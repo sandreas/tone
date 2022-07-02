@@ -1,20 +1,38 @@
-﻿ARG TONE_DOWNLOAD_URL=""
-ARG FFMPEG_IMAGE="mwader/static-ffmpeg:5.0.1-3"
-ARG FFMPEG_PATH="/ffmpeg"
+﻿ARG TARGETPLATFORM="linux/amd64"
+ARG REF_NAME="v0.0.5"
+# ARG FFMPEG_IMAGE="mwader/static-ffmpeg:5.0.1-3"
+# ARG FFMPEG_SRC_PATH="/ffmpeg"
+# ARG FFMPEG_DST_PATH="/usr/local/bin/"
 
-FROM ${FFMPEG_IMAGE} as ffmpeg_binary
+# FROM ${FFMPEG_IMAGE} as ffmpeg_image
 
 FROM alpine:3.16.0
+ARG TARGETPLATFORM
+ARG REF_NAME
 ENV WORKDIR /mnt/
 
 RUN echo "---- INSTALL RUNTIME PACKAGES ----" && \
   apk add --no-cache --update --upgrade libstdc++ wget && \
-     wget "$TONE_DOWNLOAD_URL" -O /tmp/tone.tar.gz && \
-     cd /tmp && tar xzf tone.tar.gz && mv tone*/tone /usr/local/bin/
-
-COPY --from=ffmpeg_binary "$FFMPEG_PATH" /usr/local/bin/
-COPY --from=builder /app/publish/tone /usr/local/bin/
+  if [ "$TARGETPLATFORM" = "linux/arm/v6" ]; then \
+    SUFFIX=linux-arm ; \
+  elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
+    SUFFIX=linux-arm ; \
+  elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    SUFFIX=linux-arm64 ; \    
+  elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    SUFFIX=linux-musl-x64 ; \
+  fi && \
+  TONE_VERSION=$(echo "$REF_NAME" | sed 's/^v//g') && \
+  wget "https://github.com/sandreas/tone/releases/download/v$TONE_VERSION/tone-$TONE_VERSION-$SUFFIX.tar.gz" \
+    -O /tmp/tone.tar.gz && \
+    cd /tmp/ && tar xzf tone.tar.gz && mv tone-$TONE_VERSION-$SUFFIX/tone /usr/local/bin/
+  
+# wget "https://github.com/sandreas/tone/releases/download/v0.0.5/tone-0.0.4-linux-musl-x64.tar.gz" -O /tmp/tone.tar.gz 
+# cd /tmp/ 
+# tar xzf tone.tar.gz 
+# mv tone-0.0.5-linux-musl-x64/tone /bin/
+# COPY --from=ffmpeg_image "$FFMPEG_SRC_PATH" "$FFMPEG_DST_PATH"
 
 WORKDIR ${WORKDIR}
-CMD ["--help"]
-ENTRYPOINT ["tone"]
+CMD ["--version"]
+ENTRYPOINT ["/bin/tone"]
