@@ -2,7 +2,7 @@
 
 ## changes
 - fix: code and documentation clean up (bump versions, fix typos, etc.)
-- add: experimental multi arch docker image (`docker pull sandreas/tone:latest`)
+- add: experimental multi arch docker image (`docker pull sandreas/tone:v0.0.5`)
 
 ## known issues
 - flag options (e.g. `--dry-run`) cannot be followed by arguments (e.g. `tone tag --meta-album="album" --dry-run input.mp3`) ([spectre.console 825])
