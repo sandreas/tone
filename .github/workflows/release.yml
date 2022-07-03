@@ -17,6 +17,7 @@ jobs:
       matrix:
         kind: [
           'linux', 
+          'linux-musl',
           'linux-arm',
           'linux-arm64',
           'windows', 
@@ -27,7 +28,7 @@ jobs:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
-          - kind: linux
+          - kind: linux-musl
             os: ubuntu-latest
             target: linux-musl-x64 # for docker
           - kind: linux-arm
