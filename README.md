@@ -1,5 +1,20 @@
 # tone
 
+```bash
+cd "$HOME/shared/audio/audiobooks/Fantasy/Aimée Carter/Blackcoat Rebellion"
+
+# not working
+tone tag --meta-additional-field='©day=2020/08/05' 1\ -\ Das\ Los\ der\ Drei.m4b
+tone tag --meta-additional-field='rldt=2020/08/05' 1\ -\ Das\ Los\ der\ Drei.m4b
+
+tone tag --meta-additional-field='©day=2020-08-05' 1\ -\ Das\ Los\ der\ Drei.m4b
+tone tag --meta-additional-field='rldt=2020-08-05' 1\ -\ Das\ Los\ der\ Drei.m4b
+
+# working
+mp4tags -year 2020/08/05 1\ -\ Das\ Los\ der\ Drei.m4b
+```
+
+
 `tone` is a cross platform audio utility to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more.
 It is written in pure `C#`, deployed as single binary and utilizes the awesome [atldotnet] library
 to provide support for a wide variety of audio and metadata formats.
@@ -353,6 +368,26 @@ To get an overview of fields, that can be accessed or modified via the `metadata
 | `tone.CreatePicture(string path):PictureInfo`    | Creates a `PictureInfo` value from a path (refer to `Download`)                                                                                                        | for `metadata.EmbeddedPictures`|   
 | `tone.CreateChapter(string title, number startMs, number lengthMs [, PictureInfo picture, string subtitle, string uniqueID]):ChapterInfo`    | Creates a `ChapterInfo`                                                                                                                                                | for `metadata.Chapters`|  
 
+
+# known issues
+
+The following issues are known, part of an external library and already reported:
+
+- flag options (e.g. `--dry-run`) cannot be followed by arguments (e.g. `tone tag --meta-album="album" --dry-run input.mp3`) ([spectre.console 825])
+  - workaround: append flag options at the end (`tone tag --meta-album="album" input.mp3 --dry-run`)
+- `--meta-*` options cannot be set to empty values ([spectre.console 842])
+  - workaround: use `--meta-remove-property` instead
+- Value starting with `-` is mistreated as extra option (e.g. `--meta-description "-5 degrees"`)  ([spectre.console 890])
+  - workaround: use `--meta-description="-5 degrees"` instead (with `=`)
+- Invalid handling of parameter values starting with double quotes ("), e.g. `--meta-description'"quoted" value'` ([spectre.console 891])
+- Invalid handling of `--meta-recording-date="2022-07-05"` ([atldotnet 155])
+
+
+[spectre.console 825]: https://github.com/spectreconsole/spectre.console/issues/825
+[spectre.console 842]: https://github.com/spectreconsole/spectre.console/issues/842
+[spectre.console 890]: https://github.com/spectreconsole/spectre.console/issues/890
+[spectre.console 891]: https://github.com/spectreconsole/spectre.console/issues/891
+[atldotnet 155]: https://github.com/Zeugma440/atldotnet/issues/155
 
 [releases]: https://github.com/sandreas/tone/releases
 [atldotnet]: https://github.com/Zeugma440/atldotnet
