@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tone", "tone\tone.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tone.Tests", "tone.Tests\tone.Tests.csproj", "{17FE08E8-D7CC-4BF9-8F26-26001395DA66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cli-tester", "cli-tester\cli-tester.csproj", "{55020242-A023-4943-BE80-C74D9CF5CA33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,5 +24,9 @@ Global
 		{FB5761B5-C69A-4F7C-B8C7-2D7CBA58C3B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB5761B5-C69A-4F7C-B8C7-2D7CBA58C3B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB5761B5-C69A-4F7C-B8C7-2D7CBA58C3B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55020242-A023-4943-BE80-C74D9CF5CA33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55020242-A023-4943-BE80-C74D9CF5CA33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55020242-A023-4943-BE80-C74D9CF5CA33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55020242-A023-4943-BE80-C74D9CF5CA33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
