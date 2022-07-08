@@ -7,6 +7,9 @@ using System.Threading;
 using GrokNet;
 using Jint;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using Sandreas.Files;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -41,12 +44,25 @@ services.AddSingleton<GrokPatternService>();
 services.AddSingleton<ChptFmtNativeMetadataFormat>();
 services.AddSingleton<FfmetadataFormat>();
 
+services.AddSingleton<JsonMetadata>();
+services.AddSingleton(_ => new JsonSerializerSettings
+{
+    NullValueHandling = NullValueHandling.Ignore,
+    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+    Converters = new List<JsonConverter>
+        { new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() } },
+    Formatting = Formatting.Indented,
+    DefaultValueHandling = DefaultValueHandling.Ignore
+});
 services.AddSingleton<FfmetadataSerializer>();
 services.AddSingleton<SpectreConsoleSerializer>();
+services.AddSingleton<JsonMetadataSerializer>();
+
 services.AddSingleton<SerializerService>();
 
 services.AddSingleton<SpectreConsoleService>();
 services.AddSingleton<ScriptConsole>();
+
 
 services.AddSingleton(s =>
 {
@@ -61,7 +77,7 @@ services.AddSingleton(s =>
             "NOTDIRSEP [^/\\\\]*",
             "PARTNUMBER \\b[0-9-.,IVXLCDM]+\\b"
         });
-        
+
         var grokDefinitions = patternService.Build(settings.PathPattern, customPatterns);
         if (grokDefinitions)
         {
@@ -69,10 +85,11 @@ services.AddSingleton(s =>
         }
         else
         {
-            startupErrorsService.Errors.Add((ReturnCode.GeneralError, "Could not parse `--path-pattern`: " + grokDefinitions.Error));
-        }  
+            startupErrorsService.Errors.Add((ReturnCode.GeneralError,
+                "Could not parse `--path-pattern`: " + grokDefinitions.Error));
+        }
     }
-    
+
     return new PathPatternMatcher(pathPatterns);
 });
 services.AddSingleton<CancellationTokenSource>();
@@ -99,13 +116,16 @@ services.AddSingleton(sp =>
         settingsProvider.Build<IMetadata, INamedTagger>(s => new MetadataTagger(s)),
         settingsProvider.Build<ICoverTaggerSettings, INamedTagger>(s => new CoverTagger(fs, s)),
         settingsProvider.Build<IPathPatternSettings, INamedTagger>(_ => new PathPatternTagger(pathMatcher)),
-        settingsProvider.Build<IChptFmtNativeTaggerSettings, INamedTagger>(s => new ChptFmtNativeTagger(fs, chapterFormat, s.ImportChaptersFile, s.AutoImportChapters)),
+        settingsProvider.Build<IChptFmtNativeTaggerSettings, INamedTagger>(s =>
+            new ChptFmtNativeTagger(fs, chapterFormat, s.ImportChaptersFile, s.AutoImportChapters)),
         settingsProvider.Build<IEquateTaggerSettings, INamedTagger>(s => new EquateTagger(s)),
         new M4BFillUpTagger(),
         settingsProvider.Build<IRemoveTaggerSettings, INamedTagger>(s => new RemoveTagger(s))
-    }.Where(t => t!= null).Select(e => e!).ToArray();
+    }.Where(t => t != null).Select(e => e!).ToArray();
     var taggerOrderSettings = settingsProvider.Get<ITaggerOrderSettings>();
-    return taggerOrderSettings == null ? new TaggerComposite(taggers) : new TaggerComposite(taggerOrderSettings.Taggers, taggers);
+    return taggerOrderSettings == null
+        ? new TaggerComposite(taggers)
+        : new TaggerComposite(taggerOrderSettings.Taggers, taggers);
 });
 services.AddSingleton<JavaScriptApi>(sp =>
 {
@@ -120,7 +140,7 @@ services.AddSingleton<JavaScriptApi>(sp =>
         script = s.Scripts.Aggregate(script, (current, scr) => current + fs.File.ReadAllText(scr));
         return new JavaScriptApi(jint, fs, http, taggerComposite, s.ScriptTaggerParameters);
     }) ?? new JavaScriptApi();
-    
+
     jint.SetValue("tone", javaScriptApi);
     jint.SetValue("console", scriptConsole);
     jint.Execute(script);
@@ -146,23 +166,34 @@ app.Configure(config =>
         .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
         .WithExample(new[] { "dump", "--help" })
         .WithExample(new[] { "dump", "input.mp3" })
-        .WithExample(new[] { "dump", "audio-directory/", "--include-extension", "m4b", "--format", "ffmetadata", "--include-property", "title", "--include-property", "artist" })
+        .WithExample(new[]
+        {
+            "dump", "audio-directory/", "--include-extension", "m4b", "--format", "ffmetadata", "--include-property",
+            "title", "--include-property", "artist"
+        })
         ;
     config.AddCommand<TagCommand>("tag")
         .WithDescription("tag files with metadata properties (directories are traversed recursively)")
         .WithExample(new[] { "tag", "--help" })
         .WithExample(new[] { "tag", "input.mp3", "--meta-title", "\"a title\"" })
-        .WithExample(new[] { "tag", "--debug", "--auto-import=covers","--meta-additional-field", "©st3=testing", "input.m4b", "--dry-run"})
-        .WithExample(new[] { "tag", "--auto-import=covers", "--auto-import=chapters",
+        .WithExample(new[]
+        {
+            "tag", "--debug", "--auto-import=covers", "--meta-additional-field", "©st3=testing", "input.m4b",
+            "--dry-run"
+        })
+        .WithExample(new[]
+        {
+            "tag", "--auto-import=covers", "--auto-import=chapters",
             "--path-pattern=\"audiobooks/%g/%a/%s/%p - %n.m4b\"",
-            "--path-pattern=\"audiobooks/%g/%a/%z/%n.m4b\"", 
-            "audiobooks/", "--dry-run"})
+            "--path-pattern=\"audiobooks/%g/%a/%z/%n.m4b\"",
+            "audiobooks/", "--dry-run"
+        })
         ;
     /*config.AddCommand<SplitCommand>("split")
         .WithDescription("split audio files")
         ;    
         */
-    
+
     if (propagateExceptions)
     {
         config.PropagateExceptions();
@@ -173,7 +204,6 @@ app.Configure(config =>
 });
 try
 {
-    
     return await app.RunAsync(args).ConfigureAwait(false);
 }
 catch (Exception e)
@@ -182,6 +212,7 @@ catch (Exception e)
     {
         AnsiConsole.Write(ce.Pretty);
     }
+
     AnsiConsole.WriteException(e);
     return (int)ReturnCode.UncaughtException;
 }

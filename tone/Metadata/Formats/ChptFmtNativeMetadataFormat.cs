@@ -119,7 +119,7 @@ public class ChptFmtNativeMetadataFormat : IMetadataFormat
 
     public async Task<Status<string>> WriteAsync(IMetadata input, Stream output)
     {
-        if (input.Chapters == null || input.Chapters.Count == 0)
+        if (input.Chapters.Count == 0)
         {
             return Helpers.Error("metadata does not contain any chapters");
         }

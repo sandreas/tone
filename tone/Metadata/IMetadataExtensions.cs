@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -324,13 +325,7 @@ public static class MetadataExtensions
                 metadata.TrackTotal = ObjectAsType<int?>(value);
                 break;
             case MetadataProperty.Chapters:
-                var chapters = ObjectAsType<IList<ChapterInfo>?>(value) ?? new List<ChapterInfo>();
-                metadata.Chapters.Clear();
-                foreach (var chapter in chapters)
-                {
-                    metadata.Chapters.Add(chapter);
-                }
-
+                metadata.Chapters = ObjectAsType<IList<ChapterInfo>?>(value) ?? new List<ChapterInfo>();
                 break;
             case MetadataProperty.EmbeddedPictures:
                 var pictures = ObjectAsType<IList<PictureInfo>?>(value) ?? new List<PictureInfo>();
@@ -398,12 +393,19 @@ public static class MetadataExtensions
         }
     }
 
-    public static void OverwriteProperties(this IMetadata metadata, IMetadata source)
+    public static void OverwriteProperties(this IMetadata metadata, IMetadata source, IEnumerable<string>? removeAdditionalKeys = null)
     {
         foreach (var property in MetadataProperties)
         {
             metadata.SetMetadataPropertyValue(property, source.GetMetadataPropertyValue(property));
         }
+
+        if (removeAdditionalKeys == null) return;
+        foreach(var key in removeAdditionalKeys)
+        {
+            metadata.AdditionalFields.Remove(key);
+        }
+
     }
 
     private static bool IsConsideredEmpty(object? value) => value switch

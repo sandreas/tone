@@ -1,20 +1,5 @@
 # tone
 
-```bash
-cd "$HOME/shared/audio/audiobooks/Fantasy/Aimée Carter/Blackcoat Rebellion"
-
-# not working
-tone tag --meta-additional-field='©day=2020/08/05' 1\ -\ Das\ Los\ der\ Drei.m4b
-tone tag --meta-additional-field='rldt=2020/08/05' 1\ -\ Das\ Los\ der\ Drei.m4b
-
-tone tag --meta-additional-field='©day=2020-08-05' 1\ -\ Das\ Los\ der\ Drei.m4b
-tone tag --meta-additional-field='rldt=2020-08-05' 1\ -\ Das\ Los\ der\ Drei.m4b
-
-# working
-mp4tags -year 2020/08/05 1\ -\ Das\ Los\ der\ Drei.m4b
-```
-
-
 `tone` is a cross platform audio utility to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more.
 It is written in pure `C#`, deployed as single binary and utilizes the awesome [atldotnet] library
 to provide support for a wide variety of audio and metadata formats.

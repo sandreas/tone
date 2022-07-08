@@ -1,22 +1,26 @@
 using System;
 using System.Collections.Generic;
 using ATL;
+using Newtonsoft.Json;
+using tone.Metadata.Converters;
 
 namespace tone.Metadata;
 
-public interface IMetadata
+public class JsonMetadata: IMetadata
 {
-    // non-metadata properties
-    public string? Path { get; }
-    public string? BasePath { get; }
+    [JsonIgnore]
+    public string? Path  => null;
+    [JsonIgnore]
+    
+    public string? BasePath => null;
+    [JsonIgnore]
 
-    public TimeSpan TotalDuration { get; }
-
-    // metadata properties
+    public TimeSpan TotalDuration => new();
     public string? Album { get; set; }
     public string? AlbumArtist { get; set; }
     public string? Artist { get; set; }
     public int? Bpm { get; set; }
+    
     public string? ChaptersTableDescription { get; set; }
     public string? Composer { get; set; }
     public string? Comment { get; set; }
@@ -34,6 +38,7 @@ public interface IMetadata
     public ItunesMediaType? ItunesMediaType { get; set; }
     public ItunesPlayGap? ItunesPlayGap { get; set; }
     public string? LongDescription { get; set; }
+    [JsonConverter(typeof(LyricsConverter))]
     public LyricsInfo? Lyrics { get; set; }
     public string? Part { get; set; }
     public string? Movement { get; set; }
@@ -55,11 +60,12 @@ public interface IMetadata
     public string? Title { get; set; }
     public int? TrackNumber { get; set; }
     public int? TrackTotal { get; set; }
-
-    public IList<ChapterInfo> Chapters { get; set; }
-    public IList<PictureInfo> EmbeddedPictures { get; }
-    public IDictionary<string, string> AdditionalFields { get; }
-    public IDictionary<string, string> MappedAdditionalFields { get; }
-
-   
+    [JsonConverter(typeof(ChaptersConverter))]
+    public IList<ChapterInfo> Chapters { get; set; } = new List<ChapterInfo>();
+    
+    [JsonConverter(typeof(PicturesConverter))]
+    public IList<PictureInfo> EmbeddedPictures { get; } = new List<PictureInfo>();
+    public IDictionary<string, string> AdditionalFields { get; } = new Dictionary<string, string>();
+    [JsonIgnore]
+    public IDictionary<string, string> MappedAdditionalFields => new Dictionary<string, string>();
 }

@@ -132,7 +132,7 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSetti
     public string? BasePath => null;
 
     public TimeSpan TotalDuration => new();
-    public IList<ChapterInfo> Chapters { get; } = new List<ChapterInfo>();
+    public IList<ChapterInfo> Chapters { get; set; } = new List<ChapterInfo>();
     public LyricsInfo? Lyrics { get; set; }
     public IList<PictureInfo> EmbeddedPictures => new List<PictureInfo>();
 
