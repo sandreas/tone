@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
@@ -34,9 +36,6 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
         
         foreach (var file in inputFiles)
         {
-            // ideas:
-            // - prefix, separator, suffix (for json output? [ , ])
-            // - JsonSerializer
             var track = new MetadataTrack(file);
 
             if (settings.IncludeProperties.Length > 0)
@@ -45,7 +44,27 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
             }
 
             var serializeResult = await _serializerService.SerializeAsync(track, settings.Format);
-            _console.WriteLine(serializeResult);
+            if(settings.Format == SerializerFormat.Json && settings.Query != "")
+            {
+                try
+                {
+                    var o =  JObject.Parse(serializeResult);
+                    var tokens = o.SelectTokens(settings.Query);
+                    foreach(var token in tokens) {
+                        _console.WriteLine(token.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    _console.WriteException(e);
+                    return await Task.FromResult((int)ReturnCode.GeneralError);
+                }
+            }
+            else
+            {
+                _console.WriteLine(serializeResult);
+            }
+            
         }
 
         return await Task.FromResult((int)ReturnCode.Success);

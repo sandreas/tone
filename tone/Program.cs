@@ -44,7 +44,7 @@ services.AddSingleton<GrokPatternService>();
 services.AddSingleton<ChptFmtNativeMetadataFormat>();
 services.AddSingleton<FfmetadataFormat>();
 
-services.AddSingleton<JsonMetadata>();
+services.AddSingleton<ToneJson>();
 services.AddSingleton(_ => new JsonSerializerSettings
 {
     NullValueHandling = NullValueHandling.Ignore,
@@ -56,7 +56,7 @@ services.AddSingleton(_ => new JsonSerializerSettings
 });
 services.AddSingleton<FfmetadataSerializer>();
 services.AddSingleton<SpectreConsoleSerializer>();
-services.AddSingleton<JsonMetadataSerializer>();
+services.AddSingleton<ToneJsonSerializer>();
 
 services.AddSingleton<SerializerService>();
 
@@ -113,6 +113,7 @@ services.AddSingleton(sp =>
     var chapterFormat = sp.GetRequiredService<ChptFmtNativeMetadataFormat>();
     var taggers = new[]
     {
+        settingsProvider.Build<IToneJsonTaggerSettings, INamedTagger>(s => new ToneJsonTagger(fs, s)),
         settingsProvider.Build<IMetadata, INamedTagger>(s => new MetadataTagger(s)),
         settingsProvider.Build<ICoverTaggerSettings, INamedTagger>(s => new CoverTagger(fs, s)),
         settingsProvider.Build<IPathPatternSettings, INamedTagger>(_ => new PathPatternTagger(pathMatcher)),
@@ -160,7 +161,7 @@ app.Configure(config =>
     config.UseStrictParsing();
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
-    config.SetApplicationVersion("0.0.5");
+    config.SetApplicationVersion("0.0.6");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
         .WithDescription("dump metadata for files and directories (directories are traversed recursively)")

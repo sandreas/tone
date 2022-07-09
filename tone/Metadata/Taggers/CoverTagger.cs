@@ -36,17 +36,20 @@ public class CoverTagger: INamedTagger
     }
     public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
-        if(_autoload && _covers.Count == 0 && metadata.BasePath!=null && _fs.Directory.Exists(metadata.BasePath))
+        if(_autoload && _covers.Count == 0 && metadata.BasePath!=null)
         {
-            // autoload covers
-            // (<audiofilename>.)cover[0-100].(jpg|png)
-            // 1 - MyTitle.cover.jpg
-            // 1 - MyTitle.cover.png
-            // 1 - MyTitle.cover[0].jpg
-            _covers.AddRange( _fs.Directory
-                .GetFiles(metadata.BasePath)
-                .Select(p => _fs.FileInfo.FromFileName(p))
-                .Where(HasCoverExtension));
+            var dir = _fs.GetContainingDirectory(metadata.BasePath);
+            if(dir.Exists){
+                // autoload covers
+                // (<audiofilename>.)cover[0-100].(jpg|png)
+                // 1 - MyTitle.cover.jpg
+                // 1 - MyTitle.cover.png
+                // 1 - MyTitle.cover[0].jpg
+                _covers.AddRange( _fs.Directory
+                    .GetFiles(dir.FullName)
+                    .Select(p => _fs.FileInfo.FromFileName(p))
+                    .Where(HasCoverExtension));
+            }
         }
         
         

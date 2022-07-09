@@ -9,7 +9,7 @@ using tone.Metadata;
 
 namespace tone.Commands.Settings;
 
-public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings, IRemoveTaggerSettings, ITaggerOrderSettings, IScriptSettings
+public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IToneJsonTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings, IRemoveTaggerSettings, ITaggerOrderSettings, IScriptSettings
 {
     [CommandOption("--meta-artist")] public string? Artist { get; set; }
     [CommandOption("--meta-album")] public string? Album { get; set; }
@@ -104,7 +104,8 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSetti
     [CommandOption("--meta-chapters-file")] public string ImportChaptersFile { get; init; } = "";
 
     [CommandOption("--meta-cover-file")] public string[] Covers { get; set; } = Array.Empty<string>();    
-    
+    [CommandOption("--meta-tone-json-file")] public string[] ToneJsonFiles { get; set; } = Array.Empty<string>();    
+
     [CommandOption("--path-pattern|-p")] public string[] PathPattern { get; set; } = Array.Empty<string>();
 
     [CommandOption("--path-pattern-extension")]
@@ -141,6 +142,8 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSetti
     // tagger specific    
     public bool AutoImportCovers => AutoImport.Contains(AutoImportValue.Covers);
     public bool AutoImportChapters => AutoImport.Contains(AutoImportValue.Chapters);
+    public bool AutoImportToneJson => AutoImport.Contains(AutoImportValue.ToneJson);
+
     /*
     public override ValidationResult Validate()
     {

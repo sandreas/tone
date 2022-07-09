@@ -4,4 +4,5 @@ public enum AutoImportValue
 {
     Covers,
     Chapters,
+    ToneJson,
 }
