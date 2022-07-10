@@ -27,10 +27,6 @@ RUN echo "---- INSTALL RUNTIME PACKAGES ----" && \
     -O /tmp/tone.tar.gz && \
     cd /tmp/ && tar xzf tone.tar.gz && mv tone-$TONE_VERSION-$SUFFIX/tone /usr/local/bin/
   
-# wget "https://github.com/sandreas/tone/releases/download/v0.0.5/tone-0.0.4-linux-musl-x64.tar.gz" -O /tmp/tone.tar.gz 
-# cd /tmp/ 
-# tar xzf tone.tar.gz 
-# mv tone-0.0.5-linux-musl-x64/tone /bin/
 # COPY --from=ffmpeg_image "$FFMPEG_SRC_PATH" "$FFMPEG_DST_PATH"
 
 WORKDIR ${WORKDIR}
