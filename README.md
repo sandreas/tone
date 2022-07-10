@@ -68,19 +68,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.6/tone-0.0.6-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.6/tone-0.0.6-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.6/tone-0.0.6-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.6/tone-0.0.6-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.6/tone-0.0.6-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -97,10 +97,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.0.4-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.4/tone-0.0.4-win-x64.zip
+iwr -outf tone-0.0.6-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.6/tone-0.0.6-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.0.4-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.0.6-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -143,7 +143,7 @@ There are some global options, that can be used to change the behaviour of the f
 ### `dump` - show audio metadata
 
 ```bash
-tone dump --help
+tone dump --help                                                            
 USAGE:
     tone dump [input] [OPTIONS]
 
@@ -163,7 +163,8 @@ OPTIONS:
         --order-by                                    
         --limit                                       
         --include-property                            
-        --format
+        --format                                      
+        --query
 ```
 
 ### `tag` - modify audio metadata
@@ -234,6 +235,7 @@ OPTIONS:
         --auto-import                                               
         --meta-chapters-file                                        
         --meta-cover-file                                           
+        --meta-tone-json-file                                       
     -p, --path-pattern                                              
         --path-pattern-extension                                    
         --meta-equate                                               
@@ -243,7 +245,7 @@ OPTIONS:
         --script                                                    
         --script-tagger-parameter                                   
     -y, --assume-yes                                                
-        --dry-run  
+        --dry-run
 ```
 
 #### filename to tag via `--path-pattern` / `-p`

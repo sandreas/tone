@@ -4,7 +4,7 @@
 - add: `tone.json` serializer for `dump` command with optional `JSONPath` support (`tone dump my-file.m4b --format=json --query="$.meta.album"`)
 - add: support new metadata format `tone.json` including `--auto-import` (`tone tag my-file.m4b --meta-tone-json-file="tone.json" --auto-import="tonejson"`)
 - fix: cover tagger did not find covers under specific circumstances
-- 
+
 ## known issues
 
 The following issues are known, part of an external library and already reported:
