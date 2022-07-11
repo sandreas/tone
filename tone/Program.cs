@@ -44,7 +44,7 @@ services.AddSingleton<GrokPatternService>();
 services.AddSingleton<ChptFmtNativeMetadataFormat>();
 services.AddSingleton<FfmetadataFormat>();
 
-services.AddSingleton<ToneJson>();
+services.AddSingleton<ToneJsonMeta>();
 services.AddSingleton(_ => new JsonSerializerSettings
 {
     NullValueHandling = NullValueHandling.Ignore,

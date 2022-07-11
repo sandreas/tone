@@ -6,7 +6,7 @@ using tone.Metadata.Converters;
 
 namespace tone.Metadata;
 
-public class ToneJson: IMetadata
+public class ToneJsonMeta: IMetadata
 {
     [JsonIgnore]
     public string? Path  => null;

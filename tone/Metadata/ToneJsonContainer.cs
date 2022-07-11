@@ -2,5 +2,7 @@ namespace tone.Metadata;
 
 public class ToneJsonContainer
 {
-    public ToneJson Meta { get; set; } = new();
+    public ToneJsonAudio? Audio { get; set; }
+    public ToneJsonMeta Meta { get; set; } = new();
+    public ToneJsonFile? File { get; set; }
 }
