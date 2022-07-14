@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
+using tone.Metadata;
 
-namespace tone.Metadata.Serializers;
+namespace tone.Serializers;
 
 public interface IMetadataSerializer
 {

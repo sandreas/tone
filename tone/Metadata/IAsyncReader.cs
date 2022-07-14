@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
-using OperationResult;
 
-namespace tone.Common.Data;
+namespace tone.Metadata;
 
 public interface IAsyncReader<in TSource, TResult>
 {

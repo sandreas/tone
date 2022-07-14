@@ -1,9 +1,10 @@
 using System.IO;
 using System.Threading.Tasks;
 using tone.Common.Extensions.Stream;
+using tone.Metadata;
 using tone.Metadata.Formats;
 
-namespace tone.Metadata.Serializers;
+namespace tone.Serializers;
 
 public class FfmetadataSerializer : IMetadataSerializer
 {

@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
-using OperationResult;
 
-namespace tone.Common.Data;
+namespace tone.Metadata;
 
 public interface IAsyncWriter<in TInput, in TOutput, TResult>
 {

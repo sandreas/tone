@@ -63,6 +63,7 @@
       <None Update="appsettings.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Remove="doc\release\vortex_before.txt" />
     </ItemGroup>
 
 </Project>

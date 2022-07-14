@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using ATL;
 using OperationResult;
 using tone.Commands.Settings.Interfaces;
-using tone.Common.Extensions.String;
+using tone.Metadata.Extensions;
 
 namespace tone.Metadata.Taggers;
 using static Helpers;

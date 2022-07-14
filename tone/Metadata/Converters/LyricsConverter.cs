@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using ATL;
-using ATL.AudioData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -12,7 +9,7 @@ namespace tone.Metadata.Converters;
 
 public class LyricsConverter : JsonConverter
 {
-    private bool _startWritten = false;
+    private bool _startWritten ;
 
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {

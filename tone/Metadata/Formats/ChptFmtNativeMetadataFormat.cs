@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ATL;
 using OperationResult;
-using tone.Common.Extensions.String;
+using tone.Metadata.Extensions;
 
 namespace tone.Metadata.Formats;
 

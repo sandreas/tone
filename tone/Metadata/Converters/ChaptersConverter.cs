@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using ATL;
@@ -49,7 +48,7 @@ public class ChaptersConverter : JsonConverter
     }
 
     // https://www.jerriepelser.com/blog/custom-converters-in-json-net-case-study-1/
-    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
+    public override object ReadJson(JsonReader reader, Type objectType, object? existingValue,
         JsonSerializer serializer)
     {
         var result = new List<ChapterInfo>();

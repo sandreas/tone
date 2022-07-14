@@ -5,8 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using ATL;
 using Spectre.Console;
+using tone.Metadata;
 
-namespace tone.Metadata.Serializers;
+namespace tone.Serializers;
 
 public class SpectreConsoleSerializer : IMetadataSerializer
 {
@@ -166,7 +167,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
 
             var metadataFormats = string.Join(Environment.NewLine, track.MetadataFormats.Select(m => m.Name));
             var formatString = track.MetadataFormats.Count == 1 ? "format" : "formats";
-            Stringify(track.MetadataFormats.Count, s => fileTable.AddRow($"{track.MetadataFormats.Count} meta {formatString}", Markup.Escape(metadataFormats)));
+            Stringify(track.MetadataFormats.Count, _ => fileTable.AddRow($"{track.MetadataFormats.Count} meta {formatString}", Markup.Escape(metadataFormats)));
 
             _console.Write(fileTable);
         }

@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using OperationResult;
 using tone.Commands.Settings.Interfaces;
-using tone.Common.Extensions.String;
 
 namespace tone.Metadata.Taggers;
 

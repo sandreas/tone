@@ -1,11 +1,9 @@
-using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using tone.Common.Extensions.Stream;
-using tone.Metadata.Formats;
+using tone.Metadata;
 
-namespace tone.Metadata.Serializers;
+namespace tone.Serializers;
 
 public class ToneJsonSerializer : IMetadataSerializer
 {
@@ -13,7 +11,7 @@ public class ToneJsonSerializer : IMetadataSerializer
     private readonly JsonSerializerSettings _settings;
     private readonly IFileSystem _fs;
 
-    public ToneJsonSerializer(FileSystem fs, ToneJsonMeta toneJsonMeta, JsonSerializerSettings settings)
+    public ToneJsonSerializer(IFileSystem fs, ToneJsonMeta toneJsonMeta, JsonSerializerSettings settings)
     {
         _fs = fs;
         _toneJsonMeta = toneJsonMeta;
@@ -32,15 +30,6 @@ public class ToneJsonSerializer : IMetadataSerializer
         
         if(metadata is MetadataTrack track)
         {
-            /*
-                         Stringify(track.AudioFormat, s => fileTable.AddRow("format", Markup.Escape(s)));
-            Stringify(track.Bitrate, s => fileTable.AddRow("bitrate", Markup.Escape(s)));
-            Stringify(track.SampleRate, s => fileTable.AddRow("sample-rate", Markup.Escape(s)));
-            Stringify(track.TotalDuration, s => fileTable.AddRow("duration", Markup.Escape(s)));
-            Stringify(track.IsVBR, s => fileTable.AddRow("vbr", Markup.Escape(s)));
-            Stringify(track.ChannelsArrangement, s => fileTable.AddRow("channels", Markup.Escape(s)));
-            Stringify(track.EmbeddedPictures.Count, s => fileTable.AddRow("embedded pictures", Markup.Escape(s)));
-             */
             container.Audio = new ToneJsonAudio
             {
                 Format = track.AudioFormat.Name,
@@ -51,7 +40,7 @@ public class ToneJsonSerializer : IMetadataSerializer
                 ChannelsArrangement = track.ChannelsArrangement,
                 Vbr = track.IsVBR
             };
-        };
+        }
         
         if(metadata.Path != "" && _fs.File.Exists(metadata.Path))
         {
@@ -66,7 +55,7 @@ public class ToneJsonSerializer : IMetadataSerializer
                 Path = file.DirectoryName,
                 Name = file.Name,
             };
-        };
+        }
         
         var result = JsonConvert.SerializeObject(container, _settings);
         return await Task.FromResult(result);
