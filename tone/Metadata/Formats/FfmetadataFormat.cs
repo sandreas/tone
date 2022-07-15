@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ATL;
 using OperationResult;
+using Sandreas.AudioMetadata;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Formats;

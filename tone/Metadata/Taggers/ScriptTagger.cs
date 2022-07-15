@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jint;
 using OperationResult;
+using Sandreas.AudioMetadata;
 using static OperationResult.Helpers;
 namespace tone.Metadata.Taggers;
 

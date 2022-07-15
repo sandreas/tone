@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Sandreas.AudioMetadata;
 using tone.Metadata;
 
 namespace tone.Serializers;

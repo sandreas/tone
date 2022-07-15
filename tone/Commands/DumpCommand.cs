@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Sandreas.AudioMetadata;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
 using tone.Directives;
-using tone.Metadata;
 using tone.Services;
 
 

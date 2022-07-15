@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using OperationResult;
+using Sandreas.AudioMetadata;
 using tone.Commands.Settings.Interfaces;
 
 namespace tone.Metadata.Taggers;

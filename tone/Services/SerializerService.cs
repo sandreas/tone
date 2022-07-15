@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using tone.Metadata;
+using Sandreas.AudioMetadata;
 using tone.Serializers;
 
 namespace tone.Services;

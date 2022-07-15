@@ -1,12 +1,12 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Sandreas.AudioMetadata;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
 using tone.Directives;
 using tone.Matchers;
-using tone.Metadata;
 using tone.Metadata.Taggers;
 
 namespace tone.Commands;

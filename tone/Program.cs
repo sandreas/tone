@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using Sandreas.AudioMetadata;
 using Sandreas.Files;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -161,7 +162,7 @@ app.Configure(config =>
     config.UseStrictParsing();
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
-    config.SetApplicationVersion("0.0.6");
+    config.SetApplicationVersion("0.0.7");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
         .WithDescription("dump metadata for files and directories (directories are traversed recursively)")

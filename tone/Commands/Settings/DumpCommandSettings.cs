@@ -1,6 +1,6 @@
 using System;
+using Sandreas.AudioMetadata;
 using Spectre.Console.Cli;
-using tone.Metadata;
 using tone.Services;
 
 namespace tone.Commands.Settings;

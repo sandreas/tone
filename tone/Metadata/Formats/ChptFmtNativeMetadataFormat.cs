@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ATL;
 using OperationResult;
+using Sandreas.AudioMetadata;
 using tone.Metadata.Extensions;
 
 namespace tone.Metadata.Formats;

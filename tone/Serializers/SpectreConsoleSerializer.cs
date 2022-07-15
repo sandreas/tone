@@ -4,8 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using ATL;
+using Sandreas.AudioMetadata;
 using Spectre.Console;
-using tone.Metadata;
 
 namespace tone.Serializers;
 

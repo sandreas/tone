@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
+using Sandreas.AudioMetadata;
 using tone.Common.Extensions.Stream;
-using tone.Metadata;
 using tone.Metadata.Formats;
 
 namespace tone.Serializers;

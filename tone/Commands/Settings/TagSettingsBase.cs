@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ATL;
+using Sandreas.AudioMetadata;
 using Spectre.Console.Cli;
 using tone.Commands.Settings.Interfaces;
 using tone.Commands.Settings.SettingValues;
-using tone.Metadata;
 
 namespace tone.Commands.Settings;
 

@@ -3,6 +3,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using OperationResult;
+using Sandreas.AudioMetadata;
 using tone.Metadata.Formats;
 using static System.Array;
 using static OperationResult.Helpers;

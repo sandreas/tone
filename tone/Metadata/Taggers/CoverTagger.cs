@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ATL;
 using OperationResult;
+using Sandreas.AudioMetadata;
 using tone.Commands.Settings.Interfaces;
 using tone.Metadata.Extensions;
 

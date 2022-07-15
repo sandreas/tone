@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ATL;
+using Sandreas.AudioMetadata;
 using tone.Common.Extensions.Stream;
 using tone.Common.Extensions.String;
-using tone.Metadata;
 using tone.Metadata.Formats;
 using Xunit;
 
