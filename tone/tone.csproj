@@ -46,9 +46,11 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="Sandreas.AudioMetadata" Version="0.0.3" />
+      <PackageReference Include="Sandreas.AudioMetadata" Version="0.0.4" />
+      <PackageReference Include="Sandreas.Files" Version="1.1.1" />
       <PackageReference Include="Spectre.Console" Version="0.44.0" />
-      <PackageReference Include="System.IO.Abstractions" Version="16.1.5" />
+      <PackageReference Include="System.IO.Abstractions" Version="17.0.23" />
+      <PackageReference Include="z440.atl.core" Version="4.9.0" />
     </ItemGroup>
 
 

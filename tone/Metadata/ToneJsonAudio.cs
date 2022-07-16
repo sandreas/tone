@@ -9,7 +9,7 @@ public class ToneJsonAudio
     public string FormatShort { get; set; }
 
     public double SampleRate { get; set; }
-    public int Duration { get; set; }
+    public double Duration { get; set; }
     public ChannelsArrangements.ChannelsArrangement ChannelsArrangement { get; set; }
     public bool Vbr { get; set; }
 }

@@ -53,7 +53,7 @@ services.AddSingleton(_ => new JsonSerializerSettings
     Converters = new List<JsonConverter>
         { new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() } },
     Formatting = Formatting.Indented,
-    DefaultValueHandling = DefaultValueHandling.Ignore
+    DefaultValueHandling = DefaultValueHandling.Ignore,
 });
 services.AddSingleton<FfmetadataSerializer>();
 services.AddSingleton<SpectreConsoleSerializer>();

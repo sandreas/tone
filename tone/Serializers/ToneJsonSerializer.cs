@@ -10,9 +10,9 @@ public class ToneJsonSerializer : IMetadataSerializer
 {
     private readonly ToneJsonMeta _toneJsonMeta;
     private readonly JsonSerializerSettings _settings;
-    private readonly IFileSystem _fs;
+    private readonly FileSystem _fs;
 
-    public ToneJsonSerializer(IFileSystem fs, ToneJsonMeta toneJsonMeta, JsonSerializerSettings settings)
+    public ToneJsonSerializer(FileSystem fs, ToneJsonMeta toneJsonMeta, JsonSerializerSettings settings)
     {
         _fs = fs;
         _toneJsonMeta = toneJsonMeta;
@@ -37,7 +37,7 @@ public class ToneJsonSerializer : IMetadataSerializer
                 FormatShort = track.AudioFormat.ShortName,
                 Bitrate = track.Bitrate,
                 SampleRate = track.SampleRate,
-                Duration = track.TotalDuration.Milliseconds,
+                Duration = track.TotalDuration.TotalMilliseconds,
                 ChannelsArrangement = track.ChannelsArrangement,
                 Vbr = track.IsVBR
             };

@@ -69,4 +69,5 @@ public class ToneJsonMeta: IMetadata
     public IDictionary<string, string> AdditionalFields { get; } = new Dictionary<string, string>();
     [JsonIgnore]
     public IDictionary<string, string> MappedAdditionalFields => new Dictionary<string, string>();
+    
 }
