@@ -17,6 +17,7 @@ using Spectre.Console.Cli;
 using tone;
 using tone.Api.JavaScript;
 using tone.Commands;
+using tone.Commands.Settings;
 using tone.Commands.Settings.Interfaces;
 using tone.DependencyInjection;
 using tone.Interceptors;
@@ -49,11 +50,13 @@ services.AddSingleton<ToneJsonMeta>();
 services.AddSingleton(_ => new JsonSerializerSettings
 {
     NullValueHandling = NullValueHandling.Ignore,
-    ContractResolver = new CamelCasePropertyNamesContractResolver(),
-    Converters = new List<JsonConverter>
-        { new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() } },
-    Formatting = Formatting.Indented,
     DefaultValueHandling = DefaultValueHandling.Ignore,
+    ContractResolver = new ToneJsonContractResolver(settingsProvider.Get<DumpCommandSettings>()?.IncludeProperties),
+    Converters = new List<JsonConverter>
+    {
+        new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() }
+    },
+    Formatting = Formatting.Indented,
 });
 services.AddSingleton<FfmetadataSerializer>();
 services.AddSingleton<SpectreConsoleSerializer>();
@@ -170,7 +173,8 @@ app.Configure(config =>
         .WithExample(new[] { "dump", "input.mp3" })
         .WithExample(new[]
         {
-            "dump", "audio-directory/", "--include-extension", "m4b", "--format", "ffmetadata", "--include-property",
+            "dump", "audio-directory/", "--include-extension", "m4b", "--format", "ffmetadata",
+            "--include-property",
             "title", "--include-property", "artist"
         })
         ;
