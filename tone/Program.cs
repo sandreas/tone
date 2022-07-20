@@ -165,7 +165,7 @@ app.Configure(config =>
     config.UseStrictParsing();
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
-    config.SetApplicationVersion("0.0.7");
+    config.SetApplicationVersion("0.0.8");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
         .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
