@@ -1,4 +1,5 @@
 using ATL;
+using Sandreas.AudioMetadata;
 
 namespace tone.Metadata;
 
@@ -10,6 +11,8 @@ public class ToneJsonAudio
 
     public double SampleRate { get; set; }
     public double Duration { get; set; }
-    public ChannelsArrangements.ChannelsArrangement ChannelsArrangement { get; set; }
     public bool Vbr { get; set; }
+    public object? Channels { get; set; }
+    public object? Frames { get; set; }
+    public MetadataSpecification[] MetaFormat { get; set; }
 }

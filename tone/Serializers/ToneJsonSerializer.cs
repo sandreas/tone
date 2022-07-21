@@ -38,8 +38,14 @@ public class ToneJsonSerializer : IMetadataSerializer
                 Bitrate = track.Bitrate,
                 SampleRate = track.SampleRate,
                 Duration = track.TotalDuration.TotalMilliseconds,
-                ChannelsArrangement = track.ChannelsArrangement,
-                Vbr = track.IsVBR
+                Vbr = track.IsVBR,
+                Channels = new { Count = track.ChannelsArrangement.NbChannels, Description = track.ChannelsArrangement.Description },
+                Frames = new
+                {
+                    Offset = track.TechnicalInformation.AudioDataOffset, 
+                    Length = track.TechnicalInformation.AudioDataSize
+                },
+                MetaFormat = track.MetadataSpecifications
             };
         }
         
