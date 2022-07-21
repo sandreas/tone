@@ -6,6 +6,7 @@
 
 ## Changed
 
+- `dump` now contains technical information about the audio frames and metadata formats
 
 ## Added
 
