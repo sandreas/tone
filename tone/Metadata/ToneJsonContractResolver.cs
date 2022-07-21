@@ -38,28 +38,10 @@ public class ToneJsonContractResolver : CamelCasePropertyNamesContractResolver
             {
                 return true;
             }
-
-            var value = toneJsonMeta.GetMetadataPropertyValue(metadataProperty);
-            return value == null || ShouldSerializeToneJsonProperty(value);
+            return !MetadataExtensions.IsEmpty(toneJsonMeta.GetMetadataPropertyValue(metadataProperty));
         };
         
         return property;
     }
 
-    // todo: make IMetadataExtensions.IsConsideredEmpty public
-    private static bool ShouldSerializeToneJsonProperty(object t) => t switch
-    {
-         int i => i != 0,
-         float f => f != 0.0f,
-         double d => d != 0.0d,
-         string s => !string.IsNullOrEmpty(s),
-         DateTime d => d != DateTime.MinValue,
-         LyricsInfo ly => string.IsNullOrEmpty(ly.UnsynchronizedLyrics) && ly.SynchronizedLyrics.Count == 0,
-         IList<ChapterInfo> { Count: 0 }
-             or IList<PictureInfo> { Count: 0 }
-             or IDictionary<string, string> { Count: 0 } => false,
-         _ => true
-    };
-    
-    
 }
