@@ -4,15 +4,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using OperationResult;
 using Sandreas.AudioMetadata;
+using tone.Metadata.Extensions;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
 public class TaggerComposite : ITagger
 {
-    private const string PlaceHolderStar = "*";
-    public List<ITagger> Taggers { get; } = new();
+    private readonly IEnumerable<string> _order = Array.Empty<string>();
     
+    private const string PlaceHolderStar = "*";
+    public List<INamedTagger> Taggers { get; } = new();
+    public IEnumerable<INamedTagger> OrderedTaggers => OrderTaggers(_order, Taggers.ToArray());
 
     public TaggerComposite(params INamedTagger[] taggers)
     {
@@ -20,15 +23,19 @@ public class TaggerComposite : ITagger
     }
 
     public TaggerComposite(IEnumerable<string> order, params INamedTagger[] taggers) : this(
-        OrderTaggers(order, taggers))
+        taggers)
     {
-        
+        _order = order;
     }
 
-    private static INamedTagger[] OrderTaggers(IEnumerable<string> order, INamedTagger[] taggers)
+    private static IEnumerable<INamedTagger> OrderTaggers(IEnumerable<string> order, INamedTagger[] taggers)
     {
-        
-        var taggerNames = _normalizeTaggerNames(order);
+        var orderArray = order.ToArray();
+        if(orderArray.Length == 0)        {
+            return taggers;
+        }
+            
+        var taggerNames = _normalizeTaggerNames(orderArray);
         var nonStarNames = taggerNames.Where(o => o != PlaceHolderStar).ToArray();
         if (nonStarNames.Length == 0)
         {
@@ -43,8 +50,9 @@ public class TaggerComposite : ITagger
                 continue;
             }
 
+            // todo: normalize tagger names so that Tagger-Suffix is removed, instead of appended (because ScriptTaggers may don't work like that)
             var taggerToAdd = taggers.FirstOrDefault(t =>
-                string.Equals(t.Name, taggerName, StringComparison.InvariantCultureIgnoreCase));
+                string.Equals(t.Name.TrimSuffix("Tagger"), taggerName.TrimSuffix("Tagger"), StringComparison.InvariantCultureIgnoreCase));
             if (taggerToAdd != null)
             {
                 orderedTaggers.Add(taggerToAdd);
@@ -70,7 +78,7 @@ public class TaggerComposite : ITagger
     public async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {
         var error = "";
-        foreach (var tagger in Taggers)
+        foreach (var tagger in OrderedTaggers)
         {
             var result = await tagger.UpdateAsync(metadata);
             if (!result)

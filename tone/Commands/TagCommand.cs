@@ -83,7 +83,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     if (!status)
                     {
                         _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
-                        return;
+                        continue;
                     }
 
                     var currentMetadata = new MetadataTrack(file);
@@ -93,7 +93,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                         if(settings.DryRun || !settings.Force){
                             _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
                                 .LeftAligned());
-                            return;
+                            continue;
                         }
                         var path = Markup.Escape(track.Path ?? "");
                         var message = !track.Save() ? $"[red]Force update failed: {path}[/]" : $"[green]Forced update: {path}[/]";
@@ -118,7 +118,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                         if (settings.DryRun)
                         {
                             _console.Write(diffTable);
-                            return;
+                            continue;
                         }
 
                         var path = Markup.Escape(track.Path ?? "");
