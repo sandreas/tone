@@ -103,7 +103,7 @@ services.AddSingleton(sp =>
     {
         var cts = sp.GetRequiredService<CancellationTokenSource>();
         options.LimitMemory(4_000_000);
-        options.TimeoutInterval(TimeSpan.FromSeconds(5));
+        options.TimeoutInterval(TimeSpan.FromSeconds(25));
         options.MaxStatements(1000);
         options.CancellationToken(cts.Token);
     });

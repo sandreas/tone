@@ -3,6 +3,8 @@
 ## Fixed
 
 - `dump` command now skips empty properties when using `--format=json`
+- only one file was processed under specific circumstances
+- script taggers were always applied ignoring the `--taggers` option
 
 ## Changed
 
@@ -10,6 +12,7 @@
 
 ## Added
 
+- JavaScriptApi now contains new methods `tone.WriteTextFile`, `tone.AppendTextFile`, and `tone.LimitByteLength`
 
 ## known issues
 

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Abstractions;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using ATL;
 using Jint;
@@ -171,4 +173,49 @@ public class JavaScriptApi
         pic.ComputePicHash();
         return pic;
     }
+    
+    public void WriteTextFile(string path, string content)
+    {
+        _fs.File.WriteAllText(path, content);
+    }
+    
+    public void AppendTextFile(string path, string content){
+        if(!_fs.File.Exists(path)){
+            WriteTextFile(path, content);
+            return;
+        } 
+        _fs.File.AppendAllText(path, content);
+    } 
+    
+    // this https://stackoverflow.com/questions/8707755/how-to-know-the-size-of-the-string-in-bytes
+    // maybe optimize: https://stackoverflow.com/questions/8707755/how-to-know-the-size-of-the-string-in-bytes
+    public static string LimitByteLength(string message, int maxLength, string encodingAsString="utf8")
+    {
+        var encoding = EncodingStringToEncoding(encodingAsString);
+        
+        if (string.IsNullOrEmpty(message) || encoding.GetByteCount(message) <= maxLength)
+        {
+            return message;
+        }
+    
+        var enumerator = StringInfo.GetTextElementEnumerator(message);
+        var result = new StringBuilder();
+        var lengthBytes = 0;
+        while (enumerator.MoveNext())
+        {
+            lengthBytes += encoding.GetByteCount(enumerator.GetTextElement());
+            if (lengthBytes <= maxLength)
+            {
+                result.Append(enumerator.GetTextElement()); 
+            }
+        }
+    
+        return result.ToString();
+    }
+
+    private static Encoding EncodingStringToEncoding(string encodingAsString) => encodingAsString switch
+    {
+        "utf8" => Encoding.UTF8,
+        _ => Encoding.Default
+    };
 }
