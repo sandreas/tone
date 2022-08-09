@@ -68,19 +68,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.0.7/tone-0.0.7-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.0.7/tone-0.0.7-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.0.7/tone-0.0.7-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.0.7/tone-0.0.7-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.0.7/tone-0.0.7-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -97,10 +97,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.0.7-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.7/tone-0.0.7-win-x64.zip
+iwr -outf tone-0.0.8-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.0.7-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.0.8-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -344,16 +344,19 @@ tone tag "harry-potter-1.m4b" --taggers="musicbrainz" --script="musicbrainz.js" 
 
 To get an overview of fields, that can be accessed or modified via the `metadata` object, you should take a look at the [`IMetadata` interface](https://github.com/sandreas/tone/blob/main/tone/Metadata/IMetadata.cs). Not all of them are primitive types, but there are API at least some helper methods to overcome this problem (more are planned):
 
-| Method    | Description                                                                                                                                                            | Notes                                                                                                                     |
-|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| `tone.RegisterTagger(string functionName):void`    | Registers a custom tagger function with `functionName` | - |
-| `tone.Fetch(string url [, object? options]):string`    | Fetches remote `url` contents using `options` inspired by [original fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)                 | Only a small subset of options is implemented (mainly `method`, `body` and `headers`)                                     |
-| `tone.Download(string url, string destinationPath [, object options]):bool`    | Downloads a remote `<url>` to `<destinationFile>` using `options` inspired by [original fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) | Returns `true` on success, `false` on error<br/>Directories will be created recursively<br/>Files are not overwritten by default |
-| `tone.ReadTextFile(string path):string`    | Reads a text file completely as string                                                                                                                                 | - |
-| `tone.CreateDateTime(string dateString):DateTime`    | Creates a `DateTime` value from string                                                                                                                                 | e.g. for `metadata.PublishingDate`|
-| `tone.CreateTimeSpan(number milliseconds):TimeSpan`    | Creates a `TimeSpan` value from string                                                                                                                                 | e.g. for `metadata.TotalDuration`|  
-| `tone.CreatePicture(string path):PictureInfo`    | Creates a `PictureInfo` value from a path (refer to `Download`)                                                                                                        | for `metadata.EmbeddedPictures`|   
-| `tone.CreateChapter(string title, number startMs, number lengthMs [, PictureInfo picture, string subtitle, string uniqueID]):ChapterInfo`    | Creates a `ChapterInfo`                                                                                                                                                | for `metadata.Chapters`|  
+| Method                                                                                                                                    | Description                                                                                                                                                                | Notes                                                                                                                     |
+|-------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `tone.RegisterTagger(string functionName):void`                                                                                           | Registers a custom tagger function with `functionName`                                                                                                                     | - |
+| `tone.Fetch(string url [, object? options]):string`                                                                                       | Fetches remote `url` contents using `options` inspired by [original fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)                     | Only a small subset of options is implemented (mainly `method`, `body` and `headers`)                                     |
+| `tone.Download(string url, string destinationPath [, object options]):bool`                                                               | Downloads a remote `<url>` to `<destinationFile>` using `options` inspired by [original fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) | Returns `true` on success, `false` on error<br/>Directories will be created recursively<br/>Files are not overwritten by default |
+| `tone.ReadTextFile(string path):string`                                                                                                   | Reads a text file completely as string                                                                                                                                     | - |
+| `tone.WriteTextFile(string path, string content):void`                                                                                    | Writes text to a file (create file if not exists, overwrite contents)                                                                                                      | - |
+| `tone.AppendTextFile(string path, string content):void`                                                                                   | Appends text to a file  (create file if not exists, append contents)                                                                                                       | - |
+| `tone.LimitByteLength(string message, int maxLength):string`                                                                              | Limites text to byte length (not char length)                                                                                                                              | - |
+| `tone.CreateDateTime(string dateString):DateTime`                                                                                         | Creates a `DateTime` value from string                                                                                                                                     | e.g. for `metadata.PublishingDate`|
+| `tone.CreateTimeSpan(number milliseconds):TimeSpan`                                                                                       | Creates a `TimeSpan` value from string                                                                                                                                     | e.g. for `metadata.TotalDuration`|  
+| `tone.CreatePicture(string path):PictureInfo`                                                                                             | Creates a `PictureInfo` value from a path (refer to `Download`)                                                                                                            | for `metadata.EmbeddedPictures`|   
+| `tone.CreateChapter(string title, number startMs, number lengthMs [, PictureInfo picture, string subtitle, string uniqueID]):ChapterInfo` | Creates a `ChapterInfo`                                                                                                                                                    | for `metadata.Chapters`|  
 
 
 # known issues
