@@ -1,17 +1,19 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Sandreas.AudioMetadata;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
+using tone.DependencyInjection;
 using tone.Directives;
 using tone.Matchers;
 using tone.Metadata.Taggers;
 
 namespace tone.Commands;
 
-public class TagCommand : AsyncCommand<TagCommandSettings>
+public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
 {
     private readonly DirectoryLoaderService _dirLoader;
     private readonly SpectreConsoleService _console;
@@ -31,8 +33,10 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
         _api = api; // unused but necessary (Dependency Injection Initialisation)
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, TagCommandSettings settings,
+        CancellationToken cancellation)
     {
+        // it throws a TaskCanceledException
         if (_startup.HasErrors)
         {
             return _startup.ShowErrors(_console.Error.WriteLine);
@@ -44,11 +48,12 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
         {
             inputFiles = inputFiles.Where(f => _pathPatternMatcher.TryMatchSinglePattern(f.FullName, out _));
         }
+
         var inputFilesAsArray = inputFiles
             .Apply(new OrderByDirective(settings.OrderBy))
             .Apply(new LimitDirective(settings.Limit))
             .ToArray();
-        
+
         var packages = _dirLoader.BuildPackages(inputFilesAsArray, _pathPatternMatcher, settings.Input).ToArray();
         var fileCount = packages.Sum(p => p.Files.Count);
 
@@ -65,7 +70,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     return (int)ReturnCode.UserAbort;
             }
         }
-        
+
         var showDryRunMessage = false;
 
         var tasks = packages.Select(p => Task.Run(async () =>
@@ -78,8 +83,6 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     };
                     var status = await _tagger.UpdateAsync(track);
 
-
-                    
                     if (!status)
                     {
                         _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
@@ -90,16 +93,22 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                     var diffListing = track.Diff(currentMetadata);
                     if (diffListing.Count == 0)
                     {
-                        if(settings.DryRun || !settings.Force){
+                        if (settings.DryRun || !settings.Force)
+                        {
                             _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
                                 .LeftAligned());
                             continue;
                         }
+
                         var path = Markup.Escape(track.Path ?? "");
-                        var message = !track.Save() ? $"[red]Force update failed: {path}[/]" : $"[green]Forced update: {path}[/]";
+                        var message = !track.Save()
+                            ? $"[red]Force update failed: {path}[/]"
+                            : $"[green]Forced update: {path}[/]";
                         _console.Write(new Rule(message)
                             .LeftAligned());
-                    } else {
+                    }
+                    else
+                    {
                         showDryRunMessage = settings.DryRun;
                         var diffTable = new Table().Expand();
                         diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
@@ -114,7 +123,7 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                                 Markup.Escape(currentValue?.ToString() ?? "<null>")
                             );
                         }
-                        
+
                         if (settings.DryRun)
                         {
                             _console.Write(diffTable);
@@ -122,15 +131,18 @@ public class TagCommand : AsyncCommand<TagCommandSettings>
                         }
 
                         var path = Markup.Escape(track.Path ?? "");
-                        var message = !track.Save() ? $"[red]Update failed: {path}[/]" : $"[green]Updated: {path}[/]";
+                        var message = !track.Save()
+                            ? $"[red]Update failed: {path}[/]"
+                            : $"[green]Updated: {path}[/]";
                         diffTable.Caption = new TableTitle(message);
                         _console.Write(diffTable);
                     }
                 }
-            }))
-            .ToList();
-        
-        await Task.WhenAll(tasks);
+            }, cancellation))
+            .ToArray();
+
+        // https://stackoverflow.com/questions/27238232/how-can-i-cancel-task-whenall
+        await Task.Run(() => Task.WaitAll(tasks), cancellation);
 
         if (showDryRunMessage)
         {
