@@ -71,78 +71,30 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
             }
         }
 
+        var returnCode = ReturnCode.Success;
         var showDryRunMessage = false;
-
-        var tasks = packages.Select(p => Task.Run(async () =>
+        foreach (var p in packages)
+        {
+            if (cancellation.IsCancellationRequested)
             {
-                foreach (var file in p.Files)
-                {
-                    var track = new MetadataTrack(file)
-                    {
-                        BasePath = p.BaseDirectory?.FullName
-                    };
-                    var status = await _tagger.UpdateAsync(track);
+                _console.Error.Write(new Markup($"[red]User cancelled on package: {p.BaseDirectory}[/]"));
+                returnCode = ReturnCode.UserAbort;
+                break;
+            }
 
-                    if (!status)
-                    {
-                        _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
-                        continue;
-                    }
-
-                    var currentMetadata = new MetadataTrack(file);
-                    var diffListing = track.Diff(currentMetadata);
-                    if (diffListing.Count == 0)
-                    {
-                        if (settings.DryRun || !settings.Force)
-                        {
-                            _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
-                                .LeftAligned());
-                            continue;
-                        }
-
-                        var path = Markup.Escape(track.Path ?? "");
-                        var message = !track.Save()
-                            ? $"[red]Force update failed: {path}[/]"
-                            : $"[green]Forced update: {path}[/]";
-                        _console.Write(new Rule(message)
-                            .LeftAligned());
-                    }
-                    else
-                    {
-                        showDryRunMessage = settings.DryRun;
-                        var diffTable = new Table().Expand();
-                        diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
-                        diffTable.AddColumn("property")
-                            .AddColumn("current")
-                            .AddColumn("new");
-                        foreach (var (property, currentValue, newValue) in diffListing)
-                        {
-                            diffTable.AddRow(
-                                property.ToString(),
-                                Markup.Escape(newValue?.ToString() ?? "<null>"),
-                                Markup.Escape(currentValue?.ToString() ?? "<null>")
-                            );
-                        }
-
-                        if (settings.DryRun)
-                        {
-                            _console.Write(diffTable);
-                            continue;
-                        }
-
-                        var path = Markup.Escape(track.Path ?? "");
-                        var message = !track.Save()
-                            ? $"[red]Update failed: {path}[/]"
-                            : $"[green]Updated: {path}[/]";
-                        diffTable.Caption = new TableTitle(message);
-                        _console.Write(diffTable);
-                    }
-                }
-            }, cancellation))
-            .ToArray();
-
+            var (retCode, dryRun) = await ProcessAudioBookPackage(p, settings, cancellation);
+            if (dryRun)
+            {
+                showDryRunMessage = true;
+            }
+            if(retCode == ReturnCode.UserAbort)
+            {
+                returnCode = ReturnCode.UserAbort;
+                break;
+            }
+        }
         // https://stackoverflow.com/questions/27238232/how-can-i-cancel-task-whenall
-        await Task.Run(() => Task.WaitAll(tasks), cancellation);
+        // await Task.Run(() => Task.WaitAll(tasks), cancellation);
 
         if (showDryRunMessage)
         {
@@ -150,38 +102,83 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
             _console.Write(new Markup("[blue]!!! This was a dry-run, no changes where actually saved !!![/]"));
         }
 
-        return await Task.FromResult((int)ReturnCode.Success);
+        return await Task.FromResult((int)returnCode);
     }
 
-
-    /*private Task<Result<ITagger, ReturnCode>> BuildTaggerCompositeAsync(TagSettingsBase settings,
-        PathPatternMatcher matcher)
+    private async Task<(ReturnCode returnCode, bool dryRun)> ProcessAudioBookPackage(AudioBookPackage p, TagCommandSettings settings,
+        CancellationToken cancellation)
     {
-        var tagger = new TaggerComposite();
-        tagger.Taggers.Add(new MetadataTagger(settings));
-        tagger.Taggers.Add(new CoverTagger(_dirLoader.FileSystem,
-            settings.Covers, settings.AutoImport.Contains(AutoImportValue.Covers)));
-
-        tagger.Taggers.Add(new PathPatternTagger(matcher));
-        tagger.Taggers.Add(new AdditionalFieldsRemoveTagger(settings.RemoveAdditionalFields));
-        if (settings.AutoImport.Contains(AutoImportValue.Chapters) || settings.ImportChaptersFile != "")
+        var showDryRunMessage = false;
+        foreach (var file in p.Files)
         {
-            tagger.Taggers.Add(new ChptFmtNativeTagger(_dirLoader.FileSystem, _chapterFormat,
-                settings.ImportChaptersFile));
+            if (cancellation.IsCancellationRequested)
+            {
+                _console.Error.Write(new Markup($"[red]User cancelled on file: {file}[/]"));
+                return (ReturnCode.UserAbort, showDryRunMessage);
+            }
+
+            var track = new MetadataTrack(file)
+            {
+                BasePath = p.BaseDirectory?.FullName
+            };
+            var status = await _tagger.UpdateAsync(track);
+
+            if (!status)
+            {
+                _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
+                continue;
+            }
+
+            var currentMetadata = new MetadataTrack(file);
+            var diffListing = track.Diff(currentMetadata);
+            if (diffListing.Count == 0)
+            {
+                if (settings.DryRun || !settings.Force)
+                {
+                    _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
+                        .LeftAligned());
+                    continue;
+                }
+
+                var path = Markup.Escape(track.Path ?? "");
+                var message = !track.Save()
+                    ? $"[red]Force update failed: {path}[/]"
+                    : $"[green]Forced update: {path}[/]";
+                _console.Write(new Rule(message)
+                    .LeftAligned());
+            }
+            else
+            {
+                showDryRunMessage = settings.DryRun;
+                var diffTable = new Table().Expand();
+                diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
+                diffTable.AddColumn("property")
+                    .AddColumn("current")
+                    .AddColumn("new");
+                foreach (var (property, currentValue, newValue) in diffListing)
+                {
+                    diffTable.AddRow(
+                        property.ToString(),
+                        Markup.Escape(newValue?.ToString() ?? "<null>"),
+                        Markup.Escape(currentValue?.ToString() ?? "<null>")
+                    );
+                }
+
+                if (settings.DryRun)
+                {
+                    _console.Write(diffTable);
+                    continue;
+                }
+
+                var path = Markup.Escape(track.Path ?? "");
+                var message = !track.Save()
+                    ? $"[red]Update failed: {path}[/]"
+                    : $"[green]Updated: {path}[/]";
+                diffTable.Caption = new TableTitle(message);
+                _console.Write(diffTable);
+            }
         }
 
-        tagger.Taggers.Add(new EquateTagger(settings.Equate));
-        tagger.Taggers.Add(new M4BFillUpTagger());
-        return Task.FromResult<Result<ITagger, ReturnCode>>(Ok((ITagger)tagger));
-    }*/
-
-    /*
-    private static async Task<bool> Confirm(, string message, bool confirmIsDefault = false)
-    {
-        var confirmString = confirmIsDefault ? "[Y/n]" : "[y/N]";
-        await console.Output.WriteAsync($"{message} {confirmString}");
-        var answer = await console.Input.ReadLineAsync();
-        return answer?.Trim().ToLower() != "y";
+        return (ReturnCode.Success, showDryRunMessage);
     }
-    */
 }
