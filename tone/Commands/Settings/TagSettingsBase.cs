@@ -128,6 +128,9 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSetti
     [CommandOption("--script-tagger-parameter")]
     public string[] ScriptTaggerParameters { get; set; } = Array.Empty<string>();
     
+    
+    [CommandOption("--prepend-series-to-description")] public bool PrependSeriesToDescription { get; init; } = false;
+
     // fulfil interface contract
     public string? Path => null;
     public string? BasePath => null;

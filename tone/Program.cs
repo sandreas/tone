@@ -125,6 +125,7 @@ services.AddSingleton(sp =>
             new ChptFmtNativeTagger(fs, chapterFormat, s.ImportChaptersFile, s.AutoImportChapters)),
         settingsProvider.Build<IEquateTaggerSettings, INamedTagger>(s => new EquateTagger(s)),
         new M4BFillUpTagger(),
+        settingsProvider.Build<IPrependSeriesToDescriptionTaggerSettings, INamedTagger>(s => new PrependSeriesToDescriptionTagger(s.PrependSeriesToDescription)),
         settingsProvider.Build<IRemoveTaggerSettings, INamedTagger>(s => new RemoveTagger(s))
     }.Where(t => t != null).Select(e => e!).ToArray();
     var taggerOrderSettings = settingsProvider.Get<ITaggerOrderSettings>();
@@ -165,7 +166,7 @@ app.Configure(config =>
     config.UseStrictParsing();
     config.CaseSensitivity(CaseSensitivity.None);
     config.SetApplicationName("tone");
-    config.SetApplicationVersion("0.0.8");
+    config.SetApplicationVersion("0.0.9");
     config.ValidateExamples();
     config.AddCommand<DumpCommand>("dump")
         .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
