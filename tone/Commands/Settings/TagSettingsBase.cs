@@ -9,8 +9,24 @@ using tone.Commands.Settings.SettingValues;
 
 namespace tone.Commands.Settings;
 
-public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IToneJsonTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings, IRemoveTaggerSettings, ITaggerOrderSettings, IScriptSettings
+public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IToneJsonTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings, IRemoveTaggerSettings, ITaggerOrderSettings, IScriptSettings,IPrependSeriesToDescriptionTaggerSettings
 {
+    [CommandOption("--assume-yes|-y")] public bool AssumeYes { get; init; } = false;
+    [CommandOption("--dry-run")] public bool DryRun { get; init; } = false;
+
+    [CommandOption("--taggers")]
+    public string[] Taggers { get; set; } = Array.Empty<string>();
+    
+    [CommandOption("--script")]
+    public string[] Scripts { get; set; } = Array.Empty<string>();
+    
+    [CommandOption("--script-tagger-parameter")]
+    public string[] ScriptTaggerParameters { get; set; } = Array.Empty<string>();
+    
+    
+    [CommandOption("--prepend-series-to-description")] public bool PrependSeriesToDescription { get; init; } = false;
+
+    
     [CommandOption("--meta-artist")] public string? Artist { get; set; }
     [CommandOption("--meta-album")] public string? Album { get; set; }
     [CommandOption("--meta-album-artist")] public string? AlbumArtist { get; set; }
@@ -118,18 +134,6 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSetti
 
     [CommandOption("--meta-remove-property")]
     public MetadataProperty[] Remove { get; init; } = Array.Empty<MetadataProperty>();
-
-    [CommandOption("--taggers")]
-    public string[] Taggers { get; set; } = Array.Empty<string>();
-    
-    [CommandOption("--script")]
-    public string[] Scripts { get; set; } = Array.Empty<string>();
-    
-    [CommandOption("--script-tagger-parameter")]
-    public string[] ScriptTaggerParameters { get; set; } = Array.Empty<string>();
-    
-    
-    [CommandOption("--prepend-series-to-description")] public bool PrependSeriesToDescription { get; init; } = false;
 
     // fulfil interface contract
     public string? Path => null;
