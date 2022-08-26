@@ -5,15 +5,15 @@ using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class PrependSeriesToDescriptionTagger : AbstractNamedTagger
+public class PrependMovementToDescriptionTagger : AbstractNamedTagger
 {
     private readonly bool _enabled;
 
-    public PrependSeriesToDescriptionTagger(bool enabled=false)
+    public PrependMovementToDescriptionTagger(bool enabled=false)
     {
         _enabled = enabled;
     }
-    public override string Name => nameof(PrependSeriesToDescriptionTagger);
+    public override string Name => nameof(PrependMovementToDescriptionTagger);
 
     public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
     {

@@ -10,7 +10,7 @@
 
 ## Added
 
-- `--prepend-series-to-description` parameter which adds the movement name as prefix to every description field
+- `--meta-prepend-movement-to-description` parameter which adds the movement name as prefix to every description field
 
 ## known issues
 

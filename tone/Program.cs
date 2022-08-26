@@ -125,7 +125,7 @@ services.AddSingleton(sp =>
             new ChptFmtNativeTagger(fs, chapterFormat, s.ImportChaptersFile, s.AutoImportChapters)),
         settingsProvider.Build<IEquateTaggerSettings, INamedTagger>(s => new EquateTagger(s)),
         new M4BFillUpTagger(),
-        settingsProvider.Build<IPrependSeriesToDescriptionTaggerSettings, INamedTagger>(s => new PrependSeriesToDescriptionTagger(s.PrependSeriesToDescription)),
+        settingsProvider.Build<IPrependMovementToDescriptionTaggerSettings, INamedTagger>(s => new PrependMovementToDescriptionTagger(s.PrependMovementToDescription)),
         settingsProvider.Build<IRemoveTaggerSettings, INamedTagger>(s => new RemoveTagger(s))
     }.Where(t => t != null).Select(e => e!).ToArray();
     var taggerOrderSettings = settingsProvider.Get<ITaggerOrderSettings>();

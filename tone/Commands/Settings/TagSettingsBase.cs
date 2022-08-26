@@ -9,7 +9,16 @@ using tone.Commands.Settings.SettingValues;
 
 namespace tone.Commands.Settings;
 
-public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSettings, IToneJsonTaggerSettings, IPathPatternSettings, IChptFmtNativeTaggerSettings, IRemoveTaggerSettings, ITaggerOrderSettings, IScriptSettings,IPrependSeriesToDescriptionTaggerSettings
+public class TagSettingsBase : CommandSettingsBase, 
+    IMetadata, 
+    ICoverTaggerSettings, 
+    IToneJsonTaggerSettings, 
+    IPathPatternSettings, 
+    IChptFmtNativeTaggerSettings, 
+    IRemoveTaggerSettings, 
+    ITaggerOrderSettings, 
+    IScriptSettings,
+    IPrependMovementToDescriptionTaggerSettings
 {
     [CommandOption("--assume-yes|-y")] public bool AssumeYes { get; init; } = false;
     [CommandOption("--dry-run")] public bool DryRun { get; init; } = false;
@@ -24,7 +33,7 @@ public class TagSettingsBase : CommandSettingsBase, IMetadata, ICoverTaggerSetti
     public string[] ScriptTaggerParameters { get; set; } = Array.Empty<string>();
     
     
-    [CommandOption("--prepend-series-to-description")] public bool PrependSeriesToDescription { get; init; } = false;
+    [CommandOption("--meta-prepend-movement-to-description")] public bool PrependMovementToDescription { get; init; } = false;
 
     
     [CommandOption("--meta-artist")] public string? Artist { get; set; }
