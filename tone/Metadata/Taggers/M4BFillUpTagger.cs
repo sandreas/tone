@@ -14,7 +14,7 @@ public class M4BFillUpTagger : AbstractNamedTagger
 
     public override string Name => nameof(M4BFillUpTagger);
 
-    public override async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public override async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         if (!IsM4B(metadata))
         {

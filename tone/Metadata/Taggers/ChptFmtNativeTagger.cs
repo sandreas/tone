@@ -28,7 +28,7 @@ public class ChptFmtNativeTagger : INamedTagger
         _autoImport = autoImport;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         if (!_autoImport && _forceChapterFilename == "")
         {

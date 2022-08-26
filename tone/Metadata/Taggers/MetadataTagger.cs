@@ -16,7 +16,7 @@ public class MetadataTagger : INamedTagger
         _source = source;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         metadata.OverwritePropertiesWhenNotEmpty(_source);
         return await Task.FromResult(Ok());

@@ -28,7 +28,7 @@ public class RemoveTagger : INamedTagger
         _removeAdditional = settings.RemoveAdditionalFields;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         foreach (var property in _remove)
         {

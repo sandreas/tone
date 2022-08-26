@@ -9,9 +9,9 @@ namespace tone.Metadata.Taggers;
 
 public abstract class AbstractNamedTagger: INamedTagger
 {
-    public abstract Task<Status<string>> UpdateAsync(IMetadata metadata);
+    public abstract Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null);
     public abstract string Name { get; }
-    
+
     protected static bool HasMovementOrPart(IMetadata metadata)
     {
         return !string.IsNullOrEmpty(metadata.MovementName) || !string.IsNullOrEmpty(metadata.Part);

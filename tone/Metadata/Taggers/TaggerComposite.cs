@@ -75,12 +75,16 @@ public class TaggerComposite : ITagger
         }).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata=null)
     {
+        if(originalMetadata == null){
+            originalMetadata = new ToneJsonMeta(); // todo: rename class to something more generic
+            originalMetadata.OverwriteProperties(metadata);
+        }
         var error = "";
         foreach (var tagger in OrderedTaggers)
         {
-            var result = await tagger.UpdateAsync(metadata);
+            var result = await tagger.UpdateAsync(metadata, originalMetadata);
             if (!result)
             {
                 error += result.Error;

@@ -33,7 +33,7 @@ public class TagSettingsBase : CommandSettingsBase,
     public string[] ScriptTaggerParameters { get; set; } = Array.Empty<string>();
     
     
-    [CommandOption("--meta-prepend-movement-to-description")] public bool PrependMovementToDescription { get; init; } = false;
+    [CommandOption("--prepend-movement-to-description")] public bool PrependMovementToDescription { get; init; } = false;
 
     
     [CommandOption("--meta-artist")] public string? Artist { get; set; }

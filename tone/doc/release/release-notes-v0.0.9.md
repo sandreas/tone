@@ -6,11 +6,11 @@
 
 ## Changed
 
-- 
+- `ITagger.UpdateAsync` can now refer to original metadata before any modification (required for `--prepend-movement-to-description`)
 
 ## Added
 
-- `--meta-prepend-movement-to-description` parameter which adds the movement name as prefix to every description field
+- `--prepend-movement-to-description` parameter which adds the movement name as prefix to every description field
 
 ## known issues
 

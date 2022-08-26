@@ -35,7 +35,7 @@ public class ToneJsonTagger : INamedTagger
         _autoload = settings.AutoImportToneJson;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         if (_autoload && _toneJsonFiles.Count == 0 && metadata.BasePath != null)
         {

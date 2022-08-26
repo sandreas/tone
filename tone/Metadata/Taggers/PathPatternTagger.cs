@@ -19,7 +19,7 @@ public class PathPatternTagger : INamedTagger
         _pathPatternMatcher = pathPatternMatcher;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         if (!_pathPatternMatcher.HasPatterns)
         {

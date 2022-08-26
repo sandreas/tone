@@ -20,7 +20,7 @@ public class ScriptTagger: INamedTagger
         _parameters = parameters;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         Engine.Invoke(Name, metadata, _parameters);
         return await Task.FromResult(Ok());

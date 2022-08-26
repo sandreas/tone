@@ -25,7 +25,7 @@ public class EquateTagger : INamedTagger
         _equateFieldSets = settings.Equate;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         foreach (var fieldSet in _equateFieldSets)
         {

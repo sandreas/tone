@@ -35,7 +35,7 @@ public class CoverTagger: INamedTagger
         _covers = settings.Covers.Select(f => fs.FileInfo.FromFileName(f)).ToList();
         _autoload = settings.AutoImportCovers;
     }
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata)
+    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
         if(_autoload && _covers.Count == 0 && metadata.BasePath!=null)
         {

@@ -6,5 +6,5 @@ namespace tone.Metadata.Taggers;
 
 public interface ITagger
 {
-    public Task<Status<string>> UpdateAsync(IMetadata metadata);
+    public Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata=null);
 }
