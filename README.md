@@ -21,6 +21,13 @@ tone dump input.mp3
 
 # show title and artiest tag recursively for all files in directory with extension m4b in FFMETADATA format
 tone dump audio-directory/ --include-extension m4b --format ffmetadata --include-property title --include-property artist
+
+# show album only via json format and JSONPath query
+tone dump "input.mp3" --format json --query "$.meta.album"
+
+# show audio stream information via JSONPath query
+tone dump "input.mp3" --format json --query "$.audio"
+
 ```
 
 ### modify tags
@@ -37,6 +44,9 @@ tone tag --debug --auto-import=covers --meta-additional-field "©st3=testing" in
 
 # recursively set tags genre, artist, series, part and title by path pattern (--dry-run simulation)
 tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/%g/%a/%s/%p - %n.m4b" --path-pattern="audiobooks/%g/%a/%z/%n.m4b" audiobooks/ --dry-run
+
+# write your own custom JavaScript tagger and call this function with parameters to modify metadata on your own
+tone tag "harry-potter-1.m4b" --taggers="musicbrainz" --script="musicbrainz.js" --script-tagger-parameter="e2310769-2e68-462f-b54f-25ac8e3f1a21"
 ```
 
 ## Features
@@ -68,19 +78,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.9/tone-0.0.9-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.9/tone-0.0.9-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.9/tone-0.0.9-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.9/tone-0.0.9-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.0.9/tone-0.0.9-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -97,10 +107,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.0.8-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.8/tone-0.0.8-win-x64.zip
+iwr -outf tone-0.0.9-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.0.9/tone-0.0.9-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.0.8-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.0.9-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -142,8 +152,14 @@ There are some global options, that can be used to change the behaviour of the f
 
 ### `dump` - show audio metadata
 
+The `dump` command can be used to show metadata for a wide variety of audio files. You can either specify a single file or a directory, 
+which will be traversed recursively. Several output `--format` options are supported. By default a terminal user interface library is used, 
+but it is also possible to use `json` or `ffmetadata`.
+
+
+#### Options reference 
 ```bash
-tone dump --help                                                            
+tone dump --help           
 USAGE:
     tone dump [input] [OPTIONS]
 
@@ -164,13 +180,65 @@ OPTIONS:
         --limit                                       
         --include-property                            
         --format                                      
-        --query
+        --query 
 ```
 
 ### `tag` - modify audio metadata
 
+The `tag` command can be used to modify audio metadata. Besides using predefined parameters like `--meta-album` it is also possible to 
+add or modify custom fields via `--meta-additional-field`, e.g. `--meta-additional-field "©st3=testing"` as well as pictures or chapters.
+
+#### The `--taggers` option
+The `--taggers` option allows you to specify a custom set or a different order of taggers, which are gonna be applied. In most cases
+changing the order of the *taggers* does not make a huge difference, but fully understanding this option 
+requires a bit of technical knowledge. Lets go through a use case to see what you can do with it.
+
+*Use case: re-tag `sorttitle` / `sortalbum`*
+The following taggers are relevant for this use case:
+
+- `remove` - Removes metadata fields or sets it to an empty value
+- `m4bfillup` - Fills up missing or relevant special fields for audio books (e.g. `sorttitle` / `sortalbum`)
+- `*` - Represents all remaining taggers, that are not already provided by name
+
+Usually, the `remove` tagger is applied at last. If you provide `--meta-remove-property=sorttitle`, this ensures an existing value will really be 
+removed after all taggers have been applied. The `m4bfillup` tagger will automatically generate `sorttitle` / `sortalbum` from `movementname`,
+`movement` and `title` / `album` if AND ONLY IF the current value is empty. 
+
+So if you change the `movementname` (e.g. `Harray Potter` to `Harry Potter` because of a typo), `sorttitle` / `sortalbum` will not be updated, 
+because these fields already have a value. If you `remove` the `sorttitle` / `sortalbum`, it will not be auto-updated but only removed, 
+since `remove` is applied after `m4bfillup`.
+
+This can be solved by reordering the taggers:
+- First apply `remove` tagger to remove `sorttitle` / `sortalbum` completely
+- Then apply `m4bfillup` to rebuild `sorttitle` / `sortalbum`
+
 ```bash
-tone tag --help 
+tone tag harry-potter-1.m4b --taggers="remove,m4bfillup" --meta-movement-name="Harry Potter" --meta-remove-property="sortalbum" --meta-remove-property="sorttitle"
+```
+
+As you see, most of the time, you only care about one special tagger to be applied first or last. This is why `tone` has an option to add all
+remaining taggers to the list using a `*`:
+
+```bash
+tone tag harry-potter-1.m4b --taggers="remove,*" --meta-movement-name="Harry Potter" --meta-remove-property="sortalbum" --meta-remove-property="sorttitle"
+```
+
+The following taggers are available at the moment (names can be applied case insensitive):
+
+- `ToneJson` - sets metadata values from `tone.json` file
+- `Metadata` - sets metadata values from input parameters `--meta-...`
+- `Cover` - sets cover from cover files
+- `PathPattern` - sets metadata values from path pattern
+- `ChptFmtNative` - sets chapters from `chapters.txt` file
+- `Equate` - equates 2 or more metadata fields from `--meta-equate`
+- `M4BFillUp` - auto fill `album`, `title`, `iTunesMediaType` from existing fields if possible
+- `PrependMovementToDescription` - prepends `movement` to all description fields, if set
+- `Remove` - removes metadata values from input parameter `--meta-remove-property` and `--meta-remove-additional-field`
+- `ScriptTagger` - your personal custom JavaScript taggers (see below)
+
+#### Options reference
+```bash
+tone tag --help                                                                                                                                                                     
 USAGE:
     tone tag [input] [OPTIONS]
 
@@ -179,6 +247,7 @@ EXAMPLES:
     tone tag input.mp3 --meta-title "a title"
     tone tag --debug --auto-import=covers --meta-additional-field ©st3=testing input.m4b --dry-run
     tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/%g/%a/%s/%p - %n.m4b" --path-pattern="audiobooks/%g/%a/%z/%n.m4b" audiobooks/ --dry-run
+    tone tag input.mp3 --script musicbrainz.js --script-tagger-parameter e2310769-2e68-462f-b54f-25ac8e3f1a21
 
 ARGUMENTS:
     [input]    Input files or folders
@@ -190,6 +259,12 @@ OPTIONS:
         --include-extension                                         
         --order-by                                                  
         --limit                                                     
+    -y, --assume-yes                                                
+        --dry-run                                                   
+        --taggers                                                   
+        --script                                                    
+        --script-tagger-parameter                                   
+        --prepend-movement-to-description                           
         --meta-artist                                               
         --meta-album                                                
         --meta-album-artist                                         
@@ -240,12 +315,7 @@ OPTIONS:
         --path-pattern-extension                                    
         --meta-equate                                               
         --meta-remove-additional-field                              
-        --meta-remove-property                                      
-        --taggers                                                   
-        --script                                                    
-        --script-tagger-parameter                                   
-    -y, --assume-yes                                                
-        --dry-run
+        --meta-remove-property
 ```
 
 #### filename to tag via `--path-pattern` / `-p`
