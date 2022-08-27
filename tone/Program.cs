@@ -174,10 +174,12 @@ app.Configure(config =>
         .WithExample(new[] { "dump", "input.mp3" })
         .WithExample(new[]
         {
-            "dump", "audio-directory/", "--include-extension", "m4b", "--format", "ffmetadata",
+            "dump", "audio-directory/", "--include-extension", "m4b", "--include-extension", "mp3", "--format", "ffmetadata",
             "--include-property",
             "title", "--include-property", "artist"
         })
+        .WithExample(new[] { "dump", "input.mp3", "--format", "json", "--query", "$.meta.album"})
+
         ;
     config.AddCommand<TagCommand>("tag")
         .WithDescription("tag files with metadata properties (directories are traversed recursively)")
@@ -195,6 +197,8 @@ app.Configure(config =>
             "--path-pattern=\"audiobooks/%g/%a/%z/%n.m4b\"",
             "audiobooks/", "--dry-run"
         })
+        .WithExample(new[] { "tag", "input.mp3", "--script", "musicbrainz.js", "--script-tagger-parameter", "e2310769-2e68-462f-b54f-25ac8e3f1a21"})
+
         ;
     /*config.AddCommand<SplitCommand>("split")
         .WithDescription("split audio files")
