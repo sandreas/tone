@@ -82,12 +82,12 @@ public class ChptFmtNativeMetadataFormat : IMetadataFormat
         }
 
         var chapterStartString = parts.First();
-        if (!TimeSpan.TryParse(chapterStartString, out var chapterStart))
-        {
+        
+        var chapterStart = ParseTimeSpan(chapterStartString);
+        if(chapterStart == null)        {
             return null;
         }
-
-        var start = (uint)chapterStart.TotalMilliseconds;
+        var start = (uint)chapterStart.Value.TotalMilliseconds;
         return new ChapterInfo(start, line[chapterStartString.Length..].Trim());
     }
 
@@ -153,5 +153,31 @@ public class ChptFmtNativeMetadataFormat : IMetadataFormat
         var totalHoursAsString = Math.Floor(timeSpan.TotalHours).ToString(CultureInfo.InvariantCulture)
             .PadLeft(2, '0');
         return totalHoursAsString + timeSpan.ToString(@"\:mm\:ss\.fff");
+    }
+    
+    private static TimeSpan? ParseTimeSpan(string chapterStartString)
+    {        
+        var firstSeparatorPos = chapterStartString.IndexOf(":", StringComparison.Ordinal);
+        var hourPart = chapterStartString[..firstSeparatorPos];
+        if(hourPart.StartsWith("0"))
+        {
+            hourPart = hourPart.TrimStart('0');
+            if(hourPart == "")
+            {
+                hourPart = "0";
+            }
+        }
+        if(!int.TryParse(hourPart, out var hours)){
+            return null;
+        }
+
+        var parseablePart = "00" + chapterStartString[firstSeparatorPos..];
+        if (!TimeSpan.TryParse(parseablePart, out var chapterStart))
+        {
+            return null;
+        }
+
+        chapterStart = chapterStart.Add(TimeSpan.FromHours(hours));
+        return chapterStart;
     }
 }

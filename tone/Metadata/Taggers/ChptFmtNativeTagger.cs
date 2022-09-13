@@ -72,8 +72,14 @@ public class ChptFmtNativeTagger : INamedTagger
         {
             return Error(parsedMeta.Error);
         }
-
+        
         TransferMetadataList(parsedMeta.Value.Chapters, metadata.Chapters);
+
+        var lastChapter = metadata.Chapters.LastOrDefault();
+        if(lastChapter is { EndTime: 0 } && metadata.TotalDuration.TotalMilliseconds > lastChapter.StartTime)
+        {
+            lastChapter.EndTime = (uint)metadata.TotalDuration.TotalMilliseconds;
+        }
         return Ok();
     }
 
