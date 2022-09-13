@@ -10,6 +10,9 @@ public class DumpCommandSettings : CommandSettingsBase
     
     [CommandOption("--include-property")]
     public MetadataProperty[] IncludeProperties { get; set; } = Array.Empty<MetadataProperty>();
+    
+    [CommandOption("--exclude-property")]
+    public MetadataProperty[] ExcludeProperties { get; set; } = Array.Empty<MetadataProperty>();
     [CommandOption("--format")] public SerializerFormat Format { get; set; } = SerializerFormat.Default;
     [CommandOption("--query")] public string Query { get; set; } = "";
 

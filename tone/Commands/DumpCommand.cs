@@ -42,6 +42,13 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
             {
                 track.ClearProperties(settings.IncludeProperties);
             }
+            
+            if (settings.ExcludeProperties.Length > 0)
+            {
+                var propertiesToKeep =
+                    MetadataExtensions.MetadataProperties.Where(p => !settings.ExcludeProperties.Contains(p));
+                track.ClearProperties(propertiesToKeep);
+            }
 
             var serializeResult = await _serializerService.SerializeAsync(track, settings.Format);
             if(settings.Format == SerializerFormat.Json && settings.Query != "")
