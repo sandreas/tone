@@ -12,6 +12,7 @@
 
 - `dump` command now supports `--exclude-property` to exclude specific properties from a *dump* (e.g. `tone dump --format="json" --exclude-property="embeddedPictures" --exclude-property="chapters" --query='$.meta' my-audio-book.m4b`)
   - Note: If you combine `--exclude-property` and `--include-property`, `--include-property` will be applied first, so it makes not much sense only to be able to exclude properties, that you included first
+- `console` for custom JavaScript taggers can now use `.clear()`, `.debug()`,`.info()`,`.warn()`,`.error()` and `.log()`
 
 ## known issues
 
