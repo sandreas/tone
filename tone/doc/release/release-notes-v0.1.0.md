@@ -4,10 +4,6 @@
 
 - `tone` now supports `chapters.txt` files with more than 24 hours of content (issue #24, thx @MrBrN197 for reporting this)
 
-## Changed
-
-- 
-
 ## Added
 
 - `dump` command now supports `--exclude-property` to exclude specific properties from a *dump* (e.g. `tone dump --format="json" --exclude-property="embeddedPictures" --exclude-property="chapters" --query='$.meta' my-audio-book.m4b`)
