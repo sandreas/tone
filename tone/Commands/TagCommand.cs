@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,7 +88,8 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
             {
                 showDryRunMessage = true;
             }
-            if(retCode == ReturnCode.UserAbort)
+
+            if (retCode == ReturnCode.UserAbort)
             {
                 returnCode = ReturnCode.UserAbort;
                 break;
@@ -105,77 +107,85 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
         return await Task.FromResult((int)returnCode);
     }
 
-    private async Task<(ReturnCode returnCode, bool dryRun)> ProcessAudioBookPackage(AudioBookPackage p, TagCommandSettings settings,
+    private async Task<(ReturnCode returnCode, bool dryRun)> ProcessAudioBookPackage(AudioBookPackage p,
+        TagCommandSettings settings,
         CancellationToken cancellation)
     {
         var showDryRunMessage = false;
         foreach (var file in p.Files)
         {
-            if (cancellation.IsCancellationRequested)
+            try
             {
-                _console.Error.Write(new Markup($"[red]User cancelled on file: {file}[/]"));
-                return (ReturnCode.UserAbort, showDryRunMessage);
-            }
-
-            var track = new MetadataTrack(file)
-            {
-                BasePath = p.BaseDirectory?.FullName
-            };
-            var status = await _tagger.UpdateAsync(track);
-
-            if (!status)
-            {
-                _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
-                continue;
-            }
-
-            var currentMetadata = new MetadataTrack(file);
-            var diffListing = track.Diff(currentMetadata);
-            if (diffListing.Count == 0)
-            {
-                if (settings.DryRun || !settings.Force)
+                if (cancellation.IsCancellationRequested)
                 {
-                    _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
+                    _console.Error.Write(new Markup($"[red]User cancelled on file: {file}[/]"));
+                    return (ReturnCode.UserAbort, showDryRunMessage);
+                }
+
+                var track = new MetadataTrack(file)
+                {
+                    BasePath = p.BaseDirectory?.FullName
+                };
+                var status = await _tagger.UpdateAsync(track);
+
+                if (!status)
+                {
+                    _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
+                    continue;
+                }
+
+                var currentMetadata = new MetadataTrack(file);
+                var diffListing = track.Diff(currentMetadata);
+                if (diffListing.Count == 0)
+                {
+                    if (settings.DryRun || !settings.Force)
+                    {
+                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
+                            .LeftAligned());
+                        continue;
+                    }
+
+                    var path = Markup.Escape(track.Path ?? "");
+                    var message = !track.Save()
+                        ? $"[red]Force update failed: {path}[/]"
+                        : $"[green]Forced update: {path}[/]";
+                    _console.Write(new Rule(message)
                         .LeftAligned());
-                    continue;
                 }
-
-                var path = Markup.Escape(track.Path ?? "");
-                var message = !track.Save()
-                    ? $"[red]Force update failed: {path}[/]"
-                    : $"[green]Forced update: {path}[/]";
-                _console.Write(new Rule(message)
-                    .LeftAligned());
-            }
-            else
-            {
-                showDryRunMessage = settings.DryRun;
-                var diffTable = new Table().Expand();
-                diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
-                diffTable.AddColumn("property")
-                    .AddColumn("current")
-                    .AddColumn("new");
-                foreach (var (property, currentValue, newValue) in diffListing)
+                else
                 {
-                    diffTable.AddRow(
-                        property.ToString(),
-                        Markup.Escape(newValue?.ToString() ?? "<null>"),
-                        Markup.Escape(currentValue?.ToString() ?? "<null>")
-                    );
-                }
+                    showDryRunMessage = settings.DryRun;
+                    var diffTable = new Table().Expand();
+                    diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
+                    diffTable.AddColumn("property")
+                        .AddColumn("current")
+                        .AddColumn("new");
+                    foreach (var (property, currentValue, newValue) in diffListing)
+                    {
+                        diffTable.AddRow(
+                            property.ToString(),
+                            Markup.Escape(newValue?.ToString() ?? "<null>"),
+                            Markup.Escape(currentValue?.ToString() ?? "<null>")
+                        );
+                    }
 
-                if (settings.DryRun)
-                {
+                    if (settings.DryRun)
+                    {
+                        _console.Write(diffTable);
+                        continue;
+                    }
+
+                    var path = Markup.Escape(track.Path ?? "");
+                    var message = !track.Save()
+                        ? $"[red]Update failed: {path}[/]"
+                        : $"[green]Updated: {path}[/]";
+                    diffTable.Caption = new TableTitle(message);
                     _console.Write(diffTable);
-                    continue;
                 }
-
-                var path = Markup.Escape(track.Path ?? "");
-                var message = !track.Save()
-                    ? $"[red]Update failed: {path}[/]"
-                    : $"[green]Updated: {path}[/]";
-                diffTable.Caption = new TableTitle(message);
-                _console.Write(diffTable);
+            }
+            catch (Exception e)
+            {
+                _console.Error.WriteException(e);
             }
         }
 

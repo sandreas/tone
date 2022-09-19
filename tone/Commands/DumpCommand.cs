@@ -36,42 +36,47 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
         
         foreach (var file in inputFiles)
         {
-            var track = new MetadataTrack(file);
-
-            if (settings.IncludeProperties.Length > 0)
+            try
             {
-                track.ClearProperties(settings.IncludeProperties);
-            }
-            
-            if (settings.ExcludeProperties.Length > 0)
-            {
-                var propertiesToKeep =
-                    MetadataExtensions.MetadataProperties.Where(p => !settings.ExcludeProperties.Contains(p));
-                track.ClearProperties(propertiesToKeep);
-            }
-
-            var serializeResult = await _serializerService.SerializeAsync(track, settings.Format);
-            if(settings.Format == SerializerFormat.Json && settings.Query != "")
-            {
-                try
+                var track = new MetadataTrack(file);
+                if (settings.IncludeProperties.Length > 0)
                 {
-                    var o =  JObject.Parse(serializeResult);
-                    var tokens = o.SelectTokens(settings.Query);
-                    foreach(var token in tokens) {
-                        _console.WriteLine(token.ToString());
+                    track.ClearProperties(settings.IncludeProperties);
+                }
+            
+                if (settings.ExcludeProperties.Length > 0)
+                {
+                    var propertiesToKeep =
+                        MetadataExtensions.MetadataProperties.Where(p => !settings.ExcludeProperties.Contains(p));
+                    track.ClearProperties(propertiesToKeep);
+                }
+
+                var serializeResult = await _serializerService.SerializeAsync(track, settings.Format);
+                if(settings.Format == SerializerFormat.Json && settings.Query != "")
+                {
+                    try
+                    {
+                        var o =  JObject.Parse(serializeResult);
+                        var tokens = o.SelectTokens(settings.Query);
+                        foreach(var token in tokens) {
+                            _console.WriteLine(token.ToString());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _console.Error.WriteException(e);
+                        return await Task.FromResult((int)ReturnCode.GeneralError);
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    _console.WriteException(e);
-                    return await Task.FromResult((int)ReturnCode.GeneralError);
+                    _console.WriteLine(serializeResult);
                 }
             }
-            else
+            catch (Exception e)
             {
-                _console.WriteLine(serializeResult);
+                _console.Error.WriteException(e);
             }
-            
         }
 
         return await Task.FromResult((int)ReturnCode.Success);
