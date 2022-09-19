@@ -2,8 +2,8 @@
 
 ## Fixed
 
-- `tone dump` now contains better handling for file specific errors (issue #25, thx @tmr0861 for reporting this)
-- 
+- `dump` command now contains better handling for file specific errors (issue #25, thx @tmr0861 for reporting this)
+- `tag` and `dump` now should no longer write metadata based exceptions to stdout (issue #26, thx @advplyr for reporting this)
 
 ## Added
 
