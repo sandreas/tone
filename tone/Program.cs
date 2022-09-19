@@ -58,6 +58,7 @@ services.AddSingleton(_ => new JsonSerializerSettings
     },
     Formatting = Formatting.Indented,
 });
+services.AddSingleton<ChptFmtNativeSerializer>();
 services.AddSingleton<FfmetadataSerializer>();
 services.AddSingleton<SpectreConsoleSerializer>();
 services.AddSingleton<ToneJsonSerializer>();

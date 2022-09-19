@@ -7,7 +7,7 @@
 
 ## Added
 
-- 
+- `dump` now supports `--format="ChptFmtNative"` to dump chapters only
 
 ## known issues
 
