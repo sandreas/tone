@@ -1,3 +1,4 @@
+using System;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -23,47 +24,71 @@ public class ToneJsonSerializer : IMetadataSerializer
     {
         _toneJsonMeta.OverwriteProperties(metadata, metadata.MappedAdditionalFields.Keys);
 
-        
+
         var container = new ToneJsonContainer()
         {
             Meta = _toneJsonMeta
         };
-        
-        if(metadata is MetadataTrack track)
+
+        if (metadata is MetadataTrack track)
         {
-            container.Audio = new ToneJsonAudio
+            try
             {
-                Format = track.AudioFormat.Name,
-                FormatShort = track.AudioFormat.ShortName,
-                Bitrate = track.Bitrate,
-                SampleRate = track.SampleRate,
-                Duration = track.TotalDuration.TotalMilliseconds,
-                Vbr = track.IsVBR,
-                Channels = new { Count = track.ChannelsArrangement.NbChannels, Description = track.ChannelsArrangement.Description },
-                Frames = new
+                container.Audio = new ToneJsonAudio
                 {
-                    Offset = track.TechnicalInformation.AudioDataOffset, 
-                    Length = track.TechnicalInformation.AudioDataSize
-                },
-                MetaFormat = track.MetadataSpecifications
-            };
-        }
-        
-        if(metadata.Path != "" && _fs.File.Exists(metadata.Path))
-        {
-            var file = _fs.FileInfo.FromFileName(metadata.Path);
-            // basePath
-            container.File = new ToneJsonFile()
+                    Format = track.AudioFormat?.Name ?? "",
+                    FormatShort = track.AudioFormat?.ShortName ?? "",
+                    Bitrate = track.Bitrate,
+                    SampleRate = track.SampleRate,
+                    Duration = track.TotalDuration.TotalMilliseconds,
+                    Vbr = track.IsVBR,
+                    Channels = new
+                    {
+                        Count = track.ChannelsArrangement?.NbChannels, 
+                        Description = track.ChannelsArrangement?.Description
+                    },
+                    Frames = new
+                    {
+                        Offset = track.TechnicalInformation?.AudioDataOffset,
+                        Length = track.TechnicalInformation?.AudioDataSize
+                    },
+                    MetaFormat = track.MetadataSpecifications
+                };
+            }
+            catch (Exception e)
             {
-                Size = file.Length,
-                Created = file.CreationTime,
-                Modified = file.LastWriteTime,
-                Accessed = file.LastAccessTime,
-                Path = file.DirectoryName,
-                Name = file.Name,
-            };
+                container.Audio = new ToneJsonAudio()
+                {
+                    Format = "Format detection error: " + e.Message
+                };
+            }
         }
-        
+
+        if (metadata.Path != "" && _fs.File.Exists(metadata.Path))
+        {
+            try
+            {
+                var file = _fs.FileInfo.FromFileName(metadata.Path);
+                // basePath
+                container.File = new ToneJsonFile
+                {
+                    Size = file.Length,
+                    Created = file.CreationTime,
+                    Modified = file.LastWriteTime,
+                    Accessed = file.LastAccessTime,
+                    Path = file.DirectoryName,
+                    Name = file.Name,
+                };
+            }
+            catch (Exception e)
+            {
+                container.File = new ToneJsonFile()
+                {
+                    Name = "Load file error: " + e.Message,
+                };
+            }
+        }
+
         var result = JsonConvert.SerializeObject(container, _settings);
         return await Task.FromResult(result);
     }
