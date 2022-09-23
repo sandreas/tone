@@ -15,8 +15,7 @@ enum SectionType
 {
     Default,
     Chapter,
-    Stream,
-    EndOfStream
+    Stream
 }
 
 public class FfmetadataFormat : IMetadataFormat
@@ -25,7 +24,65 @@ public class FfmetadataFormat : IMetadataFormat
 
     private const string FfmetadataHeader = ";FFMETADATA";
     private static readonly char[] CharsToEscape = { '=', ';', '#', '\\', '\n' };
-
+    // TBPM=0,
+    // TMED=CD,
+    // language=eng,
+    // TIPL=arranger,
+    // artist-sort=12Stones,
+    // TDOR=2002-04-23,
+    // Script=Latn,
+    // ASIN=B0000649OY
+    // lyrics-XXX (where XXX is either XXX or language code, e.g. -eng)
+    // disc
+    //
+    private static readonly List<(MetadataProperty property, Type type, string ffmetakey, string[]? ffmetaFallbackKeys)> KeyMapping = new()
+    {
+        (MetadataProperty.Album, typeof(string), "album",null),
+        (MetadataProperty.AlbumArtist, typeof(string), "album_artist",null),
+        (MetadataProperty.Artist, typeof(string), "artist",null),
+        // (MetadataProperty.Bpm, typeof(string), "",null), // TBPM
+        //(MetadataProperty.ChaptersTableDescription, typeof(string), "",null),
+        (MetadataProperty.Composer, typeof(string), "composer",null),
+        (MetadataProperty.Comment, typeof(string), "comment",null),
+        // (MetadataProperty.Conductor, typeof(string), "",null),
+        (MetadataProperty.Copyright, typeof(string), "copyright",null),
+        (MetadataProperty.Description, typeof(string), "description",null),
+        // (MetadataProperty.DiscNumber, typeof(string), "album",null), // disc = 1/1
+        // (MetadataProperty.DiscTotal, typeof(string), "album",null),  // disc = 1/1
+        (MetadataProperty.EncodedBy, typeof(string), "encoded_by",null),
+        // (MetadataProperty.EncoderSettings, typeof(string), "album",null),
+        (MetadataProperty.EncodingTool, typeof(string), "encoder",null),
+        (MetadataProperty.Genre, typeof(string), "genre",null),
+        (MetadataProperty.Group, typeof(string), "grouping",null),
+        (MetadataProperty.ItunesCompilation, typeof(ItunesCompilation), "compilation",null),
+        (MetadataProperty.ItunesMediaType, typeof(ItunesMediaType), "media_type",null),
+        (MetadataProperty.ItunesPlayGap, typeof(ItunesGapless), "gapless_playback",null),
+        (MetadataProperty.LongDescription, typeof(string), "synopsis",null),
+        // (MetadataProperty.Lyrics, typeof(string), "lyrics-XXX",null),
+        (MetadataProperty.Part, typeof(string), "PART",null),
+        // (MetadataProperty.Movement, typeof(string), "",null),
+        // (MetadataProperty.MovementName, typeof(string), "",null),
+        // (MetadataProperty.Narrator, typeof(string), "album",null),
+        // (MetadataProperty.OriginalAlbum, typeof(string), "album",null),
+        // (MetadataProperty.OriginalArtist, typeof(string), "album",null),
+        // (MetadataProperty.Popularity, typeof(string), "album",null),
+        (MetadataProperty.Publisher, typeof(string), "publisher",null),
+        // (MetadataProperty.PublishingDate, typeof(string), "album",null),
+        (MetadataProperty.PurchaseDate, typeof(DateTime), "purchase_date",null),
+        (MetadataProperty.RecordingDate, typeof(DateTime), "date",null),
+        (MetadataProperty.SortTitle, typeof(string), "sort_title",new []{"title-sort"}),
+        (MetadataProperty.SortAlbum, typeof(string), "sort_album",new []{"album-sort"}),
+        (MetadataProperty.SortArtist, typeof(string), "sort_artist",new []{"artist-sort"}),
+        // (MetadataProperty.SortAlbumArtist, typeof(string), "album",null),
+        //(MetadataProperty.SortComposer, typeof(string), "album",null),
+        //(MetadataProperty.Subtitle, typeof(string), "album",null),
+        (MetadataProperty.Title, typeof(string), "title",null),
+        // (MetadataProperty.TrackNumber, typeof(string), "album",null),
+        // (MetadataProperty.TrackTotal, typeof(string), "album",null),
+        // (MetadataProperty.Chapters, typeof(string), "album",null),
+        // (MetadataProperty.EmbeddedPictures, typeof(string), "album",null),
+        // (MetadataProperty.AdditionalFields, typeof(string), "album",null),
+    };
     public async Task<Result<IMetadata, string>> ReadAsync(Stream input)
     {
         var metadata = new MetadataTrack();
@@ -43,9 +100,9 @@ public class FfmetadataFormat : IMetadataFormat
         }
 
         var currentSectionType = SectionType.Default;
-        while (currentSectionType != SectionType.EndOfStream)
+        while (!sr.EndOfStream)
         {
-            var properties = ReadSectionProperties(sr, currentSectionType, out currentSectionType);
+            var properties = ReadSectionProperties(sr, currentSectionType, out var nextSectionType);
             switch (currentSectionType)
             {
                 case SectionType.Chapter:
@@ -53,25 +110,113 @@ public class FfmetadataFormat : IMetadataFormat
                     break;
                 case SectionType.Default:
                 case SectionType.Stream:
-                case SectionType.EndOfStream:
                 default:
                     ParseMetadataProperties(properties, metadata);
                     break;
             }
+
+            currentSectionType = nextSectionType;
         }
 
         return metadata;
     }
 
-    private static void ParseMetadataProperties(Dictionary<string, string> properties, MetadataTrack metadata)
+    private static void ParseMetadataProperties(Dictionary<string, string> properties, IMetadata metadata)
     {
+        // var mappedKeys = new List<string>();
+        foreach (var (property, type, ffmetakey, ffmetaFallbackKeys) in KeyMapping)
+        {
+            // mappedKeys.Add(ffmetakey);
+            
+            var orderedKeys = new List<string>();
+            if (ffmetaFallbackKeys != null)
+            {
+                // mappedKeys.AddRange(ffmetaFallbackKeys);
+                orderedKeys.AddRange(ffmetaFallbackKeys.Reverse());
+            }
+            orderedKeys.Add(ffmetakey);
+            foreach (var propertyKey in orderedKeys.Where(properties.ContainsKey))
+            {
+                metadata.SetMetadataPropertyValue(property, properties[propertyKey], type);
+            }
+        }
+
+        /*
+        foreach (var (key, value) in properties.Where(kvp => !mappedKeys.Contains(kvp.Key)))
+        {
+            metadata.AdditionalFields[key] = value;
+        }
+        */
     }
 
-    private static void ParseChapterProperties(Dictionary<string, string> properties, MetadataTrack metadata)
+        
+
+    private static void ParseChapterProperties(Dictionary<string, string> properties, IMetadata metadata)
     {
+        decimal timebase = -1;
+        int start = -1;
+        int end = -1;
+        string title = "";
+        foreach (var (key, value) in properties)
+        {
+            var normalizedKey = key.ToLowerInvariant();
+            switch (normalizedKey)
+            {
+                case "timebase":
+                    if (!TryParseTimeBaseInMilliseconds(value, out timebase))
+                    {
+                        return;
+                    }
+                    break;
+                case "start":
+                    if (!int.TryParse(value, out start))
+                    {
+                        return;
+                    }
+                    break;
+                case "end":
+                    if (!int.TryParse(value, out end))
+                    {
+                        return;
+                    }
+                    break;
+                case "title":
+                    title = value;
+                    break;
+            }
+        }
+
+        if (start == -1 || timebase == -1)
+        {
+            return;
+        }
+
+        var chapter = new ChapterInfo(Convert.ToUInt32(start * timebase), title);
+        if (end != -1)
+        {
+            chapter.EndTime = Convert.ToUInt32(end * timebase);
+        }
+        metadata.Chapters.Add(chapter);
     }
 
-    private Dictionary<string, string> ReadSectionProperties(StreamReader sr, SectionType currentSectionType,
+    private static bool TryParseTimeBaseInMilliseconds(string value, out decimal timebase)
+    {
+        var parts = value.Split("/");
+        if (parts.Length == 2 
+            && decimal.TryParse(parts[0], out var meter) 
+            && decimal.TryParse(parts[1], out var denominator) 
+            && meter > 0 
+            && denominator > 0)
+        {
+            timebase = meter / denominator * 1000;
+            return true;
+        }
+
+        timebase = 1m;
+        return false;
+    }
+
+    private Dictionary<string, string> ReadSectionProperties(TextReader sr, SectionType currentSectionType,
         out SectionType nextSectionType)
     {
         var properties = new Dictionary<string, string>();
@@ -81,7 +226,6 @@ public class FfmetadataFormat : IMetadataFormat
             var line = sr.ReadLine();
             if (line == null)
             {
-                nextSectionType = SectionType.EndOfStream;
                 break;
             }
 
@@ -92,7 +236,7 @@ public class FfmetadataFormat : IMetadataFormat
 
             while (line.EndsWith("\\") && sr.Peek() != -1)
             {
-                line += sr.ReadLine();
+                line = line.TrimEnd('\\') + "\n" + sr.ReadLine();
             }
 
             var trimmedLowerLine = line.Trim().ToLower();
@@ -146,7 +290,7 @@ public class FfmetadataFormat : IMetadataFormat
 
         return (propertyNameBuilder.ToString(), propertyValueBuilder.ToString());
     }
-
+/*
     private static string Unescape(string escapedString)
     {
         var builder = new StringBuilder();
@@ -171,17 +315,30 @@ public class FfmetadataFormat : IMetadataFormat
     {
         return new List<ChapterInfo>();
     }
-
+*/
 
     private static async Task<Status<string>> ReadHeaderAsync(StreamReader sr)
     {
-        var headerLine = await sr.ReadLineAsync() ?? "";
-        if (!headerLine.StartsWith(FfmetadataHeader))
+        while (!sr.EndOfStream)
         {
-            return Error("Could not find required header " + FfmetadataHeader);
-        }
+            var headerLine = await sr.ReadLineAsync();
+            if (headerLine == null)
+            {
+                return Error("Could not find required header (null)");
+            }
 
-        return Ok();
+            if (headerLine.Trim() == "")
+            {
+                continue;
+            }
+            
+            if (!headerLine.StartsWith(FfmetadataHeader))
+            {
+                return Error("Could not find required header " + FfmetadataHeader);
+            }
+            return Ok();
+        }
+        return Error("Could not find required header (EndOfStream)");
     }
 
 
@@ -195,7 +352,7 @@ public class FfmetadataFormat : IMetadataFormat
         await WriteKeyValueAsync(outputWriter, "album", input.Album);
         await WriteKeyValueAsync(outputWriter, "composer", input.Composer);
         await WriteKeyValueAsync(outputWriter, "genre", input.Genre);
-        await WriteKeyValueAsync(outputWriter, "date", input.PublishingDate, DateTime.MinValue); // 2022/03/31
+        await WriteKeyValueAsync(outputWriter, "date", input.RecordingDate, DateTime.MinValue); // 2022/03/31
         await WriteKeyValueAsync(outputWriter, "sort_name", input.SortTitle);
         await WriteKeyValueAsync(outputWriter, "sort_album", input.SortAlbum); // (album-sort)
         await WriteKeyValueAsync(outputWriter, "description", input.LongDescription);
@@ -227,6 +384,8 @@ public class FfmetadataFormat : IMetadataFormat
         // await WriteKeyValueAsync(outputWriter, "director", input.??);
         // await WriteKeyValueAsync(outputWriter, "show", input.??);
         await WriteKeyValueAsync(outputWriter, "subtitle", input.Subtitle);
+        
+        // todo: slash notation (track: 1/10)
         await WriteKeyValueAsync(outputWriter, "track", input.TrackNumber, 0);
         await WriteKeyValueAsync(outputWriter, "disc", input.DiscNumber, 0);
         // await WriteKeyValueAsync(outputWriter, "rating", input.??); // Rating (0 = none, 1 = clean, 2 = explicit) 
