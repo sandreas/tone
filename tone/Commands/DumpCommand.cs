@@ -6,6 +6,7 @@ using Sandreas.AudioMetadata;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
+using tone.Common;
 using tone.Directives;
 using tone.Services;
 
@@ -36,14 +37,18 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
         
         foreach (var file in inputFiles)
         {
+            var consoleOutOriginal = Console.Out;
             try
             {
+                // todo: this has to be fixed in atldotnet: https://github.com/Zeugma440/atldotnet/issues/164
+                Console.SetOut(new DiscardTextWriter());
+                
                 var track = new MetadataTrack(file);
                 if (settings.IncludeProperties.Length > 0)
                 {
                     track.ClearProperties(settings.IncludeProperties);
                 }
-            
+
                 if (settings.ExcludeProperties.Length > 0)
                 {
                     var propertiesToKeep =
@@ -52,13 +57,14 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
                 }
 
                 var serializeResult = await _serializerService.SerializeAsync(track, settings.Format);
-                if(settings.Format == SerializerFormat.Json && settings.Query != "")
+                if (settings.Format == SerializerFormat.Json && settings.Query != "")
                 {
                     try
                     {
-                        var o =  JObject.Parse(serializeResult);
+                        var o = JObject.Parse(serializeResult);
                         var tokens = o.SelectTokens(settings.Query);
-                        foreach(var token in tokens) {
+                        foreach (var token in tokens)
+                        {
                             _console.WriteLine(token.ToString());
                         }
                     }
@@ -76,6 +82,10 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
             catch (Exception e)
             {
                 _console.Error.WriteException(e);
+            }
+            finally
+            {
+                Console.SetOut(consoleOutOriginal);
             }
         }
 
