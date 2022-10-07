@@ -8,6 +8,14 @@
 ## Added
 
 - `dump` now supports `--format="ChptFmtNative"` to dump chapters only
+- *Serilog* library is now used to provide logging beyond command line output
+- `--log-level` and `--log-file` can now be used to review error output that has been suppressed to keep it parseable
+- `tone` is now also published as `musl` for `arm` and `arm64` builds (issue #31, thx @garlic82 for reporting this)
+- `ffmetadata` has been improved and import has been prepared for integration in the next releases
+
+## Changed
+
+- `docker` builds now use `musl` deployment wherever necessary (issue #31)
 
 ## known issues
 
@@ -25,4 +33,4 @@ The following issues are known, part of an external library and already reported
 [spectre.console 842]: https://github.com/spectreconsole/spectre.console/issues/842
 [spectre.console 890]: https://github.com/spectreconsole/spectre.console/issues/890
 [spectre.console 891]: https://github.com/spectreconsole/spectre.console/issues/891
-[atldotnet 155]: https://github.com/Zeugma440/atldotnet/issues/155
+

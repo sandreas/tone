@@ -5,5 +5,6 @@ public enum ReturnCode
     Success,
     UserAbort,
     GeneralError,
-    UncaughtException
+    UncaughtException,
+    SuppressedConsoleOutput
 }

@@ -48,6 +48,11 @@
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="Sandreas.AudioMetadata" Version="0.0.8" />
       <PackageReference Include="Sandreas.Files" Version="1.1.1" />
+      <PackageReference Include="Serilog" Version="2.12.0" />
+      <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+      <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+      <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
       <PackageReference Include="Spectre.Console" Version="0.44.0" />
       <PackageReference Include="System.IO.Abstractions" Version="17.0.23" />
       <PackageReference Include="z440.atl.core" Version="4.9.0" />

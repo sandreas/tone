@@ -13,5 +13,5 @@ public class DiscardTextWriter: TextWriter
     {
     }
 
-    public override Encoding Encoding => Encoding.ASCII;
+    public override Encoding Encoding => Encoding.Default;
 }

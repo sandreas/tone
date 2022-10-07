@@ -14,11 +14,11 @@ ENV WORKDIR /mnt/
 RUN echo "---- INSTALL RUNTIME PACKAGES ----" && \
   apk add --no-cache --update --upgrade libstdc++ wget && \
   if [ "$TARGETPLATFORM" = "linux/arm/v6" ]; then \
-    SUFFIX=linux-arm ; \
+    SUFFIX=linux-musl-arm ; \
   elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
-    SUFFIX=linux-arm ; \
+    SUFFIX=linux-musl-arm ; \
   elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-    SUFFIX=linux-arm64 ; \    
+    SUFFIX=linux-musl-arm64 ; \    
   elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     SUFFIX=linux-musl-x64 ; \
   fi && \
