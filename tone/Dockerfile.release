@@ -1,8 +1,9 @@
 ﻿ARG REF_NAME="v0.1.1"
-# uname -m (https://stackoverflow.com/questions/45125516/possible-values-for-uname-m)
+# apk --print-arch (https://github.com/alpinelinux/apk-tools/blob/feec480b345e7c4f4ab262bdf7a2a3ebce5a31a3/src/apk_defines.h)
+# https://stackoverflow.com/questions/53048942/is-it-possible-to-get-the-architecture-of-the-docker-engine-in-a-dockerfile
 # x86_64 => x64
-# arm => arm
-# aarch64_be, aarch64, armv8b, armv8l => arm64
+# armv7, armhf, armel => arm (armv7|armhf|armel)
+# aarch64 => arm64
 
 FROM alpine:3.16.0
 ARG REF_NAME
@@ -10,18 +11,15 @@ ENV WORKDIR /mnt/
 
 RUN echo "---- INSTALL RUNTIME PACKAGES ----" && \
   apk add --no-cache --update --upgrade libstdc++ wget && \
-  if [ "$TARGETARCH" = "" ]; then \
-    UNAME_M="$(uname -m)"; \
-    if [ "$UNAME_M" = "arm" ]; then \
-      SUFFIX=linux-musl-arm ; \
-    elif [ "$UNAME_M" = "aarch64_be" ] || [ "$UNAME_M" = "aarch64" ] || [ "$UNAME_M" = "armv8b" ] || [ "$UNAME_M" = "armv8l" ] ; then \
-      SUFFIX=linux-musl-arm64 ; \
-    elif [ "$UNAME_M" = "x86_64" ] ; then \
-      SUFFIX=linux-musl-x64 ; \
-    fi \
-  elif [ "$TARGETARCH" != "" ]; then \
-    SUFFIX=$(echo "linux-musl-$TARGETARCH" | sed 's/amd64/x64/g'); \
+  APK_ARCH=$(apk --print-arch) && \
+  if [ "$APK_ARCH" = "x86_64" ]; then \
+    TONE_DOWNLOAD_SUFFIX="x64"; \
+  elif [ "$APK_ARCH" = "aarch64" ]; then \
+    TONE_DOWNLOAD_SUFFIX="arm64"; \
+  elif [ "$APK_ARCH" = "armv7" ] || [ "$APK_ARCH" = "armhf" ] || [ "$APK_ARCH" = "armel" ]; then \
+    TONE_DOWNLOAD_SUFFIX="arm"; \
   fi && \
+  SUFFIX="linux-musl-$TONE_DOWNLOAD_SUFFIX" && \
   TONE_VERSION=$(echo "$REF_NAME" | sed 's/^v//g') && \
   DOWNLOAD_URI="https://github.com/sandreas/tone/releases/download/v$TONE_VERSION/tone-$TONE_VERSION-$SUFFIX.tar.gz" && \
   echo "downloading tone $SUFFIX: $DOWNLOAD_URI" && \
@@ -29,8 +27,6 @@ RUN echo "---- INSTALL RUNTIME PACKAGES ----" && \
     -O /tmp/tone.tar.gz && \
     cd /tmp/ && tar xzf tone.tar.gz && mv tone-$TONE_VERSION-$SUFFIX/tone /usr/local/bin/
   
-# COPY --from=ffmpeg_image "$FFMPEG_SRC_PATH" "$FFMPEG_DST_PATH"
-
 WORKDIR ${WORKDIR}
 CMD ["--version"]
 ENTRYPOINT ["/usr/local/bin/tone"]
