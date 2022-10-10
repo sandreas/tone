@@ -107,6 +107,7 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
                     _logger.Warning("Suppressed console output");    
                 }
                 _logger.Warning("{Output}",output);
+                _console.Error.WriteLine(output);
                 suppressedConsoleOutput = true;
             }));
             
