@@ -2,15 +2,16 @@
 
 ## Fixed
 
-- ...
+- `tag` command: `--meta-remove-property` did not work properly to completely remove metadata (issue #15, thx @advplyr)
+- `tag` command no longer changes timebase of chapters (issue #32, thx @advplyr)
 
 ## Added
 
-- ...
+- Options `--log-level` and `--log-file` for dumping error details
 
 ## Changed
 
-- ...
+- Updated several dependencies to newer versions
 
 ## Setup instructions
 
