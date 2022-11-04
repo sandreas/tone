@@ -15,7 +15,6 @@ using Newtonsoft.Json.Serialization;
 using Sandreas.AudioMetadata;
 using Sandreas.Files;
 using Spectre.Console;
-using Spectre.Console.Cli;
 using tone;
 using tone.Api.JavaScript;
 using tone.Commands;
@@ -30,6 +29,7 @@ using tone.Metadata.Taggers;
 using tone.Serializers;
 using tone.Services;
 using Serilog;
+using Spectre.Console.Cli;
 using ILogger = Serilog.ILogger;
 using Log = Serilog.Log;
 
@@ -44,13 +44,11 @@ try
     services.AddSingleton<ILogger>(_ =>
     {
         var loggerSettings = settingsProvider.Get<ILoggerSettings>();
-        // set loglevel to debug, if --debug is present
-        
-
         var configBuilder = new ConfigurationBuilder().AddEnvironmentVariables();
         var config = new LoggerConfiguration()
             .ReadFrom.Configuration(configBuilder.Build()); 
         
+        // set loglevel to debug, if --debug is present
         if (debugMode && loggerSettings != null)
         {
             loggerSettings.LogLevel = LogLevel.Debug;
@@ -80,15 +78,12 @@ try
     services.AddSingleton(_ => settingsProvider);
     services.AddSingleton<StartupErrorService>();
     services.AddSingleton<HttpClient>();
-// services.AddTransient<StringWriter>();
     services.AddSingleton<FileSystem>();
     services.AddSingleton<FileWalker>();
     services.AddSingleton<DirectoryLoaderService>();
     services.AddSingleton<GrokPatternService>();
-    
     services.AddSingleton<ChptFmtNativeMetadataFormat>();
     services.AddSingleton<FfmetadataFormat>();
-
     services.AddSingleton<ToneJsonMeta>();
     services.AddSingleton(_ => new JsonSerializerSettings
     {
@@ -105,13 +100,9 @@ try
     services.AddSingleton<FfmetadataSerializer>();
     services.AddSingleton<SpectreConsoleSerializer>();
     services.AddSingleton<ToneJsonSerializer>();
-
     services.AddSingleton<SerializerService>();
-
     services.AddSingleton<SpectreConsoleService>();
     services.AddSingleton<ScriptConsole>();
-
-
     services.AddSingleton(s =>
     {
         var patternService = s.GetRequiredService<GrokPatternService>();
@@ -152,8 +143,6 @@ try
             options.CancellationToken(cts.Token);
         });
     });
-
-
     services.AddSingleton(sp =>
     {
         var fs = sp.GetRequiredService<FileSystem>();

@@ -101,7 +101,7 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
         if (showDryRunMessage)
         {
             _console.WriteLine();
-            _console.Write(new Markup("[blue]!!! This was a dry-run, no changes where actually saved !!![/]"));
+            _console.Write(new Markup("[blue]!!! This was a dry-run, no changes where actually saved !!![/]")); 
         }
 
         return await Task.FromResult((int)returnCode);
@@ -174,7 +174,7 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
                         _console.Write(diffTable);
                         continue;
                     }
-
+                    
                     var path = Markup.Escape(track.Path ?? "");
                     var message = !track.Save()
                         ? $"[red]Update failed: {path}[/]"

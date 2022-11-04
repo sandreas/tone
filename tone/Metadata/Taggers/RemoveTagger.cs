@@ -32,9 +32,9 @@ public class RemoveTagger : INamedTagger
     {
         foreach (var property in _remove)
         {
-            metadata.SetMetadataPropertyValue(property, null);
+            metadata.RemoveMetadataPropertyValue(property);
         }
-
+        
         foreach (var key in _removeAdditional)
         {
             if(metadata.AdditionalFields.ContainsKey(key))

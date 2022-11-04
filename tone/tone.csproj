@@ -36,32 +36,34 @@
 
 
     <ItemGroup>
-      <PackageReference Include="CliWrap" Version="3.4.4" />
+      <PackageReference Include="CliWrap" Version="3.5.0" />
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
       <PackageReference Include="grok.net" Version="1.1.0" />
       <PackageReference Include="Jint" Version="3.0.0-beta-2038" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="Sandreas.AudioMetadata" Version="0.0.8" />
+      <PackageReference Include="Sandreas.AudioMetadata" Version="0.1.0" />
       <PackageReference Include="Sandreas.Files" Version="1.1.1" />
       <PackageReference Include="Serilog" Version="2.12.0" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
       <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
       <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-      <PackageReference Include="Spectre.Console" Version="0.44.0" />
-      <PackageReference Include="System.IO.Abstractions" Version="17.0.23" />
-      <PackageReference Include="z440.atl.core" Version="4.11.0" />
+      <PackageReference Include="Spectre.Console" Version="0.45.0" />
+      <PackageReference Include="Spectre.Console.Cli" Version="0.45.0" />
+      <PackageReference Include="System.IO.Abstractions" Version="17.2.3" />
+      <PackageReference Include="z440.atl.core" Version="4.13.0" />
     </ItemGroup>
 
 
     <ItemGroup>
       <Folder Include="Common\Extensions\IEnumerable" />
       <Folder Include="var\data\output" />
+      <Folder Include="var\issues\15" />
     </ItemGroup>
 
 
