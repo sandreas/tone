@@ -45,6 +45,20 @@ public abstract class AbstractNamedTagger: INamedTagger
         return HasMovementOrPart(metadata) &&
                (string.IsNullOrEmpty(metadata.SortTitle) || metadata.SortTitle == metadata.Title);
     }
+    
+    
+    protected T? GetFirstNonEmptyValueOrNull<T>(params T?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!MetadataExtensions.IsEmpty(value))
+            {
+                return value;
+            }
+        }
+        
+        return values.Last();
+    }
 /*
     private static void ExtractSeriesFromSortProperties(IMetadata metadata)
     {
