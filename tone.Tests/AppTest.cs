@@ -27,7 +27,7 @@ public class AppTest
         mockCommand.Setup(x => x.ExecuteAsync(It.IsAny<MergeOptions>())).ReturnsAsync(5);
         var app = new App( mockCommand.Object, new StringWriter());
 
-        var actual = await app.RunAsync(new[] { "mergse" });
+        var actual = await app.RunAsync(new[] { "merge" });
         Assert.Equal(5, actual);
     }
 }

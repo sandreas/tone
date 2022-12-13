@@ -128,7 +128,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
     {
         _console.Write(new Rule($"[red]{Markup.Escape(metadata.Path ?? "")}[/]")
         {
-            Alignment = Justify.Left,
+            Justification = Justify.Left,
             Style = new Style(color)
         });
         _console.WriteLine();

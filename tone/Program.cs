@@ -14,14 +14,13 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Sandreas.AudioMetadata;
 using Sandreas.Files;
+using Sandreas.SpectreConsoleHelpers.DependencyInjection;
 using Spectre.Console;
 using tone;
 using tone.Api.JavaScript;
 using tone.Commands;
 using tone.Commands.Settings;
 using tone.Commands.Settings.Interfaces;
-using tone.DependencyInjection;
-using tone.Interceptors;
 using tone.Matchers;
 using tone.Metadata;
 using tone.Metadata.Formats;
@@ -38,7 +37,7 @@ try
 {
     var debugMode = args.Contains("--debug");
     
-    var settingsProvider = new CommandSettingsProvider();
+    var settingsProvider = new CustomCommandSettingsProvider();
 
     var services = new ServiceCollection();
     services.AddSingleton<ILogger>(_ =>
@@ -192,11 +191,11 @@ try
 // services.AddSingleton<ILogger>(_ => Log.Logger);
 
 
-    var app = new CommandApp(new TypeRegistrar(services));
+    var app = new CommandApp(new CustomTypeRegistrar(services));
 
     app.Configure(config =>
     {
-        config.SetInterceptor(new CommandInterceptor(settingsProvider));
+        config.SetInterceptor(new CustomCommandInterceptor(settingsProvider));
         config.UseStrictParsing();
         config.CaseSensitivity(CaseSensitivity.None);
         config.SetApplicationName("tone");

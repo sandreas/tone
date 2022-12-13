@@ -2,7 +2,8 @@
 
 ## Fixed
 
-- ...
+- `M4bFillupTagger` did not work as expected, now it is working again
+- Most known command line parameter parsing are fixed by @FrankRay78 (just awesome, thank you so much)
 
 ## Added
 
@@ -10,7 +11,7 @@
 
 ## Changed
 
-- ...
+- Extracted `spectre.console` helpers to a library `SpectreConsoleHelpers`
 
 ## Setup instructions
 
@@ -27,17 +28,5 @@ release for your platform, extract it and run it via command line. If you need h
 The following issues are known, part of an external library and already reported:
 
 - *M1* / *M2* macOS releases don't seem to work at the moment (see #6) - help would be really appreciated
-- flag options (e.g. `--dry-run`) cannot be followed by arguments (e.g. `tone tag --meta-album="album" --dry-run input.mp3`) ([spectre.console 825])
-  - workaround: append flag options at the end (`tone tag --meta-album="album" input.mp3 --dry-run`)
-- `--meta-*` options cannot be set to empty values ([spectre.console 842])
-  - workaround: use `--meta-remove-property` instead
-- Value starting with `-` is mistreated as extra option (e.g. `--meta-description "-5 degrees"`)  ([spectre.console 890])
-  - workaround: use `--meta-description="-5 degrees"` instead (with `=`)
-- Invalid handling of parameter values starting with double quotes ("), e.g. `--meta-description'"quoted" value'` ([spectre.console 891])
-  - workaround: use data files (e.g. `--auto-import=...`) instead of command line parameters
 
-[spectre.console 825]: https://github.com/spectreconsole/spectre.console/issues/825
-[spectre.console 842]: https://github.com/spectreconsole/spectre.console/issues/842
-[spectre.console 890]: https://github.com/spectreconsole/spectre.console/issues/890
-[spectre.console 891]: https://github.com/spectreconsole/spectre.console/issues/891
 

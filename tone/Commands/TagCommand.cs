@@ -3,11 +3,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sandreas.AudioMetadata;
+using Sandreas.SpectreConsoleHelpers.Commands;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
-using tone.DependencyInjection;
 using tone.Directives;
 using tone.Matchers;
 using tone.Metadata.Taggers;
@@ -140,8 +140,7 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
                 {
                     if (settings.DryRun || !settings.Force)
                     {
-                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]")
-                            .LeftAligned());
+                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]").LeftJustified());
                         continue;
                     }
 
@@ -150,7 +149,7 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
                         ? $"[red]Force update failed: {path}[/]"
                         : $"[green]Forced update: {path}[/]";
                     _console.Write(new Rule(message)
-                        .LeftAligned());
+                        .LeftJustified());
                 }
                 else
                 {
