@@ -4,6 +4,7 @@
 
 - `M4bFillupTagger` did not work as expected, now it is working again
 - Most known command line parameter parsing are fixed by @FrankRay78 (just awesome, thank you so much)
+- Fixed invalid chapter length output in `dump` command on `--format=json` (thank you @itzexor)
 
 ## Added
 
@@ -27,6 +28,6 @@ release for your platform, extract it and run it via command line. If you need h
 
 The following issues are known, part of an external library and already reported:
 
-- *M1* / *M2* macOS releases don't seem to work at the moment (see #6) - help would be really appreciated
+- *M1* / *M2* macOS releases don't seem to work at the moment (see issue #6) - help would be really appreciated
 
 
