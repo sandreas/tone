@@ -45,7 +45,7 @@ public class ToneJsonSerializer : IMetadataSerializer
                     Channels = new
                     {
                         Count = track.ChannelsArrangement?.NbChannels, 
-                        Description = track.ChannelsArrangement?.Description
+                        track.ChannelsArrangement?.Description
                     },
                     Frames = new
                     {
@@ -68,7 +68,7 @@ public class ToneJsonSerializer : IMetadataSerializer
         {
             try
             {
-                var file = _fs.FileInfo.FromFileName(metadata.Path);
+                var file = _fs.FileInfo.New(metadata.Path);
                 // basePath
                 container.File = new ToneJsonFile
                 {
@@ -76,7 +76,7 @@ public class ToneJsonSerializer : IMetadataSerializer
                     Created = file.CreationTime,
                     Modified = file.LastWriteTime,
                     Accessed = file.LastAccessTime,
-                    Path = file.DirectoryName,
+                    Path = file.DirectoryName ?? "",
                     Name = file.Name,
                 };
             }

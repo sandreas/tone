@@ -21,13 +21,13 @@ public class ChaptersConverter : JsonConverter
                 writer.WritePropertyName("start");
                 writer.WriteValue(chapter.StartTime);
 
-                var length = chapter.EndTime - chapter.StartTime;
-                if (length > 0)
+                if (chapter.EndTime >= chapter.StartTime)
                 {
+                    var length = chapter.EndTime - chapter.StartTime;
                     writer.WritePropertyName("length");
                     writer.WriteValue(length);
                 }
-
+                
                 if (!string.IsNullOrEmpty(chapter.Title))
                 {
                     writer.WritePropertyName("title");
