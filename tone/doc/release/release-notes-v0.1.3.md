@@ -5,10 +5,7 @@
 - `M4bFillupTagger` did not work as expected, now it is working again
 - Most known command line parameter parsing are fixed by @FrankRay78 (just awesome, thank you so much)
 - Fixed invalid chapter length output in `dump` command on `--format=json` (thank you @itzexor)
-
-## Added
-
-- ...
+- Fixed several opus / vorbis issues (thank you @Zeugma440)
 
 ## Changed
 

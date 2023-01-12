@@ -77,6 +77,8 @@ jobs:
           release_notes="$(sed 's/%/%25/g;s/\r/%0D/g;' ${{ env.PROJECT_NAME }}/doc/release/release-notes-${{ steps.version.outputs.version }}.md | sed ':a;N;$!ba;s/\n/%0A/g')"
           echo "::set-output name=release_notes::$release_notes"
           
+          sed -i "s/<TargetFramework>net6.0<\/TargetFramework>/<TargetFramework>${{ env.DOTNET_FRAMEWORK }}<\/TargetFramework>/g" ${{ env.PROJECT_PATH }}
+          
           dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           
           if [ "${{ matrix.target }}" == "win-x64" ]; then
