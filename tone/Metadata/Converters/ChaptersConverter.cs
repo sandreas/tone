@@ -21,7 +21,8 @@ public class ChaptersConverter : JsonConverter
                 writer.WritePropertyName("start");
                 writer.WriteValue(chapter.StartTime);
 
-                if (chapter.EndTime >= chapter.StartTime)
+                var chapterLength = CalculateChapterLength(chapter);
+                if (chapterLength != null)
                 {
                     var length = chapter.EndTime - chapter.StartTime;
                     writer.WritePropertyName("length");
@@ -45,6 +46,28 @@ public class ChaptersConverter : JsonConverter
         }
 
         writer.WriteEndArray();
+    }
+
+    private uint? CalculateChapterLength(ChapterInfo chapter)
+    {
+        uint start;
+        uint end;
+        if (chapter.UseOffset)
+        {
+            start = chapter.StartOffset;
+            end = chapter.EndOffset;
+        }
+        else
+        {
+            start = chapter.StartTime;
+            end = chapter.EndTime;
+        }
+        if (end > 0 && end>=start)
+        {
+            return end - start;
+        }
+
+        return null;
     }
 
     // https://www.jerriepelser.com/blog/custom-converters-in-json-net-case-study-1/
