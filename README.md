@@ -4,10 +4,13 @@
 It is written in pure `C#`, deployed as single binary and utilizes the awesome [atldotnet] library
 to provide support for a wide variety of audio and metadata formats.
 
-> Important note: `tone` is in a pretty early state of development and may contain
-> bugs or missing features as well as missing documentation, so it might be a good
-> idea to backup your files before using it and prepare for reading code, if
-> documentation is missing.
+## Support me via GitHub sponsors
+
+If you are using any of my projects and find them helpful, please consider [donating to support me](https://github.com/sponsors/sandreas). I plan to use the money to support other open source projects or charitable purposes. Thank you!
+
+<p align="center">
+<a href="https://github.com/sponsors/sandreas"><img src="./assets/help.svg" width="300" alt="sponsor me and donate" style="margin:auto;"></a>
+</p>
 
 ## TL;DR
 
