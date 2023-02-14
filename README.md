@@ -1,8 +1,30 @@
 # tone
 
-`tone` is a cross platform audio utility to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more.
-It is written in pure `C#`, deployed as single binary and utilizes the awesome [atldotnet] library
-to provide support for a wide variety of audio and metadata formats.
+`tone` is a cross platform audio tagger and metadata editor to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more. It has no dependencies and can be downloaded as single binary for Windows, macOS, Linux and other common platforms.
+
+The code is written in pure `C#` and utilizes the awesome [atldotnet] library to provide full support for a wide variety of audio and metadata formats.
+
+## Features
+The main purpose of `tone` is to tag `m4b` audio books for myself. It is planned as a successor to [m4b-tool].
+
+- `dump` metadata of audio files
+  - different metadata formats (e.g. `chptfmtnative`, `ffmetadata`, etc.)
+  - file information (bitrate, channels, duration, etc.)
+  - support for filterable `json` output (similar to `jq`)
+  - extensive list of supported tags (default fields like *album* or *artist as well as *custom fields*, *covers*, *chapters*, etc.)
+- `tag` audio files with different kinds of metadata
+  - different file formats (e.g. `mp3`, `m4b`, and `flac`)
+  - extensive list of supported tags (default fields like *album* or *artist as well as *custom fields*, *covers*, *chapters*, etc.)
+  - filename to tags via `--path-pattern` (see below)
+  - custom javascript taggers via `--script` and `--script-tagger-parameter`
+
+
+### Future plans
+
+- [ ] `split` large audio files into multiple smaller files (e.g. by chapters) using `ffmpeg`, `fdkaac` and [CliWrap]
+- [ ] `merge` multiple smaller audio files into large ones auto generating chapters using silence detection with `ffmpeg`, `fdkaac` and [CliWrap]
+- [ ] write unit tests and more detailed documentation
+
 
 ## Support me via GitHub sponsors
 
@@ -51,25 +73,6 @@ tone tag --auto-import=covers --auto-import=chapters --path-pattern="audiobooks/
 # write your own custom JavaScript tagger and call this function with parameters to modify metadata on your own
 tone tag "harry-potter-1.m4b" --taggers="musicbrainz" --script="musicbrainz.js" --script-tagger-parameter="e2310769-2e68-462f-b54f-25ac8e3f1a21"
 ```
-
-## Features
-The main purpose of `tone` is to tag `m4b` audio books for myself. It is planned as a successor to [m4b-tool].
-
-- `dump` metadata of audio files
-  - different metadata formats (e.g. `ffmetadata`)
-  - extensive list of supported tags (*additional fields*, *covers*, *chapters*, etc.)
-- `tag` audio files with different kinds of metadata
-  - different file formats (e.g. `mp3`, `m4b`, and `flac`)
-  - extensive list of supported tags (*additional fields*, *covers*, *chapters*, etc.)
-  - filename to tags via `--path-pattern` (see below)
-  - custom javascript taggers via `--script` and `--script-tagger-parameter`
-
-### Future plans
-
-- [ ] `split` large audio files into multiple smaller files (e.g. by chapters) using `ffmpeg`, `fdkaac` and [CliWrap]
-- [ ] `merge` multiple smaller audio files into large ones auto generating chapters using silence detection with `ffmpeg`, `fdkaac` and [CliWrap]
-- [ ] publish an official `docker` image with all dependencies
-- [ ] write unit tests and more detailed documentation
 
 
 ## Setup
@@ -120,6 +123,156 @@ Expand-Archive -LiteralPath tone-0.1.2-win-x64.zip -DestinationPath .
 
 # open directory in windows explorer to manually put tone in your %PATH%, e.g. C:\Windows
 start .
+```
+
+## Input and output formats
+
+`tone` already supports some common input and output formats for metadata, as well as a `tone` specific one. Here are some examples:
+
+### ToneJson format
+The *ToneJson* format is specific for `tone`, can contain all supported metadata (including binary images) and looks similar to this example...
+
+
+**Example**
+
+```json
+{
+  "audio": {
+    "bitrate": 320,
+    "format": "MPEG Audio (Layer III)",
+    "formatShort": "MPEG",
+    "sampleRate": 44100.0,
+    "duration": 255920.0,
+    "channels": {
+      "count": 2,
+      "description": "Joint Stereo"
+    },
+    "frames": {
+      "offset": 20749,
+      "length": 10236864
+    },
+    "metaFormat": [
+      "id3V24"
+    ]
+  },
+  "meta": {
+    "album": "Back in Black",
+    "albumArtist": "AC/DC",
+    "artist": "AC/DC",
+    "discNumber": 1,
+    "discTotal": 1,
+    "encodedBy": "LAME 3.99.5",
+    "genre": "Hard Rock",
+    "itunesCompilation": "no",
+    "publisher": "Atlantic",
+    "recordingDate": "1986-01-01T00:00:00",
+    "sortArtist": "AC/DC",
+    "title": "Back in Black",
+    "trackNumber": 6,
+    "trackTotal": 10,
+    "embeddedPictures": [
+      {
+        "type": 2,
+        "code": 3,
+        "mimetype": "image/jpeg",
+        "data": "/9j/4AAQSkZJRgA...9k="
+      }
+    ],
+    "additionalFields": {
+      "grP1": "5",
+      "tmed": "CD",
+      "tlan": "eng",
+      "tipl": "arranger",
+      "tdor": "1980-07-25",
+      "script": "Latn",
+      "artist Credit": "AC/DC",
+      "albumartistsort": "AC/DC",
+      "catalognumber": "16018-2",
+      "album Artist Credit": "AC/DC",
+      "musicBrainz Album Type": "album",
+      "replaygaiN_ALBUM_GAIN": "-8.43 dB",
+      "replaygaiN_ALBUM_PEAK": "1.064363",
+      "replaygaiN_TRACK_GAIN": "-8.38 dB",
+      "replaygaiN_TRACK_PEAK": "1.051585",
+      "musicBrainz Album Status": "Official",
+      "musicBrainz Album Release Country": "DE",
+      "acoustid Id": "8b379144-9a9d-4fc1-897a-a7c0771f8ebb",
+      "musicBrainz Album Id": "fdabb997-b984-4097-bd3b-89fafd5e2e75",
+      "ufid": "http://musicbrainz.org\u0000ef71afb6-5e51-41df-999b-9e7c7306063a",
+      "musicBrainz Artist Id": "66c662b6-6e2f-4930-8610-912e24c63ed1",
+      "musicBrainz Album Artist Id": "66c662b6-6e2f-4930-8610-912e24c63ed1",
+      "musicBrainz Release Group Id": "d3bc1a64-7561-3787-b680-0003aa50f8f1",
+      "musicBrainz Release Track Id": "cf05ab29-27c7-47ed-9450-9f4de676cded",
+      "acoustid Fingerprint": "AQADtE...oIIYgRUChBhABIEeWAA0AQR4hSDg",
+      "iTunNORM": " 00001AE7 00001AE7 00004340 00004340 00000000 00000000 0000869A 0000869A 00000000 00000000"
+    }
+  },
+  "file": {
+    "size": 10257613,
+    "created": "2019-06-12T18:50:37.5527895+02:00",
+    "modified": "2019-06-12T18:50:37.5527895+02:00",
+    "accessed": "2023-02-14T09:21:29.2261032+01:00",
+    "path": "music/album/AC_DC/Back in Black",
+    "name": "06 - Back in Black.mp3"
+  }
+}
+
+```
+
+### ChptFmtNative format (also CHPT_FMT_NATIVE)
+The *ChptFmtNative* format was initially used in `mp4v2`, but never fully specified. However, there is a loose [spec here](https://github.com/enzo1982/mp4v2/files/8103210/ToolGuide.txt).
+
+**Example**
+
+```
+## artist: Cœur de pirate
+## album: Blonde
+##
+## total-duration: 00:38:37.034
+##
+00:00:00.000 Lève les voiles
+00:01:12.709 Adieu
+00:03:40.346 Danse et danse
+00:06:50.775 Golden Baby
+00:09:57.772 Ava
+00:13:14.657 Loin d'ici
+00:15:58.494 Les amours dévouées
+00:18:26.443 Place de la république
+00:22:37.664 Cap diamant
+00:25:20.925 Verseau
+00:29:14.722 Saint-Laurent
+00:32:29.519 La petite mort
+00:36:19.140 Hôtel amour
+```
+
+### ffmetadata format
+The *ffmetadata* format was designed for `ffmpeg`, a versatile media encoder and it is [specified here](https://ffmpeg.org/ffmpeg-formats.html#toc-Metadata-1).
+
+**Example**
+
+```
+;FFMETADATA1
+title=Back in Black
+artist=AC/DC
+track=6/10
+album=Back in Black
+disc=1/1
+date=1986
+genre=Hard Rock
+TBPM=0
+compilation=0
+TMED=CD
+language=eng
+album_artist=AC/DC
+artist-sort=AC/DC
+publisher=Atlantic
+TIPL=arranger
+TDOR=1980-07-25
+encoded_by=LAME 3.99.5
+Script=Latn
+Artist Credit=AC/DC
+ALBUMARTISTSORT=AC/DC
+CATALOGNUMBER=16018-2
 ```
 
 
@@ -192,9 +345,11 @@ The `tag` command can be used to modify audio metadata. Besides using predefined
 add or modify custom fields via `--meta-additional-field`, e.g. `--meta-additional-field "©st3=testing"` as well as pictures or chapters.
 
 #### The `--taggers` option
-The `--taggers` option allows you to specify a custom set or a different order of taggers, which are gonna be applied. In most cases
+The `--taggers` option allows you to specify a custom set or a different order of internal taggers (NOT input formats), which are gonna be applied. In most cases
 changing the order of the *taggers* does not make a huge difference, but fully understanding this option 
 requires a bit of technical knowledge. Lets go through a use case to see what you can do with it.
+
+> Note: Internal taggers are applied in a sane order by default and not meant for beginners. Most of the time you don't need to change the order and this usually is for very specific experts use cases. So if you don't fully understand this option, just leave it as is.
 
 *Use case: re-tag `sorttitle` / `sortalbum`*
 The following taggers are relevant for this use case:
