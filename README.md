@@ -125,9 +125,35 @@ Expand-Archive -LiteralPath tone-0.1.2-win-x64.zip -DestinationPath .
 start .
 ```
 
-## Input and output formats
+### Docker
 
-`tone` already supports some common input and output formats for metadata, as well as a `tone` specific one. Here are some examples:
+Since `tone` is a monolith, it is probably not necessary to run it via `docker`, but since it is convenient to have a possibility to copy `tone` in your own image, I published an official variant on dockerhub. Since it is a *multiarch*  image, you can use it on `arm6`, `arm7`, `aarch64`, and `x64` images.
+
+```bash
+docker pull sandreas/tone:v0.1.3
+```
+
+
+Or to use `tone` in your custom `Dockerfile`:
+
+```dockerfile
+# Dockerfile
+FROM sandreas/tone:v0.1.3 as tone
+# ...
+COPY --from=tone /usr/local/bin/tone /usr/local/bin/
+```
+
+## Reserved fields and supported formats
+
+`tone` already supports some common input and output formats for metadata, as well as a `tone` specific one (`ToneJson`). Moreover `tone` also uses some *reserved metadata fields* to overcome issues when storing specific information. 
+
+### Reserved metadata fields
+The namespace `----:com.pilabor.tone` as well as the following fields are reserved for `tone` in `mp4` / `m4a` / `m4b` based file formats:
+
+- `----:com.pilabor.tone:AUDIBLE_ASIN`: Since there is no official field for storing the audible ASIN, `tone` MAY use this custom field to store this piece information
+- `----:com.pilabor.tone:PART`: Since the movement index is often used for a part of a series but only supports integers (e.g. `1`) it cannot store some series part names (e.g. `2.1` or roman numbers like `IV`)
+  - `tone` supports `--meta-part` parameter being a fallback for storing non integer values while coincidentally storing `--meta-movement` only if it is an integer value
+  - Therefore it is always recommended to use the `--meta-part` parameter instead of `--meta-movement` to set the part number of a series
 
 ### ToneJson format
 The *ToneJson* format is specific for `tone`, can contain all supported metadata (including binary images) and looks similar to this example...
