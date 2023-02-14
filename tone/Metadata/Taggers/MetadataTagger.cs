@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using OperationResult;
 using Sandreas.AudioMetadata;
@@ -17,8 +18,14 @@ public class MetadataTagger : INamedTagger
     }
 
     public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
-    {
+    {  
+        var backupAdditionalFields = metadata.AdditionalFields.ToDictionary(entry => entry.Key,
+            entry => entry.Value);
         metadata.OverwritePropertiesWhenNotEmpty(_source);
+        foreach (var f in backupAdditionalFields.Where(f => !metadata.AdditionalFields.ContainsKey(f.Key)))
+        {
+            metadata.AdditionalFields.Add(f.Key, f.Value);
+        }
         return await Task.FromResult(Ok());
     }
 }
