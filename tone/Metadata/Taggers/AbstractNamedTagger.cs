@@ -128,4 +128,7 @@ public abstract class AbstractNamedTagger: INamedTagger
         return metadata.ItunesMediaType == ItunesMediaType.Audiobook ||
                metadata.Path != null && metadata.Path.EndsWith(".m4b");
     }
+
+
+    
 }

@@ -147,12 +147,15 @@ try
         var fs = sp.GetRequiredService<FileSystem>();
         var pathMatcher = sp.GetRequiredService<PathPatternMatcher>();
         var chapterFormat = sp.GetRequiredService<ChptFmtNativeMetadataFormat>();
+        var ffmetadataFormat = sp.GetRequiredService<FfmetadataFormat>();
         var taggers = new[]
         {
             settingsProvider.Build<IToneJsonTaggerSettings, INamedTagger>(s => new ToneJsonTagger(fs, s)),
             settingsProvider.Build<IMetadata, INamedTagger>(s => new MetadataTagger(s)),
             settingsProvider.Build<ICoverTaggerSettings, INamedTagger>(s => new CoverTagger(fs, s)),
             settingsProvider.Build<IPathPatternSettings, INamedTagger>(_ => new PathPatternTagger(pathMatcher)),
+            settingsProvider.Build<IFfmetadataTaggerSettings, INamedTagger>(s =>
+                new FfmetadataTagger(fs, ffmetadataFormat, s.ImportFfmetadataFile, s.AutoImportFfmetadata)),
             settingsProvider.Build<IChptFmtNativeTaggerSettings, INamedTagger>(s =>
                 new ChptFmtNativeTagger(fs, chapterFormat, s.ImportChaptersFile, s.AutoImportChapters)),
             settingsProvider.Build<IEquateTaggerSettings, INamedTagger>(s => new EquateTagger(s)),

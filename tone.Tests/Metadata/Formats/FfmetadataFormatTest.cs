@@ -1,8 +1,4 @@
-
-using System;
-using System.IO;
 using System.Linq;
-using tone.Common.Extensions.Stream;
 using tone.Common.Extensions.String;
 using tone.Metadata.Formats;
 using Xunit;

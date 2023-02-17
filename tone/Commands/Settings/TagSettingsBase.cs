@@ -6,6 +6,7 @@ using Sandreas.AudioMetadata;
 using Spectre.Console.Cli;
 using tone.Commands.Settings.Interfaces;
 using tone.Commands.Settings.SettingValues;
+using tone.Services;
 
 namespace tone.Commands.Settings;
 
@@ -15,6 +16,7 @@ public class TagSettingsBase : CommandSettingsBase,
     IToneJsonTaggerSettings, 
     IPathPatternSettings, 
     IChptFmtNativeTaggerSettings, 
+    IFfmetadataTaggerSettings,
     IRemoveTaggerSettings, 
     ITaggerOrderSettings, 
     IScriptSettings,
@@ -22,6 +24,8 @@ public class TagSettingsBase : CommandSettingsBase,
 {
     [CommandOption("--assume-yes|-y")] public bool AssumeYes { get; init; } = false;
     [CommandOption("--dry-run")] public bool DryRun { get; init; } = false;
+
+    [CommandOption("--format")] public SerializerFormat Format { get; set; } = SerializerFormat.Default;
 
     [CommandOption("--taggers")]
     public string[] Taggers { get; set; } = Array.Empty<string>();
@@ -127,6 +131,7 @@ public class TagSettingsBase : CommandSettingsBase,
     public AutoImportValue[] AutoImport { get; init; } = Array.Empty<AutoImportValue>();
     
     [CommandOption("--meta-chapters-file")] public string ImportChaptersFile { get; init; } = "";
+    [CommandOption("--meta-ffmetadata-file")] public string ImportFfmetadataFile { get; init; } = "";
 
     [CommandOption("--meta-cover-file")] public string[] Covers { get; set; } = Array.Empty<string>();    
     [CommandOption("--meta-tone-json-file")] public string[] ToneJsonFiles { get; set; } = Array.Empty<string>();    
@@ -158,6 +163,7 @@ public class TagSettingsBase : CommandSettingsBase,
     // tagger specific    
     public bool AutoImportCovers => AutoImport.Contains(AutoImportValue.Covers);
     public bool AutoImportChapters => AutoImport.Contains(AutoImportValue.Chapters);
+    public bool AutoImportFfmetadata => AutoImport.Contains(AutoImportValue.Ffmetadata);
     public bool AutoImportToneJson => AutoImport.Contains(AutoImportValue.ToneJson);
 
     /*

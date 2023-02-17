@@ -1,96 +1,41 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Threading.Tasks;
 using OperationResult;
 using Sandreas.AudioMetadata;
 using tone.Metadata.Formats;
-using static System.Array;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class ChptFmtNativeTagger : INamedTagger
+public class ChptFmtNativeTagger : AbstractFilesystemTagger, INamedTagger
 {
+    private static readonly string DefaultFileSuffix = "chapters.txt";
     public string Name => nameof(ChptFmtNativeTagger);
-
-    private readonly IFileSystem? _fs;
-    private readonly ChptFmtNativeMetadataFormat _parser;
-    private readonly string _forceChapterFilename;
-    private readonly bool _autoImport;
-
-    public ChptFmtNativeTagger(IFileSystem? fileSystem, ChptFmtNativeMetadataFormat parser,
-        string forceChapterFilename = "", bool autoImport=false)
+    public ChptFmtNativeTagger(IFileSystem? fileSystem, ChptFmtNativeMetadataFormat parser, string forcedImportFilename = "", bool autoImport = false) : base(fileSystem, parser, forcedImportFilename, autoImport)
     {
-        _fs = fileSystem;
-        _parser = parser;
-        _forceChapterFilename = forceChapterFilename;
-        _autoImport = autoImport;
     }
 
-    public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
+    protected override string? BuildPreferredFileName(IFileInfo audioFile) => ConcatPreferredFileName(audioFile, DefaultFileSuffix);
+
+    protected override bool FilterCallback(IFileInfo f) => f.Name.EndsWith(DefaultFileSuffix);
+
+    protected override Status<string> TransferPropertiesCallback(IMetadata parsedMetaValue, IMetadata metadata)
     {
-        if (!_autoImport && _forceChapterFilename == "")
-        {
-            return Ok();
-        }
-        var audioFile = _fs?.FileInfo.FromFileName(metadata.Path);
-        if (audioFile == null)
-        {
-            return Error($"Could not create fileInfo for file {metadata.Path}");
-        }
-
-        IEnumerable<IFileInfo> chaptersTxtFiles;
-        if (_forceChapterFilename == "")
-        {
-            chaptersTxtFiles = _fs?.Directory.EnumerateFiles(audioFile.DirectoryName)
-                .Select(f => _fs.FileInfo.FromFileName(f))
-                .Where(f => f.Name.EndsWith("chapters.txt")).ToArray() ?? Empty<IFileInfo>();
-        }
-        else
-        {
-            var forcedFile = _fs?.FileInfo.FromFileName(_forceChapterFilename);
-            chaptersTxtFiles = forcedFile == null ? Empty<IFileInfo>() : new[] { forcedFile };
-        }
-
-        if (!chaptersTxtFiles.Any())
-        {
-            return _forceChapterFilename == "" ? Ok() : Error($"Could not find any chapter files in {metadata.Path}");
-        }
-
-        var preferredFileName = audioFile.Name[..audioFile.Extension.Length] + "chapters.txt";
-        var preferredFile = chaptersTxtFiles.FirstOrDefault(f => f.Name == preferredFileName) ??
-                            chaptersTxtFiles.First();
-        await using var stream = _fs?.File.OpenRead(preferredFile.FullName);
-        if (stream == null)
-        {
-            return Error($"Could not open file ${preferredFile.FullName}");
-        }
-
-        var parsedMeta = await _parser.ReadAsync(stream);
-        if (!parsedMeta)
-        {
-            return Error(parsedMeta.Error);
-        }
-        
-        TransferMetadataList(parsedMeta.Value.Chapters, metadata.Chapters);
+        TransferMetadataList(parsedMetaValue.Chapters, metadata.Chapters);
 
         var lastChapter = metadata.Chapters.LastOrDefault();
         if(lastChapter is { EndTime: 0 } && metadata.TotalDuration.TotalMilliseconds > lastChapter.StartTime)
         {
             lastChapter.EndTime = (uint)metadata.TotalDuration.TotalMilliseconds;
         }
+
         return Ok();
     }
-
+    
     private static void TransferMetadataList<T>(IList<T>? source, IList<T>? destination) where T : class
     {
-        if (source == null || destination == null)
-        {
-            return;
-        }
-
-        if (source.Count == 0)
+        if (source == null || source.Count == 0 || destination == null)
         {
             return;
         }
