@@ -1,11 +1,23 @@
 # Release Notes
 
+**Caution**: This release contains some major refactorings and although I did test all the changes extensively, it still may have broken features under specific circumstances. Be sure to backup your data and do extensive testing before upgrading to `v0.1.4`.
+
 ## Fixed
 
--  additional fields are no longer removed but merged when using `--meta-additional-field="..." (#11)
+- additional fields are no longer removed but merged when using `--meta-additional-field="..." (#11)
+- Duplicate `dump` of additional fields (#7)
+- Description should now work like expected in `dump` (#17)
 
 ## Changed
 
+- Release mode for macOS-arm64 targets temporarily switched from `Release` to `Debug`, maybe this fixes issue #6
+- Improved documentation (issues #20 and #30)
+- Bumped libraries to newest versions 
+
+## Added
+
+- `tag` command now supports `--auto-import=ffmetadata` (#27)
+- `tag` command can now output json, when `--format=json` is specified (full tag output, no diff, see #29)
 
 ## Setup instructions
 
