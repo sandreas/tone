@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Sandreas.SpectreConsoleHelpers.Commands;
 using tone.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using Spectre.Console.Rendering;
 using tone.Commands.Settings;
 using tone.Directives;
 using tone.Matchers;
@@ -22,15 +24,17 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
     private readonly PathPatternMatcher _pathPatternMatcher;
     private readonly TaggerComposite _tagger;
     private readonly JavaScriptApi _api;
+    private readonly SerializerService _serializer;
 
     public TagCommand(SpectreConsoleService console, StartupErrorService startup, DirectoryLoaderService dirLoader,
-        PathPatternMatcher pathPatternMatcher, TaggerComposite tagger, JavaScriptApi api)
+        PathPatternMatcher pathPatternMatcher, TaggerComposite tagger,  SerializerService serializerService, JavaScriptApi api)
     {
         _console = console;
         _startup = startup;
         _dirLoader = dirLoader;
         _pathPatternMatcher = pathPatternMatcher;
         _tagger = tagger;
+        _serializer = serializerService;
         _api = api; // unused but necessary (Dependency Injection Initialisation)
     }
 
@@ -101,7 +105,8 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
         if (showDryRunMessage)
         {
             _console.WriteLine();
-            _console.Write(new Markup("[blue]!!! This was a dry-run, no changes where actually saved !!![/]")); 
+            _console.Write(new Markup("[blue]!!! This was a dry-run, no changes where actually saved !!![/]"));
+            _console.WriteLine();
         }
 
         return await Task.FromResult((int)returnCode);
@@ -111,7 +116,7 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
         TagCommandSettings settings,
         CancellationToken cancellation)
     {
-        var showDryRunMessage = false;
+        var shouldShowDryRunMessage = false;
         foreach (var file in p.Files)
         {
             try
@@ -119,7 +124,7 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
                 if (cancellation.IsCancellationRequested)
                 {
                     _console.Error.Write(new Markup($"[red]User cancelled on file: {file}[/]"));
-                    return (ReturnCode.UserAbort, showDryRunMessage);
+                    return (ReturnCode.UserAbort, shouldShowDryRunMessage);
                 }
 
                 var track = new MetadataTrack(file)
@@ -127,59 +132,57 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
                     BasePath = p.BaseDirectory?.FullName
                 };
                 var status = await _tagger.UpdateAsync(track);
-
+                
                 if (!status)
                 {
                     _console.Error.WriteLine($"Could not update tags for file {file}: {status.Error}");
                     continue;
                 }
-
                 var currentMetadata = new MetadataTrack(file);
                 var diffListing = track.Diff(currentMetadata);
-                if (diffListing.Count == 0)
-                {
-                    if (settings.DryRun || !settings.Force)
-                    {
-                        _console.Write(new Rule($"[green]unchanged: {Markup.Escape(track.Path ?? "")}[/]").LeftJustified());
-                        continue;
-                    }
 
-                    var path = Markup.Escape(track.Path ?? "");
-                    var message = !track.Save()
-                        ? $"[red]Force update failed: {path}[/]"
-                        : $"[green]Forced update: {path}[/]";
-                    _console.Write(new Rule(message)
-                        .LeftJustified());
+                var dryRun = settings.DryRun;
+                var force = settings.Force;
+                var hasDiff = diffListing.Count > 0;
+                var shouldSave = !dryRun && (force || hasDiff);
+                var shouldSerializeOutput = settings.Format != SerializerFormat.Default;
+                var saveSuccessful = dryRun || !shouldSave;
+
+                // save track if required
+                if (shouldSave)
+                {
+                    saveSuccessful = track.Save();
+                }
+                
+                shouldShowDryRunMessage = dryRun && hasDiff && !shouldSerializeOutput;
+                
+                var escapedPath = Markup.Escape(track.Path ?? "");
+                var actionMessage = BuildActionMessage(escapedPath, dryRun, force, hasDiff, saveSuccessful);
+                var ruleMessage = new Rule(actionMessage).LeftJustified();
+
+                // save or force save has failed
+                if (!saveSuccessful)
+                {
+                    _console.Error.Write(ruleMessage);
+                    continue;
+                }
+                
+                if (!hasDiff)
+                {
+                    // if NOT shouldSerializeOutput, show info and success messages, be quiet otherwise
+                    if(!shouldSerializeOutput) {
+                        _console.Write(ruleMessage);
+                    }
+                    continue;
+                }
+
+                if (shouldSerializeOutput)
+                {
+                    _console.WriteLine(await _serializer.SerializeAsync(track, settings.Format));
                 }
                 else
                 {
-                    showDryRunMessage = settings.DryRun;
-                    var diffTable = new Table().Expand();
-                    diffTable.Title = new TableTitle($"[blue]DIFF: {Markup.Escape(track.Path ?? "")}[/]");
-                    diffTable.AddColumn("property")
-                        .AddColumn("current")
-                        .AddColumn("new");
-                    foreach (var (property, currentValue, newValue) in diffListing)
-                    {
-                        diffTable.AddRow(
-                            property.ToString(),
-                            Markup.Escape(newValue?.ToString() ?? "<null>"),
-                            Markup.Escape(currentValue?.ToString() ?? "<null>")
-                        );
-                    }
-
-                    if (settings.DryRun)
-                    {
-                        _console.Write(diffTable);
-                        continue;
-                    }
-                    
-                    var path = Markup.Escape(track.Path ?? "");
-                    var message = !track.Save()
-                        ? $"[red]Update failed: {path}[/]"
-                        : $"[green]Updated: {path}[/]";
-                    diffTable.Caption = new TableTitle(message);
-                    _console.Write(diffTable);
+                    _console.Write(BuildDiffTable(settings, diffListing, actionMessage, escapedPath));    
                 }
             }
             catch (Exception e)
@@ -188,6 +191,45 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
             }
         }
 
-        return (ReturnCode.Success, showDryRunMessage);
+        return (ReturnCode.Success, shouldShowDryRunMessage);
+    }
+
+    private static string BuildActionMessage(string escapedPath, bool dryRun, bool force, bool hasDiff, bool saveSuccessful)
+    {
+        var actionMessageDescriptor = force && !hasDiff ? "Forced update" : "Update";
+        if (!saveSuccessful)
+        {
+            return $"[red]{actionMessageDescriptor} failed: {escapedPath}[/]";
+        }
+        
+        if (dryRun || (!force && !hasDiff))
+        {
+            return $"[green]unchanged: {escapedPath}[/]";
+        }
+        
+        return $"[green]{actionMessageDescriptor}: {escapedPath}[/]";
+    }
+    private static IRenderable BuildDiffTable(TagCommandSettings settings, List<(MetadataProperty Property, object? CurrentValue, object? NewValue)> diffListing, string actionMessage, string escapedPath)
+    {
+        var diffTable = new Table().Expand();
+        diffTable.Title = new TableTitle($"[blue]DIFF: {escapedPath}[/]");
+        diffTable.AddColumn("property")
+            .AddColumn("current")
+            .AddColumn("new");
+        foreach (var (property, currentValue, newValue) in diffListing)
+        {
+            diffTable.AddRow(
+                property.ToString(),
+                Markup.Escape(newValue?.ToString() ?? "<null>"),
+                Markup.Escape(currentValue?.ToString() ?? "<null>")
+            );
+        }
+
+        if (!settings.DryRun)
+        {
+            diffTable.Caption = new TableTitle(actionMessage);
+        }
+
+        return diffTable;
     }
 }
