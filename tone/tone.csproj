@@ -29,7 +29,6 @@
         <PublishReadyToRun>true</PublishReadyToRun>
         <!-- compress contents -->
         
-        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
         
         <TargetFramework>net6.0</TargetFramework>
         
