@@ -15,7 +15,6 @@
         <InvariantGlobalization>true</InvariantGlobalization>
 
         <!-- one single monolithic exe instead of multiple dlls -->
-        <PublishSingleFile>true</PublishSingleFile>
         
         <!-- deployment will not need runtime and is standalone -->
         <!-- set via flag in the build.sh script -->
@@ -45,7 +44,7 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="Sandreas.AudioMetadata" Version="0.1.1" />
       <PackageReference Include="Sandreas.SpectreConsoleHelpers" Version="0.0.2" />
       <PackageReference Include="Serilog" Version="2.12.0" />
@@ -55,7 +54,7 @@
       <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
       <PackageReference Include="Spectre.Console" Version="0.46.0" />
       <PackageReference Include="Spectre.Console.Cli" Version="0.46.0" />
-      <PackageReference Include="z440.atl.core" Version="4.19.0" />
+      <PackageReference Include="z440.atl.core" Version="4.29.0" />
     </ItemGroup>
 
 
