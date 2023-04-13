@@ -14,6 +14,7 @@ public class TagSettingsBase : CommandSettingsBase,
     IMetadata, 
     ICoverTaggerSettings, 
     IToneJsonTaggerSettings, 
+    IIdTaggerSettings, 
     IPathPatternSettings, 
     IChptFmtNativeTaggerSettings, 
     IFfmetadataTaggerSettings,
@@ -26,6 +27,7 @@ public class TagSettingsBase : CommandSettingsBase,
     [CommandOption("--dry-run")] public bool DryRun { get; init; } = false;
 
     [CommandOption("--format")] public SerializerFormat Format { get; set; } = SerializerFormat.Default;
+    [CommandOption("--id")] public string Id { get; set; } = "";
 
     [CommandOption("--taggers")]
     public string[] Taggers { get; set; } = Array.Empty<string>();

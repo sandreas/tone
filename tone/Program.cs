@@ -142,16 +142,29 @@ try
             options.CancellationToken(cts.Token);
         });
     });
+
+    services.AddSingleton<AudibleIdTagger>();
+    services.AddSingleton<IdTagger>();
+    
     services.AddSingleton(sp =>
     {
         var fs = sp.GetRequiredService<FileSystem>();
         var pathMatcher = sp.GetRequiredService<PathPatternMatcher>();
         var chapterFormat = sp.GetRequiredService<ChptFmtNativeMetadataFormat>();
         var ffmetadataFormat = sp.GetRequiredService<FfmetadataFormat>();
+        var idTagger  = sp.GetRequiredService<IdTagger>();
+        
         var taggers = new[]
         {
             settingsProvider.Build<IToneJsonTaggerSettings, INamedTagger>(s => new ToneJsonTagger(fs, s)),
             settingsProvider.Build<IMetadata, INamedTagger>(s => new MetadataTagger(s)),
+            
+            settingsProvider.Build<IIdTaggerSettings, INamedTagger>(s =>
+            {
+                idTagger.Id = s.Id;
+                return idTagger;
+            }),
+
             settingsProvider.Build<ICoverTaggerSettings, INamedTagger>(s => new CoverTagger(fs, s)),
             settingsProvider.Build<IPathPatternSettings, INamedTagger>(_ => new PathPatternTagger(pathMatcher)),
             settingsProvider.Build<IFfmetadataTaggerSettings, INamedTagger>(s =>
@@ -202,7 +215,7 @@ try
         config.UseStrictParsing();
         config.CaseSensitivity(CaseSensitivity.None);
         config.SetApplicationName("tone");
-        config.SetApplicationVersion("0.1.5");
+        config.SetApplicationVersion("0.1.6");
         config.ValidateExamples();
         config.AddCommand<DumpCommand>("dump")
             .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
