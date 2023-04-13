@@ -40,7 +40,7 @@ public abstract class AbstractNamedTagger: INamedTagger
 
         return string.Join("", concatValues);
     }
-    protected static bool ShouldUpdateSortTitle(IMetadata metadata)
+    protected static bool ShouldUpdateSortTitleWithMovement(IMetadata metadata)
     {
         return HasMovementOrPart(metadata) &&
                (string.IsNullOrEmpty(metadata.SortTitle) || metadata.SortTitle == metadata.Title);

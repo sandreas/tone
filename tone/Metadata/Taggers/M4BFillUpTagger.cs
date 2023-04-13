@@ -24,7 +24,7 @@ public class M4BFillUpTagger : AbstractNamedTagger
         metadata.Narrator = GetFirstNonEmptyValueOrNull(metadata.Narrator, metadata.Composer);
         metadata.Comment = GetFirstNonEmptyValueOrNull(metadata.Comment, metadata.LongDescription, metadata.Description);
 
-        if (ShouldUpdateSortTitle(metadata))
+        if (ShouldUpdateSortTitleWithMovement(metadata))
         {
             // If ALBUM only, then %Title%
             //     If ALBUM and SUBTITLE, then %Title% - %Subtitle%
@@ -33,6 +33,9 @@ public class M4BFillUpTagger : AbstractNamedTagger
             metadata.SortAlbum = GetFirstNonEmptyValueOrNull(  metadata.SortAlbum, metadata.SortTitle);
             
             metadata.AdditionalFields["shwm"] = "1"; // show movement
+            if(!string.IsNullOrWhiteSpace(metadata.MovementName)) {
+                metadata.AdditionalFields["----:com.pilabor.tone:SERIES"] = metadata.MovementName;
+            }
         }
         
         return await Task.FromResult(Ok());
