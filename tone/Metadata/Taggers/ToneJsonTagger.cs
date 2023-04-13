@@ -14,6 +14,8 @@ using static Helpers;
 
 public class ToneJsonTagger : INamedTagger
 {
+    public static readonly string DefaultFileSuffix = "tone.json";
+
     public string Name => nameof(ToneJsonTagger);
 
     private readonly List<IFileInfo> _toneJsonFiles;
@@ -39,7 +41,7 @@ public class ToneJsonTagger : INamedTagger
     {
         if (_autoload && _toneJsonFiles.Count == 0 && metadata.BasePath != null)
         {
-            _toneJsonFiles.AddRange(_fs.FindMatchingFiles(metadata.BasePath, "tone.json"));
+            _toneJsonFiles.AddRange(_fs.FindMatchingFiles(metadata.BasePath, DefaultFileSuffix));
         }
 
 

@@ -15,6 +15,7 @@ public class DumpCommandSettings : CommandSettingsBase
     public MetadataProperty[] ExcludeProperties { get; set; } = Array.Empty<MetadataProperty>();
     [CommandOption("--format")] public SerializerFormat Format { get; set; } = SerializerFormat.Default;
     [CommandOption("--query")] public string Query { get; set; } = "";
+    [CommandOption("--export")] public bool Export { get; init; } = false;
 
     /*
     public override ValidationResult Validate()

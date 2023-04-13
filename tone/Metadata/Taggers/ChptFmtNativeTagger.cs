@@ -10,7 +10,7 @@ namespace tone.Metadata.Taggers;
 
 public class ChptFmtNativeTagger : AbstractFilesystemTagger, INamedTagger
 {
-    private static readonly string DefaultFileSuffix = "chapters.txt";
+    public static readonly string DefaultFileSuffix = "chapters.txt";
     public string Name => nameof(ChptFmtNativeTagger);
     public ChptFmtNativeTagger(IFileSystem? fileSystem, ChptFmtNativeMetadataFormat parser, string forcedImportFilename = "", bool autoImport = false) : base(fileSystem, parser, forcedImportFilename, autoImport)
     {

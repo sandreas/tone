@@ -8,7 +8,7 @@ namespace tone.Metadata.Taggers;
 
 public class FfmetadataTagger : AbstractFilesystemTagger, INamedTagger
 {
-    private static readonly string DefaultFileSuffix = "ffmetadata.txt";
+    public static readonly string DefaultFileSuffix = "ffmetadata.txt";
 
     public string Name => nameof(FfmetadataTagger);
     public FfmetadataTagger(IFileSystem? fileSystem, FfmetadataFormat parser, string forcedImportFilename = "", bool autoImport = false) : base(fileSystem, parser, forcedImportFilename, autoImport)

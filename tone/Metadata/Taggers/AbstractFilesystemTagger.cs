@@ -85,7 +85,7 @@ public abstract class AbstractFilesystemTagger : ITagger
         return !parsedMeta ? Error(parsedMeta.Error) : TransferPropertiesCallback(parsedMeta.Value, metadata);
     }
 
-    protected static string ConcatPreferredFileName(IFileInfo audioFile, string suffix = "")
+    public static string ConcatPreferredFileName(IFileInfo audioFile, string suffix = "")
     {
         var extensionNoDot = audioFile.Extension.TrimStart('.');
         return string.Concat(audioFile.FullName.AsSpan(0, audioFile.FullName.Length - extensionNoDot.Length), suffix);

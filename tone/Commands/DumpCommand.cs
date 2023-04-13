@@ -1,36 +1,44 @@
 using System;
+using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Sandreas.AudioMetadata;
+using Sandreas.SpectreConsoleHelpers.Commands;
 using Serilog;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using tone.Commands.Settings;
 using tone.Common.TextWriters;
 using tone.Directives;
+using tone.Metadata.Taggers;
 using tone.Services;
 
 
 namespace tone.Commands;
 
-public class DumpCommand : AsyncCommand<DumpCommandSettings>
+public class DumpCommand : CancellableAsyncCommand<DumpCommandSettings>
 {
+    private const string NoSpecSuffix = "tone-dump.txt";
     private readonly SerializerService _serializerService;
     private readonly DirectoryLoaderService _dirLoader;
     private readonly SpectreConsoleService _console;
     private readonly ILogger _logger;
+    private readonly IFileSystem _fs;
 
     public DumpCommand(ILogger logger, SpectreConsoleService console, DirectoryLoaderService dirLoader,
-        SerializerService serializerService)
+        SerializerService serializerService, IFileSystem fs)
     {
         _console = console;
         _dirLoader = dirLoader;
         _serializerService = serializerService;
         _logger = logger;
+        _fs = fs;
     }
-
-    public override async Task<int> ExecuteAsync(CommandContext context, DumpCommandSettings settings)
+    
+    public override async Task<int> ExecuteAsync(CommandContext context, DumpCommandSettings settings, CancellationToken cancellationToken)
     {
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
         var inputFiles = _dirLoader.FindFilesByExtension(settings.Input, audioExtensions)
@@ -38,6 +46,48 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
             .Apply(new LimitDirective(settings.Limit))
             .ToArray();
         var returnCode = ReturnCode.Success;
+        
+        var outputDelegate = async Task<ReturnCode> (IFileSystem fs, string outputFile, IEnumerable<string> lines,  CancellationToken ct) =>
+        {
+            foreach (var line in lines)
+            {
+                _console.WriteLine(line);
+            }
+            return await Task.FromResult(ReturnCode.Success);
+        };
+        var outputSuffix = "";
+
+        
+        // default format is not supported for file export
+        if(settings.Export)
+        {
+            if(settings.Format == SerializerFormat.Default) {
+                settings.Format = SerializerFormat.Json;
+            }
+            
+            // outputDelegate = async  lines => ;
+            outputDelegate = async Task<ReturnCode> (fs, outputFile, lines,  ct) =>
+            {
+                try
+                {
+                    await fs.File.WriteAllLinesAsync(outputFile, lines, ct);
+                }
+                catch (Exception e)
+                {
+                    return ReturnCode.GeneralError;
+                }
+
+                return ReturnCode.Success;
+            };
+            outputSuffix = settings.Format switch
+            {
+                SerializerFormat.Json => ToneJsonTagger.DefaultFileSuffix,
+                SerializerFormat.ChptFmtNative => ChptFmtNativeTagger.DefaultFileSuffix,
+                SerializerFormat.Ffmetadata => FfmetadataTagger.DefaultFileSuffix,
+                _ => NoSpecSuffix
+            };
+        }
+        
         foreach (var file in inputFiles)
         {
             var fileReturnCode = await SuppressConsoleOutputAsync(async () =>
@@ -56,16 +106,14 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
                 }
 
                 var serializeResult = await _serializerService.SerializeAsync(track, settings.Format);
+
                 if (settings.Format == SerializerFormat.Json && settings.Query != "")
                 {
                     try
                     {
                         var o = JObject.Parse(serializeResult);
                         var tokens = o.SelectTokens(settings.Query);
-                        foreach (var token in tokens)
-                        {
-                            _console.WriteLine(token.ToString());
-                        }
+                        return await outputDelegate(_fs, AbstractFilesystemTagger.ConcatPreferredFileName(file, NoSpecSuffix), tokens.Select(t => t.ToString()), cancellationToken);
                     }
                     catch (Exception e)
                     {
@@ -73,12 +121,8 @@ public class DumpCommand : AsyncCommand<DumpCommandSettings>
                         return await Task.FromResult(ReturnCode.GeneralError);
                     }
                 }
-                else
-                {
-                    _console.WriteLine(serializeResult);
-                }
-
-                return ReturnCode.Success;
+                
+                return await outputDelegate(_fs, AbstractFilesystemTagger.ConcatPreferredFileName(file, outputSuffix), new []{serializeResult}, cancellationToken);
             });
 
             if (fileReturnCode != ReturnCode.Success)
