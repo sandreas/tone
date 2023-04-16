@@ -29,6 +29,7 @@ using tone.Serializers;
 using tone.Services;
 using Serilog;
 using Spectre.Console.Cli;
+using tone.Metadata.Taggers.IdTaggers.Audible;
 using ILogger = Serilog.ILogger;
 using Log = Serilog.Log;
 
@@ -143,8 +144,13 @@ try
         });
     });
 
-    services.AddSingleton<AudibleIdTagger>();
-    services.AddSingleton<IdTagger>();
+    services.AddSingleton<AudibleIdTaggerSettings>(_ => new AudibleIdTaggerSettings(){
+        MetadataUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_METADATA_URL_TEMPLATE") ?? "",
+        ChaptersUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_CHAPTERS_URL_TEMPLATE") ?? ""
+    });
+    services.AddHttpClient<AudibleIdTagger>();
+    
+    services.AddSingleton<IdTaggerComposite>();
     
     services.AddSingleton(sp =>
     {
@@ -152,7 +158,7 @@ try
         var pathMatcher = sp.GetRequiredService<PathPatternMatcher>();
         var chapterFormat = sp.GetRequiredService<ChptFmtNativeMetadataFormat>();
         var ffmetadataFormat = sp.GetRequiredService<FfmetadataFormat>();
-        var idTagger  = sp.GetRequiredService<IdTagger>();
+        var idTagger  = sp.GetRequiredService<IdTaggerComposite>();
         
         var taggers = new[]
         {

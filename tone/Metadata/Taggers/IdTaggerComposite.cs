@@ -1,25 +1,27 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jint;
 using OperationResult;
 using Sandreas.AudioMetadata;
 using tone.Commands.Settings.Interfaces;
+using tone.Metadata.Taggers.IdTaggers.Audible;
 using static OperationResult.Helpers;
 
 namespace tone.Metadata.Taggers;
 
-public class IdTagger: INamedTagger
+public class IdTaggerComposite: INamedTagger
 {
     private readonly IIdTaggerSettings _settings;
     private readonly Engine _jint;
-    private readonly AudibleIdTagger _audible;
-    public string Name => nameof(IdTagger);
+    private readonly List<IIdTagger> _idTaggers = new();
+    public string Name => nameof(IdTaggerComposite);
     public string Id { get; set; } = "";
 
-    public IdTagger(Engine jint, AudibleIdTagger audible)
+    public IdTaggerComposite(Engine jint, AudibleIdTagger audible)
     {
         _jint = jint;
-        _audible = audible;
+        _idTaggers.Add(audible);
     }
     public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
@@ -28,12 +30,22 @@ public class IdTagger: INamedTagger
             return await Task.FromResult(Ok());
         }
 
-        var id = ResolveScriptedId(metadata);
-        if(!id)
+        var idResult = ResolveScriptedId(metadata);
+        if(!idResult)
         {
-            return Error(id.Error);
+            return Error(idResult.Error);
         }
+
+        Id = idResult.Value;
         
+        foreach(var tagger in _idTaggers){
+            if(tagger.SupportsId(Id))
+            {
+                tagger.Id = Id;
+                var result = await tagger.UpdateAsync(metadata);
+                
+            }
+        }
         return  Ok();
     }
 
