@@ -225,39 +225,20 @@ try
         config.ValidateExamples();
         config.AddCommand<DumpCommand>("dump")
             .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
-            .WithExample(new[] { "dump", "--help" })
-            .WithExample(new[] { "dump", "input.mp3" })
-            .WithExample(new[]
-            {
-                "dump", "audio-directory/", "--include-extension", "m4b", "--include-extension", "mp3", "--format",
-                "ffmetadata",
-                "--include-property",
-                "title", "--include-property", "artist"
-            })
-            .WithExample(new[] { "dump", "input.mp3", "--format", "json", "--query", "$.meta.album" })
+            .WithExample("dump", "--help")
+            .WithExample("dump", "input.mp3")
+            .WithExample("dump", "audio-directory/", "--include-extension", "m4b", "--include-extension", "mp3", "--format", "ffmetadata", "--include-property", "title", "--include-property", "artist")
+            .WithExample("dump", "input.mp3", "--format", "json", "--query", "$.meta.album")
             ;
         config.AddCommand<TagCommand>("tag")
             .WithDescription("tag files with metadata properties (directories are traversed recursively)")
-            .WithExample(new[] { "tag", "--help" })
-            .WithExample(new[] { "tag", "input.mp3", "--meta-title", "\"a title\"" })
-            .WithExample(new[]
-            {
-                "tag", "--debug", "--auto-import=covers", "--meta-additional-field", "©st3=testing", "input.m4b",
-                "--dry-run"
-            })
-            .WithExample(new[]
-            {
-                "tag", "--auto-import=covers", "--auto-import=chapters",
-                "--path-pattern=\"audiobooks/%g/%a/%s/%p - %n.m4b\"",
-                "--path-pattern=\"audiobooks/%g/%a/%z/%n.m4b\"",
-                "audiobooks/", "--dry-run"
-            })
-            .WithExample(new[]
-            {
-                "tag", "input.mp3", "--script", "musicbrainz.js", "--script-tagger-parameter",
-                "e2310769-2e68-462f-b54f-25ac8e3f1a21"
-            })
+            .WithExample("tag", "--help")
+            .WithExample("tag", "input.mp3", "--meta-title", "\"a title\"")
+            .WithExample("tag", "--debug", "--auto-import=covers", "--meta-additional-field", "©st3=testing", "input.m4b", "--dry-run")
+            .WithExample("tag", "--auto-import=covers", "--auto-import=chapters", "--path-pattern=\"audiobooks/%g/%a/%s/%p - %n.m4b\"", "--path-pattern=\"audiobooks/%g/%a/%z/%n.m4b\"", "audiobooks/", "--dry-run")
+            .WithExample("tag", "input.mp3", "--script", "musicbrainz.js", "--script-tagger-parameter", "e2310769-2e68-462f-b54f-25ac8e3f1a21")
             ;
+
         /*config.AddCommand<SplitCommand>("split")
             .WithDescription("split audio files")
             ;    

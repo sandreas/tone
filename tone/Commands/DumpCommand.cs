@@ -26,10 +26,10 @@ public class DumpCommand : CancellableAsyncCommand<DumpCommandSettings>
     private readonly DirectoryLoaderService _dirLoader;
     private readonly SpectreConsoleService _console;
     private readonly ILogger _logger;
-    private readonly IFileSystem _fs;
+    private readonly FileSystem _fs;
 
     public DumpCommand(ILogger logger, SpectreConsoleService console, DirectoryLoaderService dirLoader,
-        SerializerService serializerService, IFileSystem fs)
+        SerializerService serializerService, FileSystem fs)
     {
         _console = console;
         _dirLoader = dirLoader;
