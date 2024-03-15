@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -32,6 +32,8 @@ using Spectre.Console.Cli;
 using tone.Metadata.Taggers.IdTaggers.Audible;
 using ILogger = Serilog.ILogger;
 using Log = Serilog.Log;
+using JKToolKit.Spectre.AutoCompletion.Completion;
+using JKToolKit.Spectre.AutoCompletion.Integrations;
 
 
 try
@@ -217,6 +219,7 @@ try
 
     app.Configure(config =>
     {
+        config.AddAutoCompletion(x => x.AddPowershell());
         config.SetInterceptor(new CustomCommandInterceptor(settingsProvider));
         config.UseStrictParsing();
         config.CaseSensitivity(CaseSensitivity.None);
