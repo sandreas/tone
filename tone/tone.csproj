@@ -39,6 +39,7 @@
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
       <PackageReference Include="grok.net" Version="2.0.0" />
       <PackageReference Include="Jint" Version="3.0.1" />
+      <PackageReference Include="JKToolKit.Spectre.AutoCompletion" Version="0.0.6" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
