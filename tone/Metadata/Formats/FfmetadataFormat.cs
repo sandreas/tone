@@ -35,6 +35,142 @@ public class FfmetadataFormat : IMetadataFormat
     // lyrics-XXX (where XXX is either XXX or language code, e.g. -eng)
     // disc
     //
+    
+    /*
+    const AVMetadataConv ff_id3v2_34_metadata_conv[] = {
+
+    { "TENC", "encoded_by"   },
+    { "TIT2", "title"        },
+    { "TLAN", "language"     },
+    { "TPE1", "artist"       },
+    { "TPE2", "album_artist" },
+    { "TPE3", "performer"    },
+    { "TPOS", "disc"         },
+    { "TPUB", "publisher"    },
+    { "TRCK", "track"        },
+    { "TSSE", "encoder"      },
+    { "USLT", "lyrics"       },
+    { 0 }
+};
+
+const AVMetadataConv ff_id3v2_4_metadata_conv[] = {
+    { "TCMP", "compilation"   },
+    { "TDRC", "date"          },
+    { "TDRL", "date"          },
+    { "TDEN", "creation_time" },
+    { "TSOA", "album-sort"    },
+    { "TSOP", "artist-sort"   },
+    { "TSOT", "title-sort"    },
+    { "TIT1", "grouping"      },
+    { 0 }
+};
+
+static const AVMetadataConv id3v2_2_metadata_conv[] = {
+
+    { "TCP", "compilation"  },
+    { "TT2", "title"        },
+    { "TP1", "artist"       },
+    { "TP2", "album_artist" },
+    { "TP3", "performer"    },
+    { "TRK", "track"        },
+    { 0 }
+};
+
+
+
+
+switch (atom.type) {
+    case MKTAG( '@','P','R','M'): key = "premiere_version"; raw = 1; break;
+    case MKTAG( '@','P','R','Q'): key = "quicktime_version"; raw = 1; break;
+    case MKTAG( 'X','M','P','_'):
+        if (c->export_xmp) { key = "xmp"; raw = 1; } break;
+    case MKTAG( 'a','A','R','T'): key = "album_artist";    break;
+    case MKTAG( 'a','k','I','D'): key = "account_type";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 'a','p','I','D'): key = "account_id"; break;
+    case MKTAG( 'c','a','t','g'): key = "category"; break;
+    case MKTAG( 'c','p','i','l'): key = "compilation";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 'c','p','r','t'): key = "copyright"; break;
+    case MKTAG( 'd','e','s','c'): key = "description"; break;
+    case MKTAG( 'd','i','s','k'): key = "disc";
+        parse = mov_metadata_track_or_disc_number; break;
+    case MKTAG( 'e','g','i','d'): key = "episode_uid";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 'F','I','R','M'): key = "firmware"; raw = 1; break;
+    case MKTAG( 'g','n','r','e'): key = "genre";
+        parse = mov_metadata_gnre; break;
+    case MKTAG( 'h','d','v','d'): key = "hd_video";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 'H','M','M','T'):
+        return mov_metadata_hmmt(c, pb, atom.size);
+    case MKTAG( 'k','e','y','w'): key = "keywords";  break;
+    case MKTAG( 'l','d','e','s'): key = "synopsis";  break;
+    case MKTAG( 'l','o','c','i'):
+        return mov_metadata_loci(c, pb, atom.size);
+    case MKTAG( 'm','a','n','u'): key = "make"; break;
+    case MKTAG( 'm','o','d','l'): key = "model"; break;
+    case MKTAG( 'p','c','s','t'): key = "podcast";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 'p','g','a','p'): key = "gapless_playback";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 'p','u','r','d'): key = "purchase_date"; break;
+    case MKTAG( 'r','t','n','g'): key = "rating";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 's','o','a','a'): key = "sort_album_artist"; break;
+    case MKTAG( 's','o','a','l'): key = "sort_album";   break;
+    case MKTAG( 's','o','a','r'): key = "sort_artist";  break;
+    case MKTAG( 's','o','c','o'): key = "sort_composer"; break;
+    case MKTAG( 's','o','n','m'): key = "sort_name";    break;
+    case MKTAG( 's','o','s','n'): key = "sort_show";    break;
+    case MKTAG( 's','t','i','k'): key = "media_type";
+        parse = mov_metadata_int8_no_padding; break;
+    case MKTAG( 't','r','k','n'): key = "track";
+        parse = mov_metadata_track_or_disc_number; break;
+    case MKTAG( 't','v','e','n'): key = "episode_id"; break;
+    case MKTAG( 't','v','e','s'): key = "episode_sort";
+        parse = mov_metadata_int8_bypass_padding; break;
+    case MKTAG( 't','v','n','n'): key = "network";   break;
+    case MKTAG( 't','v','s','h'): key = "show";      break;
+    case MKTAG( 't','v','s','n'): key = "season_number";
+        parse = mov_metadata_int8_bypass_padding; break;
+    case MKTAG(0xa9,'A','R','T'): key = "artist";    break;
+    case MKTAG(0xa9,'P','R','D'): key = "producer";  break;
+    case MKTAG(0xa9,'a','l','b'): key = "album";     break;
+    case MKTAG(0xa9,'a','u','t'): key = "artist";    break;
+    case MKTAG(0xa9,'c','h','p'): key = "chapter";   break;
+    case MKTAG(0xa9,'c','m','t'): key = "comment";   break;
+    case MKTAG(0xa9,'c','o','m'): key = "composer";  break;
+    case MKTAG(0xa9,'c','p','y'): key = "copyright"; break;
+    case MKTAG(0xa9,'d','a','y'): key = "date";      break;
+    case MKTAG(0xa9,'d','i','r'): key = "director";  break;
+    case MKTAG(0xa9,'d','i','s'): key = "disclaimer"; break;
+    case MKTAG(0xa9,'e','d','1'): key = "edit_date"; break;
+    case MKTAG(0xa9,'e','n','c'): key = "encoder";   break;
+    case MKTAG(0xa9,'f','m','t'): key = "original_format"; break;
+    case MKTAG(0xa9,'g','e','n'): key = "genre";     break;
+    case MKTAG(0xa9,'g','r','p'): key = "grouping";  break;
+    case MKTAG(0xa9,'h','s','t'): key = "host_computer"; break;
+    case MKTAG(0xa9,'i','n','f'): key = "comment";   break;
+    case MKTAG(0xa9,'l','y','r'): key = "lyrics";    break;
+    case MKTAG(0xa9,'m','a','k'): key = "make";      break;
+    case MKTAG(0xa9,'m','o','d'): key = "model";     break;
+    case MKTAG(0xa9,'n','a','m'): key = "title";     break;
+    case MKTAG(0xa9,'o','p','e'): key = "original_artist"; break;
+    case MKTAG(0xa9,'p','r','d'): key = "producer";  break;
+    case MKTAG(0xa9,'p','r','f'): key = "performers"; break;
+    case MKTAG(0xa9,'r','e','q'): key = "playback_requirements"; break;
+    case MKTAG(0xa9,'s','r','c'): key = "original_source"; break;
+    case MKTAG(0xa9,'s','t','3'): key = "subtitle";  break;
+    case MKTAG(0xa9,'s','w','r'): key = "encoder";   break;
+    case MKTAG(0xa9,'t','o','o'): key = "encoder";   break;
+    case MKTAG(0xa9,'t','r','k'): key = "track";     break;
+    case MKTAG(0xa9,'u','r','l'): key = "URL";       break;
+    case MKTAG(0xa9,'w','r','n'): key = "warning";   break;
+    case MKTAG(0xa9,'w','r','t'): key = "composer";  break;
+    case MKTAG(0xa9,'x','y','z'): key = "location";  break;
+     */
+    
     private static readonly List<(MetadataProperty property, Type type, string ffmetakey, string[]? ffmetaFallbackKeys)> KeyMapping = new()
     {
         (MetadataProperty.Album, typeof(string), "album",null),
@@ -70,9 +206,9 @@ public class FfmetadataFormat : IMetadataFormat
         // (MetadataProperty.PublishingDate, typeof(string), "album",null),
         (MetadataProperty.PurchaseDate, typeof(DateTime), "purchase_date",null),
         (MetadataProperty.RecordingDate, typeof(DateTime), "date",null),
-        (MetadataProperty.SortTitle, typeof(string), "sort_title",new []{"title-sort"}),
-        (MetadataProperty.SortAlbum, typeof(string), "sort_album",new []{"album-sort"}),
-        (MetadataProperty.SortArtist, typeof(string), "sort_artist",new []{"artist-sort"}),
+        (MetadataProperty.SortTitle, typeof(string), "sort_title",new []{"title-sort","sort-title"}),
+        (MetadataProperty.SortAlbum, typeof(string), "sort_album",new []{"album-sort","sort-album"}),
+        (MetadataProperty.SortArtist, typeof(string), "sort_artist",new []{"artist-sort", "sort-artist"}),
         // (MetadataProperty.SortAlbumArtist, typeof(string), "album",null),
         //(MetadataProperty.SortComposer, typeof(string), "album",null),
         //(MetadataProperty.Subtitle, typeof(string), "album",null),

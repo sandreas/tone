@@ -10,7 +10,9 @@ using ATL;
 using Jint;
 using Newtonsoft.Json;
 using tone.Api.JavaScript;
+using tone.Commands.Settings.Interfaces;
 using tone.Metadata.Taggers;
+using tone.Metadata.Taggers.IdTaggers;
 
 namespace tone.Services;
 
@@ -21,21 +23,26 @@ public class JavaScriptApi
     private readonly IEnumerable<string> _customTaggerParameters = Array.Empty<string>();
     private readonly HttpClient _http;
     private readonly FileSystem _fs;
+    private readonly IdTaggerComposite _idTagger;
+    private string _customId = "";
 
     public JavaScriptApi()
     {
         // fallback "dummy" constructor in case of missing prerequisites
         _jint = new Engine();
         _tagger = new TaggerComposite();
+        _idTagger = new IdTaggerComposite(_jint, null);
         _fs = new FileSystem();
         _http = new HttpClient();
         
     }
-    public JavaScriptApi(Engine jint, FileSystem fs, HttpClient http, TaggerComposite tagger, IEnumerable<string> customTaggerParameters)
+    public JavaScriptApi(Engine jint, FileSystem fs, HttpClient http, TaggerComposite tagger, IdTaggerComposite idTagger, IScriptSettings scriptSettings)
     {
         _jint = jint;
         _tagger = tagger;
-        _customTaggerParameters = customTaggerParameters;
+        _idTagger = idTagger;
+        _customTaggerParameters = scriptSettings.ScriptTaggerParameters;
+        _customId = scriptSettings.Id;
         _fs = fs;
         _http = http;
     }
@@ -43,6 +50,11 @@ public class JavaScriptApi
     public void RegisterTagger(string name)
     {
         _tagger.Taggers.Add(new ScriptTagger(_jint, name, _customTaggerParameters));
+    }
+
+    public void RegisterIdTagger(string name)
+    {
+        _idTagger.AddIdTagger(new ScriptIdTagger(_jint, name, new []{_customId}));
     }
     
     public bool Download(string url, string destination, object? data=null){

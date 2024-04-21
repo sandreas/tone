@@ -146,7 +146,8 @@ try
 
     services.AddSingleton<AudibleIdTaggerSettings>(_ => new AudibleIdTaggerSettings(){
         MetadataUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_METADATA_URL_TEMPLATE") ?? "",
-        ChaptersUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_CHAPTERS_URL_TEMPLATE") ?? ""
+        ChaptersUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_CHAPTERS_URL_TEMPLATE") ?? "",
+        
     });
     services.AddHttpClient<AudibleIdTagger>();
     
@@ -195,11 +196,12 @@ try
         var jint = sp.GetRequiredService<Engine>();
         var scriptConsole = sp.GetRequiredService<ScriptConsole>();
         var taggerComposite = sp.GetRequiredService<TaggerComposite>();
+        var idTagger = sp.GetRequiredService<IdTaggerComposite>();
         var script = "";
         var javaScriptApi = settingsProvider.Build<IScriptSettings, JavaScriptApi>(s =>
         {
             script = s.Scripts.Aggregate(script, (current, scr) => current + fs.File.ReadAllText(scr));
-            return new JavaScriptApi(jint, fs, http, taggerComposite, s.ScriptTaggerParameters);
+            return new JavaScriptApi(jint, fs, http, taggerComposite, idTagger, s);
         }) ?? new JavaScriptApi();
 
         jint.SetValue("tone", javaScriptApi);
