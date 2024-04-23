@@ -1,29 +1,17 @@
 # Release Notes
 
-## todo
-- Finish Id-Tagger + docs (for tagging via remotes with id, e.g. musicbrainz, ASIN, etc.)
-  - AudibleIdTagger
-  - 
-- Try to use "year only" on date properties: https://github.com/sandreas/tone/issues/45
-- Fix missing metadata specs #46: https://github.com/sandreas/DotnetLibAudioMetadata/blob/0feeda2978cff3d84abd0644c1ae3ccf185d63df/Sandreas.AudioMetadata/AudioMetadata/MetadataTrack.cs#L263
-
-# later
-- More ffmetadata support (https://github.com/sandreas/tone/issues/39)
-
-
 ## Fixed
 
 - tone falsely reported as malware (#41)
 - movement tag is not removed (#44)
 
-
-
 ## Changed
-- Upgrated `atldotnet` library
-- Upgrated `Jint` library (https://github.com/sandreas/tone/issues/40)
+- Upgrated `atldotnet` library (#58, #59)
+- Upgrated `Jint` library (#40)
+- Improved `ffmetadata` support (#39)
 
 ## Added
-
+- Prepared code making it possible to use `--id` for simpler id based taggers (e.g. musicbrainz id)
 - `--export` option for `dump` command - allows you to export metadata in file (can be used together with `--format`, defaults to `json`)
 
 

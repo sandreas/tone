@@ -24,6 +24,7 @@ public class FfmetadataFormat : IMetadataFormat
 
     private const string FfmetadataHeader = ";FFMETADATA";
     private static readonly char[] CharsToEscape = { '=', ';', '#', '\\', '\n' };
+    /*
     // TBPM=0,
     // TMED=CD,
     // language=eng,
@@ -35,7 +36,7 @@ public class FfmetadataFormat : IMetadataFormat
     // lyrics-XXX (where XXX is either XXX or language code, e.g. -eng)
     // disc
     //
-    
+    */
     /*
     const AVMetadataConv ff_id3v2_34_metadata_conv[] = {
 
@@ -52,7 +53,8 @@ public class FfmetadataFormat : IMetadataFormat
     { "USLT", "lyrics"       },
     { 0 }
 };
-
+*/
+/*
 const AVMetadataConv ff_id3v2_4_metadata_conv[] = {
     { "TCMP", "compilation"   },
     { "TDRC", "date"          },
@@ -64,7 +66,8 @@ const AVMetadataConv ff_id3v2_4_metadata_conv[] = {
     { "TIT1", "grouping"      },
     { 0 }
 };
-
+*/
+/*
 static const AVMetadataConv id3v2_2_metadata_conv[] = {
 
     { "TCP", "compilation"  },
@@ -183,7 +186,7 @@ switch (atom.type) {
         // (MetadataProperty.Conductor, typeof(string), "",null),
         (MetadataProperty.Copyright, typeof(string), "copyright",null),
         (MetadataProperty.Description, typeof(string), "description",null),
-        // (MetadataProperty.DiscNumber, typeof(string), "album",null), // disc = 1/1
+        // (MetadataProperty.DiscNumber, typeof(int), "disc",null), // disc = 1/1
         // (MetadataProperty.DiscTotal, typeof(string), "album",null),  // disc = 1/1
         (MetadataProperty.EncodedBy, typeof(string), "encoded_by",null),
         // (MetadataProperty.EncoderSettings, typeof(string), "album",null),
@@ -273,6 +276,13 @@ switch (atom.type) {
             orderedKeys.Add(ffmetakey);
             foreach (var propertyKey in orderedKeys.Where(properties.ContainsKey))
             {
+                
+                /*
+                if (propertyKey == "disk")
+                {
+                    
+                }
+                */
                 metadata.SetMetadataPropertyValue(property, properties[propertyKey], type);
             }
         }
