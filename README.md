@@ -84,19 +84,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -113,10 +113,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.1.7-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-win-x64.zip
+iwr -outf tone-0.1.8-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.1.7-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.1.8-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -130,7 +130,7 @@ start .
 Since `tone` is a monolith, it is probably not necessary to run it via `docker`, but since it is convenient to have a possibility to copy `tone` in your own image, I published an official variant on dockerhub. Since it is a *multiarch*  image, you can use it on `arm6`, `arm7`, `aarch64`, and `x64` images.
 
 ```bash
-docker pull sandreas/tone:v0.1.7
+docker pull sandreas/tone:v0.1.8
 ```
 
 
@@ -138,7 +138,7 @@ Or to use `tone` in your custom `Dockerfile`:
 
 ```dockerfile
 # Dockerfile
-FROM sandreas/tone:v0.1.7 as tone
+FROM sandreas/tone:v0.1.8 as tone
 # ...
 COPY --from=tone /usr/local/bin/tone /usr/local/bin/
 ```
@@ -370,10 +370,13 @@ OPTIONS:
 The `tag` command can be used to modify audio metadata. Besides using predefined parameters like `--meta-album` it is also possible to 
 add or modify custom fields via `--meta-additional-field`, e.g. `--meta-additional-field "©st3=testing"` as well as pictures or chapters.
 
+> IMPORTANT: `tone` is meant to be used on local block storage and may cause unwanted side effects when trying to modify tags on network or
+> other remote storage. Please ensure you have a backup or copy files locally to change metadata. See #52 for details.
+
 #### The `--taggers` option
 The `--taggers` option allows you to specify a custom set or a different order of internal taggers (NOT input formats), which are gonna be applied. In most cases
 changing the order of the *taggers* does not make a huge difference, but fully understanding this option 
-requires a bit of technical knowledge. Lets go through a use case to see what you can do with it.
+requires a bit of technical knowledge. Let's go through a use case to see what you can do with it.
 
 > Note: Internal taggers are applied in a sane order by default and not meant for beginners. Most of the time you don't need to change the order and this usually is for very specific experts use cases. So if you don't fully understand this option, just leave it as is.
 
@@ -407,18 +410,81 @@ remaining taggers to the list using a `*`:
 tone tag harry-potter-1.m4b --taggers="remove,*" --meta-movement-name="Harry Potter" --meta-remove-property="sortalbum" --meta-remove-property="sorttitle"
 ```
 
-The following taggers are available at the moment (names can be applied case insensitive):
+The following taggers are available at the moment (names can be applied case-insensitive):
 
 - `ToneJson` - sets metadata values from `tone.json` file
 - `Metadata` - sets metadata values from input parameters `--meta-...`
+- `Id` - sets metadata values from `--id` (e.g. for fetching from web sources via custom js taggers)
 - `Cover` - sets cover from cover files
 - `PathPattern` - sets metadata values from path pattern
+- `Ffmetadata` - sets metadata values from `ffmetadata.txt` file
 - `ChptFmtNative` - sets chapters from `chapters.txt` file
-- `Equate` - equates 2 or more metadata fields from `--meta-equate`
+- `Equate` - equates 2 or more metadata fields from `--meta-equate` (see below)
 - `M4BFillUp` - auto fill `album`, `title`, `iTunesMediaType` from existing fields if possible
 - `PrependMovementToDescription` - prepends `movement` to all description fields, if set
 - `Remove` - removes metadata values from input parameter `--meta-remove-property` and `--meta-remove-additional-field`
 - `ScriptTagger` - your personal custom JavaScript taggers (see below)
+
+***Equate***
+The equate tagger can be used to set a field by referencing another, e.g. when you would like to set 
+the `AlbumArtist` equal to the `Artist`, you could use `--meta-equate "artist,albumartiest"`.
+
+The `--meta-equate` works like this:
+
+- Fields to equate are separated by `,`, at least 2 fields are required, but more are allowed
+- The first field contains the value, the latter fields will be overwritten by this value
+- The `--meta-equate` parameter can be used multiple times to equate multiple fields, e.g. `--meta-equate=fieldA,fieldB --meta-equate=fieldC,fieldD,fieldE`
+- The provided field names are treated case-insensitive, see reference below
+
+
+<details>
+  <summary>Field reference</summary>
+```
+    Album
+    AlbumArtist
+    Artist
+    Bpm
+    ChaptersTableDescription
+    Composer
+    Comment
+    Conductor
+    Copyright
+    Description
+    DiscNumber
+    DiscTotal
+    EncodedBy
+    EncoderSettings
+    EncodingTool
+    Genre
+    Group
+    ItunesCompilation
+    ItunesMediaType
+    ItunesPlayGap
+    LongDescription
+    Lyrics
+    Part
+    Movement
+    MovementName
+    Narrator
+    OriginalAlbum
+    OriginalArtist
+    Popularity
+    Publisher
+    PublishingDate
+    PurchaseDate
+    RecordingDate
+    SortTitle
+    SortAlbum
+    SortArtist
+    SortAlbumArtist
+    SortComposer
+    Subtitle
+    Title
+    TrackNumber
+    TrackTotal
+```
+</details>
+
 
 #### Options reference
 ```bash
@@ -612,25 +678,79 @@ To get an overview of fields, that can be accessed or modified via the `metadata
 | `tone.CreatePicture(string path):PictureInfo`                                                                                             | Creates a `PictureInfo` value from a path (refer to `Download`)                                                                                                            | for `metadata.EmbeddedPictures`|   
 | `tone.CreateChapter(string title, number startMs, number lengthMs [, PictureInfo picture, string subtitle, string uniqueID]):ChapterInfo` | Creates a `ChapterInfo`                                                                                                                                                    | for `metadata.Chapters`|  
 
+# Development
+
+
+## Setup environment
+
+To build `tone`, you need the `dotnet` SDK with at least version `6.0`. After this you check out the code via git and that's it.
+
+```bash
+# check dotnet version > 6.0
+dotnet --version
+
+# clone git repository
+git clone https://github.com/sandreas/tone.git
+
+# change into main solution
+cd tone
+
+# restore nuget packages
+dotnet restore
+
+# build solution
+dotnet build
+```
+
+## First test and using an IDE 
+
+Run `tone` without params to test your environment
+```bash
+# change to project tone/tone
+cd tone 
+
+# run the project
+dotnet run
+
+# output should be something like:
+# USAGE:
+#     tone [OPTIONS] <COMMAND>
+# ...
+```
+
+If this works, you can now open the `tone.sln` file in the main directory with your favorite IDE (e.g. Visual Studio, JetBrains Rider or Visual Studio Code)
+
+## Publish a binary
+You can now also publish `tone` as single binary. Before you build an executable binary, you have to choose a valid runtime identifier (RID) 
+for the operating system and the architecture you would like to build for. 
+Valid RID values are for example win-x64, linux-x64, osx-x64 and so on 
+
+Refer to the official [RID catalog] and please ensure, your RID is supported by the according `dotnet` version (older versions may not support modern runtime ids)
+
+The most common variants are probably these:
+
+```bash
+# windows (x64)
+dotnet publish tone/tone.csproj --runtime "win-x64" --framework net6.0 -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "dist/tone"
+
+# macOS (x64)
+dotnet publish tone/tone.csproj --runtime "osx-x64" --framework net6.0 -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "dist/tone"
+
+# macOS (arm64)
+dotnet publish tone/tone.csproj --runtime "osx-arm64" --framework net6.0 -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "dist/tone"
+
+# linux (x64)
+dotnet publish tone/tone.csproj --runtime "linux-x64" --framework net6.0 -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "dist/tone"
+```
+
 
 # known issues
 
 The following issues are known, part of an external library and already reported:
 
-- flag options (e.g. `--dry-run`) cannot be followed by arguments (e.g. `tone tag --meta-album="album" --dry-run input.mp3`) ([spectre.console 825])
-  - workaround: append flag options at the end (`tone tag --meta-album="album" input.mp3 --dry-run`)
 - `--meta-*` options cannot be set to empty values ([spectre.console 842])
   - workaround: use `--meta-remove-property` instead
-- Value starting with `-` is mistreated as extra option (e.g. `--meta-description "-5 degrees"`)  ([spectre.console 890])
-  - workaround: use `--meta-description="-5 degrees"` instead (with `=`)
-- Invalid handling of parameter values starting with double quotes ("), e.g. `--meta-description'"quoted" value'` ([spectre.console 891])
-- Invalid handling of `--meta-recording-date="2022-07-05"` ([atldotnet 155])
 
-
-[spectre.console 825]: https://github.com/spectreconsole/spectre.console/issues/825
-[spectre.console 842]: https://github.com/spectreconsole/spectre.console/issues/842
-[spectre.console 890]: https://github.com/spectreconsole/spectre.console/issues/890
-[spectre.console 891]: https://github.com/spectreconsole/spectre.console/issues/891
 [atldotnet 155]: https://github.com/Zeugma440/atldotnet/issues/155
 
 [releases]: https://github.com/sandreas/tone/releases
@@ -639,3 +759,4 @@ The following issues are known, part of an external library and already reported
 [grok.net]: https://github.com/Marusyk/grok.net
 [CliWrap]: https://github.com/Tyrrrz/CliWrap
 [jint]: https://github.com/sebastienros/jint
+[RID catalog]: https://learn.microsoft.com/en-us/dotnet/core/rid-catalog
