@@ -16,6 +16,17 @@ public class SpectreConsoleService : IAnsiConsole
         {
             Out = new AnsiConsoleOutput(Console.Error)
         });
+        
+        // fix unwanted wrapping if output is redirected
+        if (Console.IsOutputRedirected)
+        {
+            Output.Profile.Width = int.MaxValue;
+        }
+
+        if (Console.IsErrorRedirected)
+        {
+            Error.Profile.Width = int.MaxValue;
+        }
     }
 
     public Profile Profile => Output.Profile;
