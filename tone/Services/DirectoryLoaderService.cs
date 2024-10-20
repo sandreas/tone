@@ -74,7 +74,7 @@ public class DirectoryLoaderService
         {
             if (!fileWalker.IsDir(inputPath))
             {
-                yield return fileWalker.FileSystem.FileInfo.FromFileName(inputPath);
+                yield return fileWalker.FileSystem.FileInfo.New(inputPath);
                 continue;
             }
             var files = FindFilesByExtension(inputPath, includeExtensionList, fileWalker);
@@ -119,7 +119,7 @@ public class DirectoryLoaderService
                 {
                     noPatternPackages.Add(new AudioBookPackage()
                     {
-                        BaseDirectory = FileSystem.DirectoryInfo.FromDirectoryName(basePath),
+                        BaseDirectory = FileSystem.DirectoryInfo.New(basePath),
                         Files = new List<IFileInfo>()
                         {
                             file
