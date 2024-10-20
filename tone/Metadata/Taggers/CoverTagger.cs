@@ -32,7 +32,7 @@ public class CoverTagger: INamedTagger
     
     public CoverTagger(IFileSystem fs, ICoverTaggerSettings settings)    {
         _fs = fs;
-        _covers = settings.Covers.Select(f => fs.FileInfo.FromFileName(f)).ToList();
+        _covers = settings.Covers.Select(f => fs.FileInfo.New(f)).ToList();
         _autoload = settings.AutoImportCovers;
     }
     public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
@@ -48,7 +48,7 @@ public class CoverTagger: INamedTagger
                 // 1 - MyTitle.cover[0].jpg
                 _covers.AddRange( _fs.Directory
                     .GetFiles(dir.FullName)
-                    .Select(p => _fs.FileInfo.FromFileName(p))
+                    .Select(p => _fs.FileInfo.New(p))
                     .Where(HasCoverExtension));
             }
         }
@@ -68,7 +68,7 @@ public class CoverTagger: INamedTagger
         // remove existing covers before import
         metadata.EmbeddedPictures.Clear();
         
-        var prefixFile = metadata.Path == null ? null : _fs.FileInfo.FromFileName(metadata.Path);
+        var prefixFile = metadata.Path == null ? null : _fs.FileInfo.New(metadata.Path);
         var fileNamePrefix = prefixFile == null ? "" : prefixFile.Name.TrimSuffix(prefixFile.Extension.TrimStart('.'));
         var prefixedCoverGroups = validCovers.ToLookup(c => c.Name.StartsWith(fileNamePrefix));
         var prefixedCovers = prefixedCoverGroups[true].ToImmutableArray();
@@ -97,6 +97,12 @@ public class CoverTagger: INamedTagger
         ICollection<PictureInfo.PIC_TYPE> embeddedCoverTypes)
     {
         var chapterMaxIndex = metadata.Chapters.Count - 1;
+        var nextPicTypes = new List<PictureInfo.PIC_TYPE>()
+        {
+            PictureInfo.PIC_TYPE.Front,
+            PictureInfo.PIC_TYPE.Back,
+            PictureInfo.PIC_TYPE.CD
+        };
         foreach (var cover in covers)
         {
             if (IsChapterCover(cover))
@@ -110,6 +116,12 @@ public class CoverTagger: INamedTagger
             }
 
             var picInfo = await LoadPictureInfoAsync(cover);
+            if (picInfo.PicType == PictureInfo.PIC_TYPE.Generic && nextPicTypes.Count > 0)
+            {
+                picInfo.PicType = nextPicTypes.First();
+                nextPicTypes.RemoveAt(0);
+            }
+            // picInfo.PicType = PictureInfo.PIC_TYPE.Front
             if (embeddedCoverTypes.Contains(picInfo.PicType) || metadata.EmbeddedPictures.Any(p => p.PicType == picInfo.PicType))
             {
                 continue;
