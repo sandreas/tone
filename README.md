@@ -84,19 +84,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.1.4/tone-0.1.4-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.1.4/tone-0.1.4-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.1.4/tone-0.1.4-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.1.4/tone-0.1.4-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.1.4/tone-0.1.4-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -113,10 +113,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.1.4-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.1.4/tone-0.1.4-win-x64.zip
+iwr -outf tone-0.1.7-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.1.4-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.1.7-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -130,7 +130,7 @@ start .
 Since `tone` is a monolith, it is probably not necessary to run it via `docker`, but since it is convenient to have a possibility to copy `tone` in your own image, I published an official variant on dockerhub. Since it is a *multiarch*  image, you can use it on `arm6`, `arm7`, `aarch64`, and `x64` images.
 
 ```bash
-docker pull sandreas/tone:v0.1.4
+docker pull sandreas/tone:v0.1.7
 ```
 
 
@@ -138,7 +138,7 @@ Or to use `tone` in your custom `Dockerfile`:
 
 ```dockerfile
 # Dockerfile
-FROM sandreas/tone:v0.1.4 as tone
+FROM sandreas/tone:v0.1.7 as tone
 # ...
 COPY --from=tone /usr/local/bin/tone /usr/local/bin/
 ```
