@@ -2,7 +2,10 @@
 
 ## Fixed
 
-- fix #68 - json output was broken when redirected
+- #68 - json output was broken when redirected
+- #66 - added instructions for developers 
+- #65 - copy from one field to another (more detailed documentation)
+- #55 - import cover as type `front` instead of `generic`
 
 ## Changed
 - Upgraded `atldotnet` library
