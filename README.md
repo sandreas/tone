@@ -46,7 +46,7 @@ tone dump "input.mp3" --format json --query "$.meta.album"
 tone dump "input.mp3" --format json --query "$.audio"
 ```
 
-*** Redirecting output / executing subprocess ***
+***Redirecting output / executing subprocess***
 
 If you plan to redirect the output into a file or run `tone` in a subprocess, there was a breaking change in version `0.1.8`,
 that will prevent invalid `json` output redirected into a file, e.g.:
