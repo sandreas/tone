@@ -65,6 +65,10 @@ This environment variable can also be used for subprocess execution.
 
 ### modify tags
 
+**IMPORTANT:** Because metadata is modified in place without copying the
+file, changes are only safe on local block storage (like your hard disk, sd card, etc.). Modifying files on
+remote storages (like network shares) may break your files. Please make sure you have a backup.
+
 ```bash
 # show help
 tone tag --help
