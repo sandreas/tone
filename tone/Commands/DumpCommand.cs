@@ -37,7 +37,28 @@ public class DumpCommand : CancellableAsyncCommand<DumpCommandSettings>
         _logger = logger;
         _fs = fs;
     }
+    private async Task<ReturnCode> SpectreConsoleDelegate(IFileSystem fs, string outputFile, IEnumerable<string> lines,  CancellationToken ct) 
+    {
+        foreach (var line in lines)
+        {
+            _console.WriteLine(line);
+        }
+        return await Task.FromResult(ReturnCode.Success);
+    }
     
+    private async Task<ReturnCode> WriteFileDelegate(IFileSystem fs, string outputFile, IEnumerable<string> lines,  CancellationToken ct) 
+    {
+        try
+        {
+            await fs.File.WriteAllLinesAsync(outputFile, lines, ct);
+        }
+        catch (Exception e)
+        {
+            return ReturnCode.GeneralError;
+        }
+
+        return ReturnCode.Success;
+    }
     public override async Task<int> ExecuteAsync(CommandContext context, DumpCommandSettings settings, CancellationToken cancellationToken)
     {
         var audioExtensions = DirectoryLoaderService.ComposeAudioExtensions(settings.IncludeExtensions);
@@ -47,14 +68,7 @@ public class DumpCommand : CancellableAsyncCommand<DumpCommandSettings>
             .ToArray();
         var returnCode = ReturnCode.Success;
         
-        var outputDelegate = async Task<ReturnCode> (IFileSystem fs, string outputFile, IEnumerable<string> lines,  CancellationToken ct) =>
-        {
-            foreach (var line in lines)
-            {
-                _console.WriteLine(line);
-            }
-            return await Task.FromResult(ReturnCode.Success);
-        };
+        var outputDelegate = SpectreConsoleDelegate;
         var outputSuffix = "";
 
         
@@ -66,19 +80,8 @@ public class DumpCommand : CancellableAsyncCommand<DumpCommandSettings>
             }
             
             // outputDelegate = async  lines => ;
-            outputDelegate = async Task<ReturnCode> (fs, outputFile, lines,  ct) =>
-            {
-                try
-                {
-                    await fs.File.WriteAllLinesAsync(outputFile, lines, ct);
-                }
-                catch (Exception e)
-                {
-                    return ReturnCode.GeneralError;
-                }
-
-                return ReturnCode.Success;
-            };
+            outputDelegate = WriteFileDelegate;
+            
             outputSuffix = settings.Format switch
             {
                 SerializerFormat.Json => ToneJsonTagger.DefaultFileSuffix,

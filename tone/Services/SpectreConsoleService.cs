@@ -18,16 +18,30 @@ public class SpectreConsoleService : IAnsiConsole
         });
         
         // fix unwanted wrapping if output is redirected
-        if (Console.IsOutputRedirected)
+        if (ShouldAdjustOutputWidth())
         {
             Output.Profile.Width = int.MaxValue;
         }
 
-        if (Console.IsErrorRedirected)
+        if (ShouldAdjustErrorWidth())
         {
             Error.Profile.Width = int.MaxValue;
         }
     }
+
+    private static bool ShouldAdjustOutputWidth() => Environment.GetEnvironmentVariable("TONE_OUTPUT_REDIRECT") switch
+    {
+        "0" => false,
+        "1" => true,
+        _ => Console.IsOutputRedirected
+    };
+    
+    private static bool ShouldAdjustErrorWidth() => Environment.GetEnvironmentVariable("TONE_OUTPUT_REDIRECT") switch
+    {
+        "0" => false,
+        "1" => true,
+        _ => Console.IsErrorRedirected
+    };
 
     public Profile Profile => Output.Profile;
     public IAnsiConsoleCursor Cursor => Output.Cursor;
