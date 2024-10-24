@@ -18,14 +18,6 @@ The main purpose of `tone` is to tag `m4b` audio books for myself. It is planned
   - filename to tags via `--path-pattern` (see below)
   - custom javascript taggers via `--script` and `--script-tagger-parameter`
 
-
-### Future plans
-
-- [ ] `split` large audio files into multiple smaller files (e.g. by chapters) using `ffmpeg`, `fdkaac` and [CliWrap]
-- [ ] `merge` multiple smaller audio files into large ones auto generating chapters using silence detection with `ffmpeg`, `fdkaac` and [CliWrap]
-- [ ] write unit tests and more detailed documentation
-
-
 ## Support me via GitHub sponsors
 
 If you are using any of my projects and find them helpful, please consider [donating to support me](https://github.com/sponsors/sandreas). I plan to use the money to support other open source projects or charitable purposes. Thank you!
@@ -52,8 +44,24 @@ tone dump "input.mp3" --format json --query "$.meta.album"
 
 # show audio stream information via JSONPath query
 tone dump "input.mp3" --format json --query "$.audio"
-
 ```
+
+*** Redirecting output / executing subprocess ***
+
+If you plan to redirect the output into a file or run `tone` in a subprocess, there was a breaking change in version `0.1.8`,
+that will prevent invalid `json` output redirected into a file, e.g.:
+
+```bash
+tone dump --format json audio.mp3 > audio-metadata.json
+```
+
+To force behaviour of version `0.1.7` (not recommended), you can use the environment variable `TONE_OUTPUT_REDIRECT=0`, e.g.: 
+
+```bash
+TONE_OUTPUT_REDIRECT=0 tone dump --format json audio.mp3 > audio-metadata.json
+```
+
+This environment variable can also be used for subprocess execution.
 
 ### modify tags
 
@@ -84,19 +92,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -113,10 +121,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.1.7-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.1.7/tone-0.1.7-win-x64.zip
+iwr -outf tone-0.1.8-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.1.8/tone-0.1.8-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.1.7-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.1.8-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -130,7 +138,7 @@ start .
 Since `tone` is a monolith, it is probably not necessary to run it via `docker`, but since it is convenient to have a possibility to copy `tone` in your own image, I published an official variant on dockerhub. Since it is a *multiarch*  image, you can use it on `arm6`, `arm7`, `aarch64`, and `x64` images.
 
 ```bash
-docker pull sandreas/tone:v0.1.7
+docker pull sandreas/tone:v0.1.8
 ```
 
 
@@ -138,7 +146,7 @@ Or to use `tone` in your custom `Dockerfile`:
 
 ```dockerfile
 # Dockerfile
-FROM sandreas/tone:v0.1.7 as tone
+FROM sandreas/tone:v0.1.8 as tone
 # ...
 COPY --from=tone /usr/local/bin/tone /usr/local/bin/
 ```
