@@ -47,7 +47,7 @@
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="Sandreas.AudioMetadata" Version="0.1.8" />
+      <PackageReference Include="Sandreas.AudioMetadata" Version="0.2.1" />
       <PackageReference Include="Sandreas.SpectreConsoleHelpers" Version="0.0.2" />
       <PackageReference Include="Serilog" Version="4.0.2" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
@@ -63,6 +63,7 @@
       <Folder Include="Common\Extensions\IEnumerable" />
       <Folder Include="var\data\output" />
       <Folder Include="var\issues\15" />
+      <Folder Include="var\issues\55\input\" />
       <Folder Include="var\issues\59\" />
     </ItemGroup>
 

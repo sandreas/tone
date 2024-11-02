@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
+using ATL;
 using GrokNet;
 using Jint;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +38,13 @@ using Log = Serilog.Log;
 try
 {
     var debugMode = args.Contains("--debug");
+    
+    // atldotnet basic settings to change the common behaviour
+    Settings.UseFileNameWhenNoTitle = false; // don't fallback to filename when no title is set
+    // Settings.NullAbsentValues = true; // use null instead of default when tags are considered empty
+    Settings.OutputStacktracesToConsole = false; // don't output something to console
+    // Settings.ID3v2_tagSubVersion = 3; // use id3v2.4 by default (4 for 2.4)
+    // Settings.MP3_parseExactDuration = true; // more exact duration, takes longer
     
     var settingsProvider = new CustomCommandSettingsProvider();
 
@@ -223,7 +231,7 @@ try
         config.UseStrictParsing();
         config.CaseSensitivity(CaseSensitivity.None);
         config.SetApplicationName("tone");
-        config.SetApplicationVersion("0.1.8");
+        config.SetApplicationVersion("0.1.9");
         config.ValidateExamples();
         config.AddCommand<DumpCommand>("dump")
             .WithDescription("dump metadata for files and directories (directories are traversed recursively)")

@@ -16,7 +16,19 @@ public class SpectreConsoleService : IAnsiConsole
         {
             Out = new AnsiConsoleOutput(Console.Error)
         });
-        
+    }
+
+    public void WriteNoBreakLine(string text)
+    {
+        var oldWidth = Output.Profile.Width;
+        Output.Profile.Width = text.Length;
+        Output.WriteLine(text, Style.Plain);
+        Output.Profile.Width = oldWidth;
+    } 
+    
+    /*
+    public void AdjustOutputWidth()
+    {
         // fix unwanted wrapping if output is redirected
         if (ShouldAdjustOutputWidth())
         {
@@ -28,7 +40,7 @@ public class SpectreConsoleService : IAnsiConsole
             Error.Profile.Width = int.MaxValue;
         }
     }
-
+    
     private static bool ShouldAdjustOutputWidth() => Environment.GetEnvironmentVariable("TONE_OUTPUT_REDIRECT") switch
     {
         "0" => false,
@@ -42,6 +54,7 @@ public class SpectreConsoleService : IAnsiConsole
         "1" => true,
         _ => Console.IsErrorRedirected
     };
+    */
 
     public Profile Profile => Output.Profile;
     public IAnsiConsoleCursor Cursor => Output.Cursor;

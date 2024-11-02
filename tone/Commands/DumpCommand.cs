@@ -46,13 +46,22 @@ public class DumpCommand : CancellableAsyncCommand<DumpCommandSettings>
         return await Task.FromResult(ReturnCode.Success);
     }
     
+    private async Task<ReturnCode> NoBreakDelegate(IFileSystem fs, string outputFile, IEnumerable<string> lines,  CancellationToken ct) 
+    {
+        foreach (var line in lines)
+        {
+            _console.WriteNoBreakLine(line);
+        }
+        return await Task.FromResult(ReturnCode.Success);
+    }
+    
     private async Task<ReturnCode> WriteFileDelegate(IFileSystem fs, string outputFile, IEnumerable<string> lines,  CancellationToken ct) 
     {
         try
         {
             await fs.File.WriteAllLinesAsync(outputFile, lines, ct);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return ReturnCode.GeneralError;
         }
@@ -89,6 +98,11 @@ public class DumpCommand : CancellableAsyncCommand<DumpCommandSettings>
                 SerializerFormat.Ffmetadata => FfmetadataTagger.DefaultFileSuffix,
                 _ => NoSpecSuffix
             };
+        }
+        else if(settings.Format != SerializerFormat.Default && Console.IsOutputRedirected)
+        {
+            // Output width needs to be ajusted when output is redirected and format is json
+            outputDelegate = NoBreakDelegate;
         }
         
         foreach (var file in inputFiles)
