@@ -37,7 +37,9 @@ public class CoverTagger: INamedTagger
     }
     public async Task<Status<string>> UpdateAsync(IMetadata metadata, IMetadata? originalMetadata = null)
     {
-        if(_autoload && _covers.Count == 0 && metadata.BasePath!=null)
+        // covers need a local copy to prevent re-use of covers when batch taggingy
+        var covers = _covers.ToList();
+        if(_autoload && covers.Count == 0 && metadata.BasePath!=null)
         {
             var dir = _fs.GetContainingDirectory(metadata.BasePath);
             if(dir.Exists){
@@ -46,7 +48,7 @@ public class CoverTagger: INamedTagger
                 // 1 - MyTitle.cover.jpg
                 // 1 - MyTitle.cover.png
                 // 1 - MyTitle.cover[0].jpg
-                _covers.AddRange( _fs.Directory
+                covers.AddRange( _fs.Directory
                     .GetFiles(dir.FullName)
                     .Select(p => _fs.FileInfo.New(p))
                     .Where(HasCoverExtension));
@@ -54,7 +56,7 @@ public class CoverTagger: INamedTagger
         }
         
         
-        var potentialCovers = _covers.Where(HasCoverExtension).ToImmutableArray();
+        var potentialCovers = covers.Where(HasCoverExtension).ToImmutableArray();
 
         var validGroups = potentialCovers.ToLookup(IsValidCover);
         var validCovers = validGroups[true].ToImmutableArray();

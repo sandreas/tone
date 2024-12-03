@@ -24,7 +24,7 @@ public class ChptFmtNativeMetadataFormat : IMetadataFormat
 
     public async Task<Result<IMetadata, string>> ReadAsync(Stream input)
     {
-        var track = new MetadataTrack();
+        var track = new MetadataTrackHolder();
 
         using var sr = new StreamReader(input);
         var lines = ReadLines(sr).ToArray();

@@ -35,21 +35,21 @@
 
 
     <ItemGroup>
-      <PackageReference Include="CliWrap" Version="3.6.6" />
+      <PackageReference Include="CliWrap" Version="3.6.7" />
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
       <PackageReference Include="grok.net" Version="2.0.0" />
-      <PackageReference Include="HtmlAgilityPack" Version="1.11.67" />
-      <PackageReference Include="Jint" Version="4.0.3" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-      <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
-      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+      <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
+      <PackageReference Include="Jint" Version="4.1.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="Sandreas.AudioMetadata" Version="0.2.1" />
+      <PackageReference Include="Sandreas.AudioMetadata" Version="0.2.3" />
       <PackageReference Include="Sandreas.SpectreConsoleHelpers" Version="0.0.2" />
-      <PackageReference Include="Serilog" Version="4.0.2" />
+      <PackageReference Include="Serilog" Version="4.1.0" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
       <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
       <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
@@ -63,6 +63,8 @@
       <Folder Include="Common\Extensions\IEnumerable" />
       <Folder Include="var\data\output" />
       <Folder Include="var\issues\15" />
+      <Folder Include="var\issues\49\data\Harry Potter\" />
+      <Folder Include="var\issues\51\input\" />
       <Folder Include="var\issues\55\input\" />
       <Folder Include="var\issues\59\" />
     </ItemGroup>

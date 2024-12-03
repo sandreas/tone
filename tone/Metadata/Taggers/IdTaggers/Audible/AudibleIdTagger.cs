@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ATL;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using OperationResult;
@@ -98,7 +97,7 @@ public class AudibleIdTagger : IIdTagger
 
     private async Task<IMetadata> TransferMetaAsync(Product? product, ChapterInfo? chapters)
     {
-        IMetadata newMeta = new MetadataTrack();
+        IMetadata newMeta = new MetadataTrackHolder();
 
         if (product != null)
         {
@@ -118,7 +117,7 @@ public class AudibleIdTagger : IIdTagger
             // newMeta.EncodedBy = "";
             // newMeta.EncoderSettings = "";
             // newMeta.EncodingTool = "";
-            var genre = product.CategoryLadders?.FirstOrDefault()?.Ladder.FirstOrDefault()?.Name;
+            var genre = product.CategoryLadders.FirstOrDefault()?.Ladder.FirstOrDefault()?.Name;
             if (genre == null)
             {
                 newMeta.Genre = genre;
@@ -168,7 +167,7 @@ public class AudibleIdTagger : IIdTagger
 
         TransferChapters(newMeta, chapters);
 
-        return newMeta;
+        return await Task.FromResult(newMeta);
     }
 
     private void TransferChapters(IMetadata newMeta, ChapterInfo? chapters)
@@ -225,6 +224,7 @@ public class AudibleIdTagger : IIdTagger
         return chapterInfos;
     }
 
+    /*
     private async Task<PictureInfo?> LoadCoverAsync(string? imageUrl)
     {
         try
@@ -245,6 +245,7 @@ public class AudibleIdTagger : IIdTagger
         }
         return null;
     }
+    */
     
     private string StripTags(string input)
     {

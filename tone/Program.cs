@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Net.Http;
@@ -47,7 +48,6 @@ try
     // Settings.MP3_parseExactDuration = true; // more exact duration, takes longer
     
     var settingsProvider = new CustomCommandSettingsProvider();
-
     var services = new ServiceCollection();
     services.AddSingleton<ILogger>(_ =>
     {
@@ -231,7 +231,7 @@ try
         config.UseStrictParsing();
         config.CaseSensitivity(CaseSensitivity.None);
         config.SetApplicationName("tone");
-        config.SetApplicationVersion("0.1.9");
+        config.SetApplicationVersion("0.2.0");
         config.ValidateExamples();
         config.AddCommand<DumpCommand>("dump")
             .WithDescription("dump metadata for files and directories (directories are traversed recursively)")

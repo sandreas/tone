@@ -34,7 +34,7 @@ public abstract class AbstractFilesystemTagger : ITagger
             return Ok();
         }
         
-        var audioFile = _fs?.FileInfo.FromFileName(metadata.Path);
+        var audioFile = metadata.Path == null ? null : _fs.FileInfo.New(metadata.Path);
         if (audioFile == null)
         {
             return Error($"Could not create fileInfo for file {metadata.Path}");
@@ -46,26 +46,23 @@ public abstract class AbstractFilesystemTagger : ITagger
         if (_forcedImportFilename == "")
         {
             preferredFileName = BuildPreferredFileName(audioFile);
-            metadataFiles = _fs?.Directory.EnumerateFiles(audioFile.DirectoryName)
-                .Select(f => _fs.FileInfo.FromFileName(f))
-                .Where(FilterCallback).ToArray() ?? Empty<IFileInfo>();
+            metadataFiles = audioFile.DirectoryName ==  null ? Empty<IFileInfo>() : _fs.Directory.EnumerateFiles(audioFile.DirectoryName)
+                .Select(f => _fs.FileInfo.New(f))
+                .Where(FilterCallback).ToArray();
         }
         else
         {
             preferredFileName = null;
-            var forcedFile = _fs?.FileInfo.FromFileName(_forcedImportFilename);
+            var forcedFile = _fs.FileInfo.New(_forcedImportFilename);
             metadataFiles = Empty<IFileInfo>();
-            
-            if (forcedFile != null)
+
+            if (!forcedFile.Exists)
             {
-                if (!forcedFile.Exists)
-                {
-                    forcedFile = _fs?.FileInfo.FromFileName(_fs.Path.Combine(audioFile.DirectoryName ?? "", _forcedImportFilename));
-                }
-                if (forcedFile is { Exists: true })
-                {
-                    metadataFiles = new[] { forcedFile };
-                }
+                forcedFile = _fs.FileInfo.New(_fs.Path.Combine(audioFile.DirectoryName ?? "", _forcedImportFilename));
+            }
+            if (forcedFile is { Exists: true })
+            {
+                metadataFiles = new[] { forcedFile };
             }
         }
         
@@ -75,11 +72,7 @@ public abstract class AbstractFilesystemTagger : ITagger
             preferredFile = metadataFiles.FirstOrDefault(f => f.Name == preferredFileName) ?? preferredFile;
         }
         
-        await using var stream = _fs?.File.OpenRead(preferredFile.FullName);
-        if (stream == null)
-        {
-            return Error($"Could not open file ${preferredFile.FullName}");
-        }
+        await using var stream = _fs.File.OpenRead(preferredFile.FullName);
 
         var parsedMeta = await _parser.ReadAsync(stream);
         return !parsedMeta ? Error(parsedMeta.Error) : TransferPropertiesCallback(parsedMeta.Value, metadata);

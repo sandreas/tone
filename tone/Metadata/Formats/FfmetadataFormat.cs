@@ -224,7 +224,7 @@ switch (atom.type) {
     };
     public async Task<Result<IMetadata, string>> ReadAsync(Stream input)
     {
-        var metadata = new MetadataTrack();
+        var metadata = new MetadataTrackHolder();
         using var sr = new StreamReader(input);
 
         if (sr.Peek() < 0)
@@ -362,7 +362,7 @@ switch (atom.type) {
         return false;
     }
 
-    private Dictionary<string, string> ReadSectionProperties(TextReader sr, SectionType currentSectionType,
+    private Dictionary<string, string> ReadSectionProperties(TextReader sr, SectionType _,
         out SectionType nextSectionType)
     {
         var properties = new Dictionary<string, string>();
