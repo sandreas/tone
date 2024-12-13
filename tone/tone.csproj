@@ -35,7 +35,7 @@
 
 
     <ItemGroup>
-      <PackageReference Include="CliWrap" Version="3.6.7" />
+      <PackageReference Include="CliWrap" Version="3.7.0" />
       <PackageReference Include="CSharp.OperationResult" Version="0.1.6" />
       <PackageReference Include="grok.net" Version="2.0.0" />
       <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
@@ -47,7 +47,7 @@
       <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="Sandreas.AudioMetadata" Version="0.2.4" />
+      <PackageReference Include="Sandreas.AudioMetadata" Version="0.2.5" />
       <PackageReference Include="Sandreas.SpectreConsoleHelpers" Version="0.0.2" />
       <PackageReference Include="Serilog" Version="4.2.0" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
