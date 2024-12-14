@@ -78,7 +78,7 @@ jobs:
           
           echo "::set-output name=release_notes::$release_notes"
           
-          sed -i.bak "s/<TargetFramework>net6.0<\/TargetFramework>/<TargetFramework>${{ env.DOTNET_FRAMEWORK }}<\/TargetFramework>/g" ${{ env.PROJECT_PATH }}
+          sed -i.bak "s/<TargetFramework>net8.0<\/TargetFramework>/<TargetFramework>${{ env.DOTNET_FRAMEWORK }}<\/TargetFramework>/g" ${{ env.PROJECT_PATH }}
           
           if [ "${{ matrix.target }}" == "osx-arm64" ]; then
             dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:EnableCompressionInSingleFile=false -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"

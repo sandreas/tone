@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+    <!--<assembly fullname="Spectre.Console" preserve="all" /> this seems to be optional--> 
+    <assembly fullname="Spectre.Console.Cli" preserve="all" /><!-- this is a must -->
+    <assembly fullname="tone" preserve="all" />
+</linker>

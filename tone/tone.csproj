@@ -77,4 +77,8 @@
       <None Remove="doc\release\vortex_before.txt" />
     </ItemGroup>
 
+    <ItemGroup>
+        <TrimmerRootDescriptor Include="tone.TrimmerRootDescriptor.xml" />
+    </ItemGroup>
+
 </Project>
