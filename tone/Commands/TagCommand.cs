@@ -127,9 +127,10 @@ public class TagCommand : CancellableAsyncCommand<TagCommandSettings>
                     return (ReturnCode.UserAbort, shouldShowDryRunMessage);
                 }
 
+                
                 var track = new MetadataTrack(file)
                 {
-                    BasePath = p.BaseDirectory?.FullName
+                    BasePath = file.DirectoryName
                 };
                 var status = await _tagger.UpdateAsync(track);
                 
