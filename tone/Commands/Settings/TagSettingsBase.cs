@@ -14,12 +14,12 @@ public class TagSettingsBase : CommandSettingsBase,
     IMetadata, 
     ICoverTaggerSettings, 
     IToneJsonTaggerSettings, 
-    IIdTaggerSettings, 
     IPathPatternSettings, 
     IChptFmtNativeTaggerSettings, 
     IFfmetadataTaggerSettings,
     IRemoveTaggerSettings, 
     ITaggerOrderSettings, 
+    // IIdTaggerSettings, // IScriptSettings already implements IIdTaggerSettings 
     IScriptSettings,
     IPrependMovementToDescriptionTaggerSettings
 {

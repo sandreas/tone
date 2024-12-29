@@ -26,14 +26,14 @@ public class ToneJsonTagger : INamedTagger
     public ToneJsonTagger(IFileSystem fs, IEnumerable<string> toneJsonFiles, bool autoload = false)
     {
         _fs = fs;
-        _toneJsonFiles = toneJsonFiles.Select(f => fs.FileInfo.FromFileName(f)).ToList();
+        _toneJsonFiles = toneJsonFiles.Select(f => fs.FileInfo.New(f)).ToList();
         _autoload = autoload;
     }
 
     public ToneJsonTagger(IFileSystem fs, IToneJsonTaggerSettings settings)
     {
         _fs = fs;
-        _toneJsonFiles = settings.ToneJsonFiles.Select(f => fs.FileInfo.FromFileName(f)).ToList();
+        _toneJsonFiles = settings.ToneJsonFiles.Select(f => fs.FileInfo.New(f)).ToList();
         _autoload = settings.AutoImportToneJson;
     }
 

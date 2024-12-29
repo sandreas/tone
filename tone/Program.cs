@@ -101,7 +101,7 @@ try
         {
             new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() }
         },
-        Formatting = Formatting.Indented,
+        Formatting = Formatting.Indented
     });
     services.AddSingleton<ChptFmtNativeSerializer>();
     services.AddSingleton<FfmetadataSerializer>();
@@ -116,24 +116,26 @@ try
         var startupErrorsService = s.GetRequiredService<StartupErrorService>();
         var settings = settingsProvider.Get<IPathPatternSettings>();
         var pathPatterns = new List<(string, Grok)>();
-        if (settings != null)
+        if (settings == null)
         {
-            var customPatterns = settings.PathPatternExtension.Concat(new[]
-            {
-                "NOTDIRSEP [^/\\\\]*",
-                "PARTNUMBER \\b[0-9-.,IVXLCDM]+\\b"
-            });
+            return new PathPatternMatcher(pathPatterns);
+        }
 
-            var grokDefinitions = patternService.Build(settings.PathPattern, customPatterns);
-            if (grokDefinitions)
-            {
-                pathPatterns = grokDefinitions.Value.ToList();
-            }
-            else
-            {
-                startupErrorsService.Errors.Add((ReturnCode.GeneralError,
-                    "Could not parse `--path-pattern`: " + grokDefinitions.Error));
-            }
+        string[] predefinedPatterns = {
+            @"NOTDIRSEP [^/\\]*",
+            @"PARTNUMBER \b[0-9-.,IVXLCDM]+\b"
+        };
+        var customPatterns = settings.PathPatternExtension.Concat(predefinedPatterns);
+
+        var grokDefinitions = patternService.Build(settings.PathPattern, customPatterns);
+        if (grokDefinitions)
+        {
+            pathPatterns = grokDefinitions.Value.ToList();
+        }
+        else
+        {
+            startupErrorsService.Errors.Add((ReturnCode.GeneralError,
+                "Could not parse `--path-pattern`: " + grokDefinitions.Error));
         }
 
         return new PathPatternMatcher(pathPatterns);
@@ -151,10 +153,9 @@ try
         });
     });
 
-    services.AddSingleton<AudibleIdTaggerSettings>(_ => new AudibleIdTaggerSettings(){
+    services.AddSingleton<AudibleIdTaggerSettings>(_ => new AudibleIdTaggerSettings {
         MetadataUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_METADATA_URL_TEMPLATE") ?? "",
-        ChaptersUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_CHAPTERS_URL_TEMPLATE") ?? "",
-        
+        ChaptersUrlTemplate = Environment.GetEnvironmentVariable("PILABOR_AUDIBLE_CHAPTERS_URL_TEMPLATE") ?? ""
     });
     services.AddHttpClient<AudibleIdTagger>();
     
@@ -230,7 +231,7 @@ try
         config.UseStrictParsing();
         config.CaseSensitivity(CaseSensitivity.None);
         config.SetApplicationName("tone");
-        config.SetApplicationVersion("0.2.3");
+        config.SetApplicationVersion("0.2.4");
         config.ValidateExamples();
         config.AddCommand<DumpCommand>("dump")
             .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
@@ -266,7 +267,7 @@ try
 }
 catch (Exception e)
 {
-    if (e is CommandParseException { Pretty: { } } ce)
+    if (e is CommandParseException { Pretty: not null } ce)
     {
         AnsiConsole.Write(ce.Pretty);
     }

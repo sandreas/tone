@@ -4,6 +4,6 @@ namespace tone.Metadata.Taggers.IdTaggers.Audible;
 
 public class AudibleMetadataResponse
 {
-    public Product Product { get; set; }
-    
+    public Product Product { get; set; } = new();
+
 }

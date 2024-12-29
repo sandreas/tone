@@ -31,10 +31,9 @@ public class JavaScriptApi
         // fallback "dummy" constructor in case of missing prerequisites
         _jint = new Engine();
         _tagger = new TaggerComposite();
-        _idTagger = new IdTaggerComposite(_jint, null);
+        _idTagger = new IdTaggerComposite(_jint);
         _fs = new FileSystem();
         _http = new HttpClient();
-        
     }
     public JavaScriptApi(Engine jint, FileSystem fs, HttpClient http, TaggerComposite tagger, IdTaggerComposite idTagger, IScriptSettings scriptSettings)
     {
@@ -81,7 +80,8 @@ public class JavaScriptApi
                 return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
 
-            var destinationFile = _fs.FileInfo.FromFileName(fetchData.DownloadPath);
+            var destinationFile = _fs.FileInfo.New(fetchData.DownloadPath);
+
             if(destinationFile.Exists && !fetchData.Overwrite)
             {
                 return "";
@@ -89,7 +89,12 @@ public class JavaScriptApi
             
             if(!_fs.Directory.Exists(destinationFile.DirectoryName))
             {
-                _fs.Directory.CreateDirectory(destinationFile.DirectoryName);
+                var dirname = destinationFile.DirectoryName;
+                if (dirname is null)
+                {
+                    return "";
+                }
+                _fs.Directory.CreateDirectory(dirname);
             }
             
             await _fs.File.WriteAllBytesAsync(destinationFile.FullName, await response.Content.ReadAsByteArrayAsync());
@@ -113,12 +118,12 @@ public class JavaScriptApi
         var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri(url),
+            RequestUri = new Uri(url)
             
         };
 
         if(data != null){
-            httpRequestMessage = new HttpRequestMessage()        {
+            httpRequestMessage = new HttpRequestMessage {
                 Method = ConvertStringToHttpMethod(fetchData.Method),
                 RequestUri = new Uri(url),
                 Content = new StringContent(fetchData.Body)
@@ -167,7 +172,7 @@ public class JavaScriptApi
         return TimeSpan.FromMilliseconds(milliseconds);
     }
     public ChapterInfo CreateChapter(string title, uint start, uint length, PictureInfo? picture=null, string subtitle="",string uniqueId="")    {
-        return new ChapterInfo()
+        return new ChapterInfo
         {
             Title = title,
             StartTime = start,

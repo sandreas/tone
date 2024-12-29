@@ -26,7 +26,7 @@ public class CoverTagger: INamedTagger
     public CoverTagger(IFileSystem fs, IEnumerable<string> covers, bool autoload=false)
     {
         _fs = fs;
-        _covers = covers.Select(f => fs.FileInfo.FromFileName(f)).ToList();
+        _covers = covers.Select(f => fs.FileInfo.New(f)).ToList();
         _autoload = autoload;
     }
     

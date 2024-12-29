@@ -51,7 +51,7 @@ public class IdTaggerComposite : INamedTagger
             if (tagger.SupportsId(Id))
             {
                 tagger.Id = Id;
-                var result = await tagger.UpdateAsync(metadata);
+                _ = await tagger.UpdateAsync(metadata);
             }
         }
 
@@ -70,7 +70,7 @@ public class IdTaggerComposite : INamedTagger
             _jint.SetValue("metadata", metadata);
             return Ok(_jint.Evaluate("return " + Id).AsString());
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return Error("Id could not be resolved: " + Id);
         }

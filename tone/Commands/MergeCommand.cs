@@ -1,4 +1,4 @@
-namespace tone.Commands;
+// namespace tone.Commands;
 
 // [Command("merge")]
 // public class MergeCommand : ICommand

@@ -155,10 +155,12 @@ public class DirectoryLoaderService
             // find baseDir by going up until the pattern does not match any more
             var grokPattern = grokPatternContainer.patternAsString;
             var baseDir = file.Directory;
-            while(pathMatcher.TryMatchSinglePattern(baseDir.Parent.FullName, out var grokPatternContainer2) && grokPatternContainer2.patternAsString == grokPattern)
+            var parent = baseDir?.Parent;
+            var parentFullName = parent?.FullName ?? "";
+            while(pathMatcher.TryMatchSinglePattern(parentFullName, out var grokPatternContainer2) && grokPatternContainer2.patternAsString == grokPattern)
             {
-                baseDir = baseDir.Parent;
-                if(baseDir.Root.FullName == baseDir.FullName)
+                baseDir = baseDir?.Parent;
+                if(baseDir?.Root.FullName == baseDir?.FullName)
                 {
                     break;
                 }        
@@ -166,7 +168,7 @@ public class DirectoryLoaderService
 
             var identifier = string.Join(",",grokResult.Select(r => r.Key+"="+r.Value));
             
-            var existingDirectoryPackage = packages.FirstOrDefault(p => p.Id == identifier && p.BaseDirectory?.FullName == baseDir.FullName);
+            var existingDirectoryPackage = packages.FirstOrDefault(p => p.Id == identifier && p.BaseDirectory?.FullName == baseDir?.FullName);
             if (existingDirectoryPackage == null)
             {
                 packages.Add(new AudioBookPackage

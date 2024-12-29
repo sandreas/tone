@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using tone.Common.StringParser;
@@ -39,7 +38,7 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
     private static void ChapterMarker(CharScanner scanner, IList<Token<FfmetadataToken>> tokenList)
     {
         var line = scanner.ReadLine();
-        if (line.ToLower() != "[chapter]")
+        if (!line.Equals("[chapter]", System.StringComparison.CurrentCultureIgnoreCase))
         {
             return;
         }
@@ -50,7 +49,7 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
     private static void StreamMarker(CharScanner scanner, IList<Token<FfmetadataToken>> tokenList)
     {
         var line = scanner.ReadLine();
-        if (line.ToLower() != "[stream]")
+        if (!line.Equals("[stream]", System.StringComparison.CurrentCultureIgnoreCase))
         {
             return;
         }
@@ -95,11 +94,12 @@ public class FfmetadataTokenizer : Tokenizer<Token<FfmetadataToken>>
             buffer += currentChar;
         }
 
-        if (propertyName != "")
+        if (propertyName == "")
         {
-            tokenList.Add(new Token<FfmetadataToken>(FfmetadataToken.PropertyName, propertyName));
-            tokenList.Add(new Token<FfmetadataToken>(FfmetadataToken.PropertyValue, buffer));
+            return;
         }
+        tokenList.Add(new Token<FfmetadataToken>(FfmetadataToken.PropertyName, propertyName));
+        tokenList.Add(new Token<FfmetadataToken>(FfmetadataToken.PropertyValue, buffer));
     }
 
 }

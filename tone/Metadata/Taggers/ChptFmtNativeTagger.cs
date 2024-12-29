@@ -16,7 +16,7 @@ public class ChptFmtNativeTagger : AbstractFilesystemTagger, INamedTagger
     {
     }
 
-    protected override string? BuildPreferredFileName(IFileInfo audioFile) => ConcatPreferredFileName(audioFile, DefaultFileSuffix);
+    protected override string BuildPreferredFileName(IFileInfo audioFile) => ConcatPreferredFileName(audioFile, DefaultFileSuffix);
 
     protected override bool FilterCallback(IFileInfo f) => f.Name.EndsWith(DefaultFileSuffix);
 
