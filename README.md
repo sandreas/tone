@@ -1,6 +1,6 @@
 # tone
 
-`tone` is a cross platform audio tagger and metadata editor to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more. It has no dependencies and can be downloaded as single binary for Windows, macOS, Linux and other common platforms.
+`tone` is a cross-platform audio tagger and metadata editor to dump and modify metadata for a wide variety of formats, including `mp3`, `m4b`, `flac` and more. It has no dependencies and can be downloaded as single binary for Windows, macOS, Linux and other common platforms.
 
 The code is written in pure `C#` and utilizes the awesome [atldotnet] library to provide full support for a wide variety of audio and metadata formats.
 
@@ -46,23 +46,6 @@ tone dump "input.mp3" --format json --query "$.meta.album"
 tone dump "input.mp3" --format json --query "$.audio"
 ```
 
-***Redirecting output / executing subprocess***
-
-If you plan to redirect the output into a file or run `tone` in a subprocess, there was a breaking change in version `0.2.2`,
-that will prevent invalid `json` output redirected into a file, e.g.:
-
-```bash
-tone dump --format json audio.mp3 > audio-metadata.json
-```
-
-To force behaviour of version `0.1.7` (not recommended), you can use the environment variable `TONE_OUTPUT_REDIRECT=0`, e.g.: 
-
-```bash
-TONE_OUTPUT_REDIRECT=0 tone dump --format json audio.mp3 > audio-metadata.json
-```
-
-This environment variable can also be used for subprocess execution.
-
 ### modify tags
 
 **IMPORTANT:** Because metadata is modified in place without copying the
@@ -96,19 +79,19 @@ This means, that downloading a single file from the [releases] page.
 ```bash
 
 # linux-arm
-wget https://github.com/sandreas/tone/releases/download/v0.2.2/tone-0.2.2-linux-arm.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.2.4/tone-0.2.4-linux-arm.tar.gz
 
 # linux-arm64
-wget https://github.com/sandreas/tone/releases/download/v0.2.2/tone-0.2.2-linux-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.2.4/tone-0.2.4-linux-arm64.tar.gz
 
 # linux-x64
-wget https://github.com/sandreas/tone/releases/download/v0.2.2/tone-0.2.2-linux-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.2.4/tone-0.2.4-linux-x64.tar.gz
 
 # macos (m1) - not working atm, see issue #6
-wget https://github.com/sandreas/tone/releases/download/v0.2.2/tone-0.2.2-osx-arm64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.2.4/tone-0.2.4-osx-arm64.tar.gz
 
 # macos (intel)
-wget https://github.com/sandreas/tone/releases/download/v0.2.2/tone-0.2.2-osx-x64.tar.gz
+wget https://github.com/sandreas/tone/releases/download/v0.2.4/tone-0.2.4-osx-x64.tar.gz
 
 # untar 
 tar xzf tone-*.tar.gz
@@ -125,10 +108,10 @@ tone --help
 
 ```bash
 # download for windows (powershell)
-iwr -outf tone-0.2.2-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.2.2/tone-0.2.2-win-x64.zip
+iwr -outf tone-0.2.4-win-x64.zip https://github.com/sandreas/tone/releases/download/v0.2.4/tone-0.2.4-win-x64.zip
 
 # extract tone
-Expand-Archive -LiteralPath tone-0.2.2-win-x64.zip -DestinationPath .
+Expand-Archive -LiteralPath tone-0.2.4-win-x64.zip -DestinationPath .
 
 # test if tone is usable
 .\tone --help
@@ -142,7 +125,7 @@ start .
 Since `tone` is a monolith, it is probably not necessary to run it via `docker`, but since it is convenient to have a possibility to copy `tone` in your own image, I published an official variant on dockerhub. Since it is a *multiarch*  image, you can use it on `arm6`, `arm7`, `aarch64`, and `x64` images.
 
 ```bash
-docker pull sandreas/tone:v0.2.2
+docker pull sandreas/tone:v0.2.4
 ```
 
 
@@ -150,7 +133,7 @@ Or to use `tone` in your custom `Dockerfile`:
 
 ```dockerfile
 # Dockerfile
-FROM sandreas/tone:v0.2.2 as tone
+FROM sandreas/tone:v0.2.4 as tone
 # ...
 COPY --from=tone /usr/local/bin/tone /usr/local/bin/
 ```
@@ -755,6 +738,26 @@ dotnet publish tone/tone.csproj --runtime "osx-arm64" --framework net6.0 -c Rele
 dotnet publish tone/tone.csproj --runtime "linux-x64" --framework net6.0 -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "dist/tone"
 ```
 
+# Submitting an issue
+
+Found an issue? Here are some helpful commands to create sample audio files without copyright to reproduce the issue:
+
+```
+# create a 5 seconds silent sample
+ffmpeg -ar 48000 -ac 1 -f s16le -i /dev/zero -t 5 -y sample.wav
+
+# convert wav to m4b (mp3 would also work)
+ffmpeg -i sample.wav -f mp4 sample.m4b
+
+# download a sample cover
+wget -c https://picsum.photos/id/237/500/500 -O cover.jpg
+
+# embed the cover into the sample
+ffmpeg -i sample.m4b -i cover.jpg -map 0 -map 1 -c copy -disposition:v:1 attached_pic -f mp4 ready.m4b
+
+# run your tone command to reproduce the issue
+tone tag --meta-genre=Fantasy sample.m4b
+```
 
 # known issues
 
