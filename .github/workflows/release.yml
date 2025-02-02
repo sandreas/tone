@@ -79,6 +79,7 @@ jobs:
           echo "::set-output name=release_notes::$release_notes"
           
           sed -i.bak "s/<TargetFramework>net8.0<\/TargetFramework>/<TargetFramework>${{ env.DOTNET_FRAMEWORK }}<\/TargetFramework>/g" ${{ env.PROJECT_PATH }}
+          sed -i "s/@package_version@/${{ steps.version.outputs.version-without-v }}/g" ${{ env.PROJECT_NAME }}/Program.cs
           
           if [ "${{ matrix.target }}" == "osx-arm64" ]; then
             dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:EnableCompressionInSingleFile=false -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
@@ -109,7 +110,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -128,7 +129,6 @@ jobs:
         with:
           file: tone/Dockerfile.release
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
-          #platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x
           push: true
           tags: sandreas/tone:${{ github.ref_name }}
           build-args: |

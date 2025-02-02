@@ -231,7 +231,7 @@ try
         config.UseStrictParsing();
         config.CaseSensitivity(CaseSensitivity.None);
         config.SetApplicationName("tone");
-        config.SetApplicationVersion("0.2.4");
+        config.SetApplicationVersion("@package_version@");
         config.ValidateExamples();
         config.AddCommand<DumpCommand>("dump")
             .WithDescription("dump metadata for files and directories (directories are traversed recursively)")
