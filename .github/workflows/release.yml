@@ -76,6 +76,7 @@ jobs:
           old-string: "@package_version@"
           new-string: ${{ steps.version.outputs.version-without-v }}
           
+          
       - name: Build
         id: build
         shell: bash
