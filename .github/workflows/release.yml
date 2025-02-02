@@ -75,11 +75,12 @@ jobs:
         run: |
           release_name="${{ env.PROJECT_NAME }}-${{ steps.version.outputs.version-without-v }}-${{ matrix.target }}"
 
-          sed -i '' "s/@package_version@/${{ steps.version.outputs.version-without-v }}/g" ${{ env.PROJECT_NAME }}/Program.cs
           
           if [ "${{ matrix.target }}" == "osx-arm64" ]; then
+            sed -i '' "s/@package_version@/${{ steps.version.outputs.version-without-v }}/g" ${{ env.PROJECT_NAME }}/Program.cs
             dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:EnableCompressionInSingleFile=false -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           else 
+            sed -i "s/@package_version@/${{ steps.version.outputs.version-without-v }}/g" ${{ env.PROJECT_NAME }}/Program.cs
             dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           fi
           
