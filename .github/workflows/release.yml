@@ -69,6 +69,13 @@ jobs:
         id: version
         uses: battila7/get-version-action@v2
 
+      - name: Replace string in file
+        uses: MathieuSoysal/replace-string-in-file@v1.1.0
+        with:
+          file: ${{ env.PROJECT_NAME }}/Program.cs
+          old-string: @package_version@
+          new-string: ${{ steps.version.outputs.version-without-v }}
+          
       - name: Build
         id: build
         shell: bash
@@ -77,10 +84,8 @@ jobs:
 
           
           if [ "${{ matrix.target }}" == "osx-arm64" ]; then
-            sed -i '' "s/@package_version@/${{ steps.version.outputs.version-without-v }}/g" ${{ env.PROJECT_NAME }}/Program.cs
             dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:EnableCompressionInSingleFile=false -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           else 
-            sed -i "s/@package_version@/${{ steps.version.outputs.version-without-v }}/g" ${{ env.PROJECT_NAME }}/Program.cs
             dotnet publish ${{ env.PROJECT_PATH }} --framework ${{ env.DOTNET_FRAMEWORK }} --runtime "${{ matrix.target }}" -c Release -p:PublishSingleFile=true --self-contained true -p:PublishReadyToRun=true -p:PublishTrimmed=true -o "$release_name"
           fi
           
