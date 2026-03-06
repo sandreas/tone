@@ -316,7 +316,7 @@ public class SpectreConsoleSerializer : IMetadataSerializer
                     ? l.UnsynchronizedLyrics
                     : string.Join("\n",
                         l.SynchronizedLyrics.Select(phrase =>
-                            Stringify(TimeSpan.FromMilliseconds(phrase.TimestampMs), null,
+                            Stringify(TimeSpan.FromMilliseconds(phrase.TimestampStart), null,
                                 TimeSpan.FromMilliseconds(int.MaxValue)) + " - " + phrase.Text))
             },
             _ => Array.Empty<string>()

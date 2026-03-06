@@ -56,7 +56,7 @@ public class LyricsConverter : JsonConverter
                 {
                     writer.WriteStartObject();
                     writer.WritePropertyName("time");
-                    writer.WriteValue(syncItem.TimestampMs);
+                    writer.WriteValue(syncItem.TimestampStart);
                     writer.WritePropertyName("text");
                     writer.WriteValue(syncItem.Text);
                     writer.WriteEndObject();

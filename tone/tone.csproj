@@ -3,7 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <LangVersion>10</LangVersion>
+        <LangVersion>12.0</LangVersion>
         <Nullable>enable</Nullable>
         <!--
         <PublishSingleFile>true</PublishSingleFile>
@@ -47,7 +47,7 @@
       <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.1" />
       <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.1" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="Sandreas.AudioMetadata" Version="0.2.8" />
+      <PackageReference Include="PCRE.NET" Version="1.4.0" />
       <PackageReference Include="Sandreas.SpectreConsoleHelpers" Version="0.0.2" />
       <PackageReference Include="Serilog" Version="4.2.0" />
       <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
@@ -56,6 +56,11 @@
       <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
       <PackageReference Include="Spectre.Console" Version="0.49.1" />
       <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
+      <PackageReference Include="z440.atl.core" Version="7.11.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\vendor\DotnetLibAudioMetadata\Sandreas.AudioMetadata\Sandreas.AudioMetadata.csproj" />
     </ItemGroup>
 
 

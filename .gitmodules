@@ -1,0 +1,3 @@
+[submodule "vendor/DotnetLibAudioMetadata"]
+	path = vendor/DotnetLibAudioMetadata
+	url = https://github.com/sandreas/DotnetLibAudioMetadata.git
