@@ -87,7 +87,7 @@ wget https://github.com/sandreas/tone/releases/download/v0.2.5/tone-0.2.5-linux-
 # linux-x64
 wget https://github.com/sandreas/tone/releases/download/v0.2.5/tone-0.2.5-linux-x64.tar.gz
 
-# macos (m1) - not working atm, see issue #6
+# macos (silicon)
 wget https://github.com/sandreas/tone/releases/download/v0.2.5/tone-0.2.5-osx-arm64.tar.gz
 
 # macos (intel)
